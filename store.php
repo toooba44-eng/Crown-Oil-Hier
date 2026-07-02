@@ -16,7 +16,7 @@
       <img src="assets/logo.jpg" alt="Crown Hair Oil">
       <span class="brand-name">Crown<span>HAIR OIL</span></span>
     </a>
-    <nav class="main-nav">
+    <nav class="main-nav" id="mainNav">
       <ul>
         <li><a href="index.php">الرئيسية</a></li>
         <li><a href="store.php">المتجر</a></li>
@@ -26,6 +26,9 @@
     <div class="header-actions">
       <button class="cart-pill" id="cartToggle">
         🛍 السلة <span id="cartCount">0</span>
+      </button>
+      <button class="nav-toggle" id="navToggle" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mainNav">
+        <span></span><span></span><span></span>
       </button>
     </div>
   </div>
@@ -214,5 +217,22 @@
 <div class="toast" id="toast"></div>
 
 <script src="script.js"></script>
+<script>
+(function(){
+  var btn = document.getElementById('navToggle');
+  var nav = document.getElementById('mainNav');
+  if(!btn || !nav) return;
+  btn.addEventListener('click', function(){
+    var isOpen = nav.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+  nav.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      nav.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
 </body>
 </html>
