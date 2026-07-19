@@ -17,6 +17,10 @@ export const PAY_METHOD_LABELS = {
   card: "بطاقة مدى / فيزا",
 };
 
+// V2.1.1: the retired default product photo, migrated to the new white shot.
+const LEGACY_PRODUCT_IMAGE = "assets/hero-light.jpg";
+export const DEFAULT_PRODUCT_IMAGE = "assets/product-white.png";
+
 const DEFAULT_PRODUCTS = [
   {
     id: "p-001",
@@ -26,7 +30,7 @@ const DEFAULT_PRODUCTS = [
     oldPrice: 149,
     stock: 24,
     category: "زيوت الشعر",
-    image: "assets/hero-light.jpg",
+    image: "assets/product-white.png",
   },
 ];
 
@@ -75,6 +79,15 @@ export function loadProducts() {
     products = DEFAULT_PRODUCTS;
     writeJSON("crown_products", products);
   }
+  // Migrate catalogs saved before the product photo swap.
+  let migrated = false;
+  products.forEach((p) => {
+    if (p.image === LEGACY_PRODUCT_IMAGE) {
+      p.image = DEFAULT_PRODUCT_IMAGE;
+      migrated = true;
+    }
+  });
+  if (migrated) writeJSON("crown_products", products);
   return products;
 }
 export function persistProducts(products) { return writeJSON("crown_products", products); }

@@ -146,10 +146,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
   overflow: hidden; display: flex; flex-direction: column;
 }
 .product-thumb {
-  position: relative; aspect-ratio: 4/3; overflow: hidden; padding: 0; border: none;
-  background: var(--cream-2); cursor: pointer; width: 100%;
+  position: relative; aspect-ratio: 16/10; overflow: hidden; padding: 0; border: none;
+  background: #fff; cursor: pointer; width: 100%;
 }
-.product-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.product-thumb img { width: 100%; height: 100%; object-fit: contain; transition: transform .5s ease; }
 .product-card:active .product-thumb img { transform: scale(1.05); }
 .sale-ribbon {
   position: absolute; top: 10px; right: 10px; z-index: 2;
@@ -181,7 +181,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 }
 @keyframes sheetUp { from { transform: translateY(40%); } }
 .sheet-handle { width: 44px; height: 4px; border-radius: 4px; background: var(--line); margin: 2px auto 4px; }
-.sheet-img { border-radius: var(--radius); aspect-ratio: 4/3; object-fit: cover; width: 100%; }
+.sheet-img { border-radius: var(--radius); aspect-ratio: 16/10; object-fit: contain; background: #fff; width: 100%; }
 .sheet h2 { font-size: 19px; }
 .sheet-desc { font-size: 14px; }
 
