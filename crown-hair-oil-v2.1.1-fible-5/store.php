@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>المتجر | Crown Hair Oil</title>
+<link rel="icon" type="image/jpeg" href="assets/logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Tajawal:wght@400;500;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -24,8 +25,8 @@
       </ul>
     </nav>
     <div class="header-actions">
-      <button class="cart-pill" id="cartToggle">
-        🛍 السلة <span id="cartCount">0</span>
+      <button class="cart-pill" id="cartToggle" aria-label="فتح سلة الشراء">
+        🛍 السلة <span id="cartCount" class="cart-count">0</span>
       </button>
       <button class="nav-toggle" id="navToggle" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mainNav">
         <span></span><span></span><span></span>
@@ -58,27 +59,27 @@
         <form id="checkoutForm">
           <div class="field-row">
             <div class="field">
-              <label>الاسم الكامل</label>
-              <input type="text" name="name" required placeholder="مثال: سارة العتيبي">
+              <label for="f-name">الاسم الكامل</label>
+              <input id="f-name" type="text" name="name" required placeholder="مثال: سارة العتيبي">
             </div>
             <div class="field">
-              <label>رقم الجوال</label>
-              <input type="tel" name="phone" required placeholder="05xxxxxxxx">
+              <label for="f-phone">رقم الجوال</label>
+              <input id="f-phone" type="tel" name="phone" required inputmode="tel" pattern="[0-9+\- ]{9,15}" placeholder="05xxxxxxxx">
             </div>
           </div>
           <div class="field-row">
             <div class="field">
-              <label>المدينة</label>
-              <input type="text" name="city" required placeholder="الرياض">
+              <label for="f-city">المدينة</label>
+              <input id="f-city" type="text" name="city" required placeholder="الرياض">
             </div>
             <div class="field">
-              <label>الحي / الرمز البريدي</label>
-              <input type="text" name="address" required placeholder="حي الياسمين">
+              <label for="f-address">الحي / الرمز البريدي</label>
+              <input id="f-address" type="text" name="address" required placeholder="حي الياسمين">
             </div>
           </div>
           <div class="field">
-            <label>ملاحظات على الطلب (اختياري)</label>
-            <textarea name="notes" rows="3" placeholder="مثال: التوصيل بعد الساعة 5 مساءً"></textarea>
+            <label for="f-notes">ملاحظات على الطلب (اختياري)</label>
+            <textarea id="f-notes" name="notes" rows="3" placeholder="مثال: التوصيل بعد الساعة 5 مساءً"></textarea>
           </div>
 
           <div class="field">
@@ -102,12 +103,10 @@
           <button type="submit" class="btn btn-primary btn-block">تأكيد الطلب</button>
         </form>
 
-        <div id="orderConfirm" style="display:none;" class="admin-list-item" style="margin-top:20px;">
-          <div class="grow">
-            <h3 style="margin-bottom:8px;">تم استلام طلبك بنجاح ✓</h3>
-            <p>رقم الطلب: <strong id="orderNumber"></strong>. سيتم التواصل معك لتأكيد التفاصيل والتوصيل.</p>
-            <a href="store.php" class="btn btn-ghost btn-sm" style="margin-top:14px;">متابعة التسوق</a>
-          </div>
+        <div id="orderConfirm" class="order-confirm" hidden>
+          <h3>تم استلام طلبك بنجاح ✓</h3>
+          <p>رقم الطلب: <strong id="orderNumber"></strong>. سيتم التواصل معك لتأكيد التفاصيل والتوصيل.</p>
+          <a href="store.php" class="btn btn-ghost btn-sm">متابعة التسوق</a>
         </div>
       </div>
 
@@ -129,39 +128,39 @@
 
 <!-- CART DRAWER -->
 <div class="cart-overlay" id="cartOverlay"></div>
-<aside class="cart-drawer" id="cartDrawer">
+<aside class="cart-drawer" id="cartDrawer" aria-label="سلة الشراء">
   <div class="cart-head">
     <h3>سلة الشراء</h3>
-    <button class="cart-close" id="cartClose">×</button>
+    <button class="cart-close" id="cartClose" aria-label="إغلاق السلة">×</button>
   </div>
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-foot">
     <div class="cart-total-row"><span>الإجمالي</span><span id="cartTotal">0 ر.س</span></div>
-    <a href="store.php#checkout" class="btn btn-primary btn-block" onclick="closeCart()">إتمام الشراء</a>
+    <a href="#checkout" class="btn btn-primary btn-block" id="goCheckout">إتمام الشراء</a>
   </div>
 </aside>
 
 <!-- ADMIN -->
-<button class="admin-toggle" id="adminToggleBtn" title="لوحة التحكم">⚙</button>
+<button class="admin-toggle" id="adminToggleBtn" title="لوحة التحكم" aria-label="لوحة التحكم">⚙</button>
 <div class="admin-panel" id="adminPanel">
   <div class="admin-box">
     <div class="admin-head">
       <h2 style="font-size:22px;">لوحة تحكم المتجر</h2>
-      <button class="cart-close" id="adminCloseBtn">×</button>
+      <button class="cart-close" id="adminCloseBtn" aria-label="إغلاق اللوحة">×</button>
     </div>
 
     <div id="adminLock" class="lock-screen">
       <p style="margin-bottom:16px;">هذه المنطقة لإدارة المتجر فقط. أدخلي كلمة المرور للاستمرار.</p>
       <form id="adminLockForm">
-        <input type="password" id="adminPasswordInput" placeholder="كلمة المرور" required style="width:100%;padding:13px;border:1px solid var(--line);border-radius:4px;margin-bottom:14px;">
+        <input type="password" id="adminPasswordInput" placeholder="كلمة المرور" required autocomplete="current-password">
         <button type="submit" class="btn btn-dark">دخول</button>
       </form>
     </div>
 
-    <div id="adminContent" style="display:none;">
-      <div class="admin-tabs">
-        <button class="active" data-tab="products" onclick="switchAdminTab('products')">المنتجات</button>
-        <button data-tab="orders" onclick="switchAdminTab('orders')">الطلبات</button>
+    <div id="adminContent" hidden>
+      <div class="admin-tabs" id="adminTabs">
+        <button class="active" data-tab="products">المنتجات</button>
+        <button data-tab="orders">الطلبات</button>
       </div>
 
       <div class="admin-pane active" id="pane-products">
@@ -171,36 +170,37 @@
         <h3 style="font-size:16px;margin:30px 0 14px;">إضافة منتج جديد</h3>
         <form id="newProductForm">
           <div class="field">
-            <label>اسم المنتج</label>
-            <input type="text" name="name" required placeholder="مثال: سيروم تساقط الشعر">
+            <label for="p-name">اسم المنتج</label>
+            <input id="p-name" type="text" name="name" required placeholder="مثال: سيروم تساقط الشعر">
           </div>
           <div class="field">
-            <label>الوصف</label>
-            <textarea name="desc" rows="2" placeholder="وصف قصير يظهر في بطاقة المنتج"></textarea>
+            <label for="p-desc">الوصف</label>
+            <textarea id="p-desc" name="desc" rows="2" placeholder="وصف قصير يظهر في بطاقة المنتج"></textarea>
           </div>
           <div class="field-row">
             <div class="field">
-              <label>السعر الحالي (ر.س)</label>
-              <input type="number" name="price" min="0" step="0.5" required>
+              <label for="p-price">السعر الحالي (ر.س)</label>
+              <input id="p-price" type="number" name="price" min="0" step="0.5" required>
             </div>
             <div class="field">
-              <label>السعر قبل الخصم (اختياري)</label>
-              <input type="number" name="oldPrice" min="0" step="0.5">
+              <label for="p-oldprice">السعر قبل الخصم (اختياري)</label>
+              <input id="p-oldprice" type="number" name="oldPrice" min="0" step="0.5">
             </div>
           </div>
           <div class="field-row">
             <div class="field">
-              <label>الكمية المتوفرة</label>
-              <input type="number" name="stock" min="0" required>
+              <label for="p-stock">الكمية المتوفرة</label>
+              <input id="p-stock" type="number" name="stock" min="0" required>
             </div>
             <div class="field">
-              <label>التصنيف</label>
-              <input type="text" name="category" placeholder="مثال: زيوت الشعر">
+              <label for="p-category">التصنيف</label>
+              <input id="p-category" type="text" name="category" placeholder="مثال: زيوت الشعر">
             </div>
           </div>
           <div class="field">
-            <label>صورة المنتج</label>
-            <input type="file" name="image" accept="image/*">
+            <label for="p-image">صورة المنتج</label>
+            <input id="p-image" type="file" name="image" accept="image/*">
+            <small class="field-hint">يتم ضغط الصورة تلقائياً لتناسب التخزين المحلي.</small>
           </div>
           <button type="submit" class="btn btn-primary">حفظ المنتج</button>
         </form>
@@ -214,25 +214,8 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="script.js"></script>
-<script>
-(function(){
-  var btn = document.getElementById('navToggle');
-  var nav = document.getElementById('mainNav');
-  if(!btn || !nav) return;
-  btn.addEventListener('click', function(){
-    var isOpen = nav.classList.toggle('open');
-    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-  });
-  nav.querySelectorAll('a').forEach(function(a){
-    a.addEventListener('click', function(){
-      nav.classList.remove('open');
-      btn.setAttribute('aria-expanded', 'false');
-    });
-  });
-})();
-</script>
+<script src="js/store.js"></script>
 </body>
 </html>

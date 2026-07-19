@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crown Hair Oil | زيت طبيعي لإطالة الشعر وتكثيفه</title>
 <meta name="description" content="Crown Hair Oil — زيت شعر طبيعي 100% من مزيج زيوت الأرغان والروزماري والزيتون، لتطويل الشعر وتكثيفه ولمعانه.">
+<link rel="icon" type="image/jpeg" href="assets/logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Tajawal:wght@400;500;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -40,6 +41,7 @@
   <div class="hero-media">
     <img src="assets/hero-light-crop.jpg" alt="زجاجة Crown Hair Oil بين أعشاب الروزماري وحبوب الأرغان">
   </div>
+  <div class="hero-grain" aria-hidden="true"></div>
   <div class="wrap">
     <div class="hero-content">
       <div class="eyebrow">مزيج زيوت طبيعية 100٪</div>
@@ -61,10 +63,10 @@
 <!-- ABOUT -->
 <section class="section-cream" id="about">
   <div class="wrap about-grid">
-    <div class="about-figure">
+    <div class="about-figure reveal">
       <img src="assets/hero-dark-crop.jpg" alt="زجاجة Crown Hair Oil على قاعدة سوداء">
     </div>
-    <div class="about-text">
+    <div class="about-text reveal">
       <div class="eyebrow">قصة العلامة</div>
       <h2>وُلِد Crown من وصفة بيتية، قبل أن يصبح روتين عناية</h2>
       <p>بدأت فكرة Crown Hair Oil من بحث طويل عن وصفة تجمع بين زيوت تُستخدم منذ قرون للعناية بالشعر، وبين تركيبة عصرية سهلة الاستخدام لا تترك أثراً دهنياً ثقيلاً.</p>
@@ -81,34 +83,34 @@
 <!-- BENEFITS -->
 <section class="section-tint" id="benefits">
   <div class="wrap">
-    <div class="section-head center">
+    <div class="section-head center reveal">
       <div class="eyebrow center" style="justify-content:center">ماذا يقدّم لك الزيت</div>
       <h2>خمس فوائد في زجاجة واحدة</h2>
     </div>
   </div>
   <div class="wrap">
     <div class="benefit-grid">
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 2c2 4 2 8 0 12M12 14c4-1 7 1 8 4M12 14c-4-1-7 1-8 4"/></svg>
         <h3>تطويل الشعر</h3>
         <p>يحفّز فروة الرأس وينشّط دورتها الدموية لدعم نمو أسرع وأكثر اتساقاً.</p>
       </div>
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 18c2-9 5-13 8-13s6 4 8 13"/></svg>
         <h3>كثافة وحجم</h3>
         <p>يقلّل التقصف والتساقط تدريجياً ليبدو الشعر أكثر كثافة من الجذور.</p>
       </div>
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="3.2"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/></svg>
         <h3>تحفيز النمو</h3>
         <p>تركيبة الروزماري معروفة بدعم نشاط البصيلات الخامدة.</p>
       </div>
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
         <h3>تغذية عميقة</h3>
         <p>زيت الأرغان يغلّف الخصلة ويغذّيها من الداخل دون أن يثقلها.</p>
       </div>
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 3l2.5 5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1z"/></svg>
         <h3>لمعان وحيوية</h3>
         <p>يمنح الشعر بريقاً طبيعياً ولمسة حريرية من أول استخدام.</p>
@@ -140,12 +142,12 @@
 <!-- INGREDIENTS RING (signature element) -->
 <section class="section-cream ring-section" id="ingredients">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head reveal">
       <div class="eyebrow">تركيبة الزيت</div>
       <h2>مزيج من ثلاث زيوت، لكل واحدة دور محدد</h2>
     </div>
     <div class="ring-wrap">
-      <div class="ring-diagram">
+      <div class="ring-diagram reveal">
         <svg viewBox="0 0 460 460" xmlns="http://www.w3.org/2000/svg">
           <circle cx="230" cy="230" r="150" fill="none" stroke="#D9CBAE" stroke-width="1"/>
           <circle cx="230" cy="230" r="98" fill="none" stroke="#D9CBAE" stroke-width="1" stroke-dasharray="3 6"/>
@@ -175,7 +177,7 @@
           <p>يرطّب بعمق ويمنح لمعاناً طبيعياً.</p>
         </div>
       </div>
-      <ul class="ring-list">
+      <ul class="ring-list reveal">
         <li><span class="ring-num">٠١</span><div><h3>تدليك فروة الرأس</h3><p>توضع قطرات الزيت مباشرة على فروة الرأس مع تدليك خفيف لتحفيز الدورة الدموية وتنشيط البصيلات.</p></div></li>
         <li><span class="ring-num">٠٢</span><div><h3>تغطية الخصلة كاملة</h3><p>يُمشّط الزيت على طول الشعر حتى الأطراف لحماية الخصلة من التقصف والجفاف.</p></div></li>
         <li><span class="ring-num">٠٣</span><div><h3>الترك والتكرار</h3><p>يُترك حسب الحاجة ثم يُغسل بشامبو لطيف، ويُكرر مرتين إلى ثلاث مرات أسبوعياً.</p></div></li>
@@ -187,21 +189,21 @@
 <!-- PRODUCT TEMPLATES -->
 <section class="section-tint" id="product">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head reveal">
       <div class="eyebrow">الزجاجة الواحدة، بثلاث إطارات</div>
       <h2>المنتج كما يراه عميلك في كل مكان</h2>
       <p>ثلاثة قوالب عرض جاهزة لاستخدامها في الموقع والمتجر ومنشورات التسويق، من نفس الصور المعتمدة للمنتج.</p>
     </div>
     <div class="mock-grid">
-      <div class="mock-card frame-a">
+      <div class="mock-card frame-a reveal">
         <img src="assets/hero-light.jpg" alt="إطار طبيعي للزجاجة بين الأعشاب">
         <div class="mock-tag"><b>الإطار الطبيعي</b><span>للصفحة الرئيسية والمحتوى التعريفي</span></div>
       </div>
-      <div class="mock-card frame-b">
+      <div class="mock-card frame-b reveal">
         <img src="assets/hero-dark.jpg" alt="إطار فاخر للزجاجة بإضاءة داكنة">
         <div class="mock-tag"><b>الإطار الفاخر</b><span>لمنشورات السوشال ميديا والعروض</span></div>
       </div>
-      <div class="mock-card frame-c">
+      <div class="mock-card frame-c reveal">
         <img src="assets/hero-detail.jpg" alt="تفاصيل قريبة من ملصق الزجاجة">
         <div class="mock-tag"><b>لقطة تفصيلية</b><span>لإبراز الملصق والمكوّنات على المنتج</span></div>
       </div>
@@ -212,22 +214,22 @@
 <!-- HOW TO USE -->
 <section class="section-cream" id="how">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head reveal">
       <div class="eyebrow">روتين بسيط</div>
       <h2>طريقة الاستخدام في ثلاث خطوات</h2>
     </div>
     <div class="steps">
-      <div class="step">
+      <div class="step reveal">
         <span class="num">٠١</span>
         <h3>قسّمي الشعر لأقسام</h3>
         <p>اقسمي الشعر إلى أقسام صغيرة لتسهيل وصول الزيت إلى فروة الرأس بالكامل.</p>
       </div>
-      <div class="step">
+      <div class="step reveal">
         <span class="num">٠٢</span>
         <h3>دلّكي بالزيت</h3>
         <p>ضعي كمية مناسبة على راحة يدك ودلّكي فروة الرأس بحركات دائرية لمدة دقيقتين.</p>
       </div>
-      <div class="step">
+      <div class="step reveal">
         <span class="num">٠٣</span>
         <h3>مرّري على الأطراف</h3>
         <p>أكملي توزيع الزيت على باقي الشعر حتى الأطراف، واتركيه حسب الحاجة قبل الغسل.</p>
@@ -238,7 +240,7 @@
 
 <!-- CTA -->
 <section class="cta-band">
-  <div class="wrap">
+  <div class="wrap reveal">
     <h2>جرّبي Crown Hair Oil الآن</h2>
     <p>زجاجة واحدة، روتين واحد، نتيجة تلاحظينها بنفسك. متوفر الآن للطلب مع توصيل لجميع مناطق المملكة.</p>
     <a href="store.php" class="btn btn-dark">انتقل إلى المتجر</a>
@@ -282,22 +284,8 @@
   </div>
 </footer>
 
-<script>
-(function(){
-  var btn = document.getElementById('navToggle');
-  var nav = document.getElementById('mainNav');
-  if(!btn || !nav) return;
-  btn.addEventListener('click', function(){
-    var isOpen = nav.classList.toggle('open');
-    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-  });
-  nav.querySelectorAll('a').forEach(function(a){
-    a.addEventListener('click', function(){
-      nav.classList.remove('open');
-      btn.setAttribute('aria-expanded', 'false');
-    });
-  });
-})();
-</script>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/store.js"></script>
 </body>
 </html>
