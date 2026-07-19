@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Tajawal:wght@400;500;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<script>document.documentElement.dataset.theme = localStorage.getItem("crown_theme") || "light";</script>
 </head>
 <body>
 
@@ -25,6 +26,7 @@
       </ul>
     </nav>
     <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع الداكن" title="الوضع الداكن / العادي">🌙</button>
       <button class="cart-pill" id="cartToggle" aria-label="فتح سلة الشراء">
         🛍 السلة <span id="cartCount" class="cart-count">0</span>
       </button>
