@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  ADMIN_PASSWORD, PAY_METHOD_LABELS,
+  ADMIN_PASSWORD, PAY_METHOD_LABELS, DEFAULT_PRODUCT_IMAGE,
   money, formatDate, uid, compressImage,
 } from '../lib/store.js';
 
@@ -49,7 +49,7 @@ export default function Admin({ products, orders, onSaveProducts, toast }) {
         oldPrice: data.get('oldPrice') ? Number(data.get('oldPrice')) : null,
         stock: Number(data.get('stock')) || 0,
         category: data.get('category') || 'عام',
-        image: image || 'assets/hero-light.jpg',
+        image: image || DEFAULT_PRODUCT_IMAGE,
       },
     ]);
     form.reset();

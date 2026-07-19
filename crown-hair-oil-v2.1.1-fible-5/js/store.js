@@ -37,9 +37,13 @@ const DEFAULT_PRODUCTS = [
     oldPrice: 149,
     stock: 24,
     category: "زيوت الشعر",
-    image: "assets/hero-light.jpg",
+    image: "assets/product-white.png",
   },
 ];
+
+// V2.1.1: the retired default product photo, migrated to the new white shot.
+const LEGACY_PRODUCT_IMAGE = "assets/hero-light.jpg";
+const DEFAULT_PRODUCT_IMAGE = "assets/product-white.png";
 
 /* ---------------- generic helpers ---------------- */
 
@@ -108,6 +112,15 @@ function getProducts() {
     products = DEFAULT_PRODUCTS;
     writeJSON("crown_products", products);
   }
+  // Migrate catalogs saved before the product photo swap.
+  let migrated = false;
+  products.forEach((p) => {
+    if (p.image === LEGACY_PRODUCT_IMAGE) {
+      p.image = DEFAULT_PRODUCT_IMAGE;
+      migrated = true;
+    }
+  });
+  if (migrated) writeJSON("crown_products", products);
   return products;
 }
 function saveProducts(products) { return writeJSON("crown_products", products); }
@@ -477,7 +490,7 @@ async function submitNewProduct(e) {
     oldPrice: data.get("oldPrice") ? Number(data.get("oldPrice")) : null,
     stock: Number(data.get("stock")) || 0,
     category: data.get("category") || "عام",
-    image: imageData || "assets/hero-light.jpg",
+    image: imageData || DEFAULT_PRODUCT_IMAGE,
   });
   if (!saveProducts(products)) return; // quota hit — keep form intact
 
