@@ -542,6 +542,26 @@ function switchAdminTab(tab) {
   document.querySelectorAll(".admin-pane").forEach((p) => p.classList.toggle("active", p.id === "pane-" + tab));
 }
 
+/* ---------------- theme (dark mode) ---------------- */
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const btn = document.getElementById("themeToggle");
+  if (btn) {
+    btn.textContent = theme === "dark" ? "☀️" : "🌙";
+    btn.setAttribute("aria-label", theme === "dark" ? "التبديل إلى الوضع العادي" : "التبديل إلى الوضع الداكن");
+  }
+  try { localStorage.setItem("crown_theme", theme); } catch { /* private mode */ }
+}
+
+function initThemeToggle() {
+  const current = document.documentElement.dataset.theme || "light";
+  applyTheme(current);
+  document.getElementById("themeToggle")?.addEventListener("click", () => {
+    applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+  });
+}
+
 /* ---------------- nav + scroll reveal (both pages) ---------------- */
 
 function initNavToggle() {
@@ -580,6 +600,7 @@ function initScrollReveal() {
 /* ---------------- init ---------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
+  initThemeToggle();
   initNavToggle();
   initScrollReveal();
 
