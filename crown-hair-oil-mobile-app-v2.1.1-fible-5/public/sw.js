@@ -1,7 +1,7 @@
 /* Crown Hair Oil PWA — minimal offline-first shell cache.
    All shell paths are relative to the SW scope so the same worker
    serves both root deployments and subpath deployments (GitHub Pages). */
-const CACHE = "crown-app-v2.1.1";
+const CACHE = "crown-app-v2.1.2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./assets/logo.jpg"];
 
 self.addEventListener("install", (e) => {

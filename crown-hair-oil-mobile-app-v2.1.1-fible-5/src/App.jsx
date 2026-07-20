@@ -22,11 +22,19 @@ export default function App() {
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
 
+  const [theme, setTheme] = useState(() => document.documentElement.dataset.theme || 'light');
+
   const toast = useCallback((msg) => {
     setToastMsg(msg);
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToastMsg(''), 2400);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0D0C0A' : '#F6F1E6');
+    try { localStorage.setItem('crown_theme', theme); } catch { /* private mode */ }
+  }, [theme]);
 
   useEffect(() => { persistProducts(products); }, [products]);
   useEffect(() => { persistCart(cart); }, [cart]);
@@ -60,6 +68,14 @@ export default function App() {
 
   return (
     <div className="app" dir="rtl">
+      <button
+        className="theme-fab"
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        aria-label={theme === 'dark' ? 'التبديل إلى الوضع العادي' : 'التبديل إلى الوضع الداكن'}
+        title="الوضع الداكن / العادي"
+      >
+        {theme === 'dark' ? '☀️' : '🌙'}
+      </button>
       <main className="screen-area">
         {tab === 'home' && <Home onShop={() => setTab('store')} />}
         {tab === 'store' && <Store products={products} onAdd={handleAdd} />}
