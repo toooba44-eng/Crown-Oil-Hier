@@ -15,6 +15,7 @@
   --line: #D9CBAE;
   --night: #15130F;
   --danger: #9c2424;
+  --surface: #ffffff;
 
   --font-display: 'Cairo', sans-serif;
   --font-body: 'IBM Plex Sans Arabic', sans-serif;
@@ -111,7 +112,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 .benefit-list { display: flex; flex-direction: column; gap: 12px; }
 .benefit-item {
   display: flex; gap: 14px; align-items: flex-start;
-  background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
 }
 .benefit-icon { font-size: 22px; line-height: 1.4; }
 .benefit-item h3 { font-size: 15px; margin-bottom: 3px; }
@@ -142,7 +143,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 .product-list { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 6px 18px 18px; }
 @media (min-width: 560px) { .product-list { grid-template-columns: 1fr 1fr; } }
 .product-card {
-  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
   overflow: hidden; display: flex; flex-direction: column;
 }
 .product-thumb {
@@ -193,7 +194,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 .cart-item-info h3 { font-size: 14.5px; }
 .qty-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
 .qty-row button {
-  width: 32px; height: 32px; border: 1px solid var(--line); background: #fff;
+  width: 32px; height: 32px; border: 1px solid var(--line); background: var(--surface);
   border-radius: 50%; cursor: pointer; font-size: 16px;
   -webkit-tap-highlight-color: transparent;
 }
@@ -203,7 +204,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
   font-size: 12.5px; text-decoration: underline; cursor: pointer; font-family: var(--font-body);
 }
 
-.cart-summary { margin: 18px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.cart-summary { margin: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
 .cart-summary.flat { margin: 14px 0; }
 .sum-line { display: flex; justify-content: space-between; font-size: 14px; color: var(--ink-soft); margin-bottom: 9px; }
 .sum-line.total { font-weight: 700; color: var(--ink); font-size: 16px; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; margin-bottom: 14px; }
@@ -216,7 +217,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 }
 
 .order-confirm {
-  margin: 24px 18px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  margin: 24px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 30px 22px; text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center;
   animation: popIn .45s cubic-bezier(0.34,1.56,0.64,1);
 }
@@ -246,7 +247,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 .field > span { font-size: 13px; font-weight: 600; }
 .field input, .field textarea {
   width: 100%; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px;
-  font-family: var(--font-body); font-size: 14.5px; background: #fff; color: var(--ink);
+  font-family: var(--font-body); font-size: 14.5px; background: var(--surface); color: var(--ink);
 }
 .field input:focus, .field textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -256,7 +257,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 .pay-option {
   display: flex; gap: 12px; align-items: flex-start;
   border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; margin-bottom: 9px;
-  cursor: pointer; background: #fff;
+  cursor: pointer; background: var(--surface);
 }
 .pay-option.active { border-color: var(--terracotta); box-shadow: 0 0 0 1px var(--terracotta); }
 .pay-option.disabled { opacity: .5; cursor: not-allowed; }
@@ -266,13 +267,13 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 
 /* ---------------- admin ---------------- */
 .lock-card {
-  margin: 24px 18px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  margin: 24px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 26px 20px; display: flex; flex-direction: column; gap: 16px; text-align: center;
 }
 .admin-list { padding: 4px 18px; display: flex; flex-direction: column; gap: 10px; }
 .admin-item {
   display: flex; align-items: center; gap: 12px;
-  background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
 }
 .admin-item.column { flex-direction: column; align-items: stretch; gap: 4px; font-size: 13px; color: var(--ink-soft); }
 .admin-item img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
@@ -305,3 +306,43 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ============================================================
+   V2.1.1 — Dark mode
+   Activated via html[data-theme="dark"]; toggled by the floating
+   theme button rendered in App.jsx.
+   ============================================================ */
+
+html[data-theme="dark"] {
+  --cream: #0D0C0A;
+  --cream-2: #16130E;
+  --ink: #F6F1E6;
+  --ink-soft: #C9BFAF;
+  --terracotta-2: #D98B5F;
+  --line: #3A3328;
+  --night: #000000;
+  --surface: #1C1913;
+}
+
+body { transition: background .35s ease, color .35s ease; }
+
+html[data-theme="dark"] .tab-bar { background: rgba(13, 12, 10, .92); }
+html[data-theme="dark"] .toast { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+html[data-theme="dark"] .sheet-overlay,
+html[data-theme="dark"] .modal-overlay { background: rgba(0, 0, 0, .7); }
+
+/* Floating theme toggle (top corner, above all screens) */
+.theme-fab {
+  position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 14px; z-index: 60;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(246, 241, 230, .82);
+  backdrop-filter: blur(10px);
+  color: var(--ink); font-size: 17px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform .3s cubic-bezier(0.34,1.56,0.64,1), background .25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-fab:active { transform: rotate(20deg) scale(1.08); }
+html[data-theme="dark"] .theme-fab { background: rgba(13, 12, 10, .82); }
