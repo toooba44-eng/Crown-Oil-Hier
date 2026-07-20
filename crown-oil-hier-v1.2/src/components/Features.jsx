@@ -40,13 +40,13 @@ export default function Features() {
   }, []);
 
   return (
-    <section id="features" ref={scope} className="bg-cream py-24 md:py-32 px-6 md:px-10">
+    <section id="features" ref={scope} className="bg-cream dark:bg-void py-24 md:py-32 px-6 md:px-10">
       <div className="max-w-6xl mx-auto">
         <div className="feature-heading max-w-xl mb-16">
           <p className="font-mono text-xs tracking-[0.3em] uppercase text-clay mb-4">The Formula</p>
-          <h2 className="font-jakarta font-extrabold text-charcoal text-[clamp(1.8rem,4vw,2.75rem)] tracking-tight">
+          <h2 className="font-jakarta font-extrabold text-charcoal dark:text-ghost text-[clamp(1.8rem,4vw,2.75rem)] tracking-tight">
             Three instruments,
-            <span className="font-garamond italic font-medium text-moss"> one ritual.</span>
+            <span className="font-garamond italic font-medium text-moss dark:text-plasma"> one ritual.</span>
           </h2>
         </div>
 

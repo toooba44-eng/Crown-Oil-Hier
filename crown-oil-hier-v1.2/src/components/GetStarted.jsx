@@ -27,7 +27,7 @@ export default function GetStarted() {
   }, []);
 
   return (
-    <section id="start" ref={scope} className="bg-cream py-24 md:py-32 px-6 md:px-10">
+    <section id="start" ref={scope} className="bg-cream dark:bg-void py-24 md:py-32 px-6 md:px-10">
       <div className="max-w-5xl mx-auto rounded-4xl bg-moss overflow-hidden relative">
         <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-plasma/20 blur-3xl" />
         <div className="relative grid md:grid-cols-2 items-center gap-10 p-8 md:p-16">

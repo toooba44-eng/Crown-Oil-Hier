@@ -22,12 +22,12 @@ export default function ShufflerCard() {
   }, []);
 
   return (
-    <div className="bg-cream rounded-2xl border border-charcoal/10 shadow-xl shadow-charcoal/5 p-7 flex flex-col">
+    <div className="bg-cream dark:bg-charcoal rounded-2xl border border-charcoal/10 dark:border-ghost/10 shadow-xl shadow-charcoal/5 dark:shadow-black/40 p-7 flex flex-col">
       <div className="flex items-center gap-2 mb-5">
         <Leaf size={16} className="text-moss" />
-        <h3 className="font-jakarta font-bold text-lg text-charcoal">Botanical Complex</h3>
+        <h3 className="font-jakarta font-bold text-lg text-charcoal dark:text-ghost">Botanical Complex</h3>
       </div>
-      <p className="text-sm text-charcoal/60 font-jakarta mb-6">
+      <p className="text-sm text-charcoal/60 dark:text-ghost/60 font-jakarta mb-6">
         Three actives, one formula — cycling through the ritual stack.
       </p>
 
@@ -43,15 +43,15 @@ export default function ShufflerCard() {
             <div
               key={itemIdx}
               style={{ ...styles, transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-              className="absolute inset-x-0 top-0 rounded-2xl border border-charcoal/10 bg-white px-5 py-4 transition-all duration-700"
+              className="absolute inset-x-0 top-0 rounded-2xl border border-charcoal/10 dark:border-ghost/10 bg-white dark:bg-void px-5 py-4 transition-all duration-700"
             >
               <div className="flex items-center justify-between">
-                <span className="font-jakarta font-semibold text-charcoal">{item.name}</span>
-                <span className="font-mono text-[10px] px-2 py-1 rounded-full bg-moss/10 text-moss">
+                <span className="font-jakarta font-semibold text-charcoal dark:text-ghost">{item.name}</span>
+                <span className="font-mono text-[10px] px-2 py-1 rounded-full bg-moss/10 dark:bg-plasma/15 text-moss dark:text-plasma">
                   0{itemIdx + 1}
                 </span>
               </div>
-              <p className="font-mono text-xs text-charcoal/50 mt-1">{item.note}</p>
+              <p className="font-mono text-xs text-charcoal/50 dark:text-ghost/50 mt-1">{item.note}</p>
             </div>
           );
         })}

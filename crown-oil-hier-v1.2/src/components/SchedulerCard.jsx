@@ -69,12 +69,12 @@ export default function SchedulerCard() {
   }, []);
 
   return (
-    <div className="bg-cream rounded-2xl border border-charcoal/10 shadow-xl shadow-charcoal/5 p-7 flex flex-col">
+    <div className="bg-cream dark:bg-charcoal rounded-2xl border border-charcoal/10 dark:border-ghost/10 shadow-xl shadow-charcoal/5 dark:shadow-black/40 p-7 flex flex-col">
       <div className="flex items-center gap-2 mb-5">
         <CalendarCheck2 size={16} className="text-clay" />
-        <h3 className="font-jakarta font-bold text-lg text-charcoal">Twice-Weekly Ritual</h3>
+        <h3 className="font-jakarta font-bold text-lg text-charcoal dark:text-ghost">Twice-Weekly Ritual</h3>
       </div>
-      <p className="text-sm text-charcoal/60 font-jakarta mb-6">
+      <p className="text-sm text-charcoal/60 dark:text-ghost/60 font-jakarta mb-6">
         Two sessions a week. No complicated routine — just consistency.
       </p>
 
@@ -87,7 +87,7 @@ export default function SchedulerCard() {
               className={`aspect-square rounded-full flex items-center justify-center font-mono text-xs font-medium border transition-colors duration-300 ${
                 active.includes(i)
                   ? 'bg-clay text-ghost border-clay'
-                  : 'bg-white text-charcoal/50 border-charcoal/10'
+                  : 'bg-white dark:bg-void text-charcoal/50 dark:text-ghost/50 border-charcoal/10 dark:border-ghost/10'
               }`}
             >
               {d}
@@ -100,7 +100,7 @@ export default function SchedulerCard() {
           type="button"
           tabIndex={-1}
           className={`mt-6 w-full rounded-full py-2.5 font-jakarta text-sm font-semibold transition-colors duration-300 ${
-            saved ? 'bg-moss text-ghost' : 'bg-charcoal/5 text-charcoal/40'
+            saved ? 'bg-moss text-ghost' : 'bg-charcoal/5 dark:bg-ghost/10 text-charcoal/40 dark:text-ghost/40'
           }`}
         >
           {saved ? 'Saved to Routine ✓' : 'Save'}
