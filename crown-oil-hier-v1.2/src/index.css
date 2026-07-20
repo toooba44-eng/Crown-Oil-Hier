@@ -72,3 +72,12 @@ body {
 .text-glow-plasma {
   text-shadow: 0 0 24px rgba(123, 97, 255, 0.6);
 }
+
+/* ---------- Dark mode (html[data-theme="dark"]) ---------- */
+body { transition: background 0.35s ease, color 0.35s ease; }
+html[data-theme="dark"] body {
+  background: #0A0A14;
+  color: #F0EFF4;
+}
+html[data-theme="dark"] ::-webkit-scrollbar-track { background: #0A0A14; }
+html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #7B61FF; }
