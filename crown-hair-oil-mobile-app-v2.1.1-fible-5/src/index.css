@@ -331,9 +331,12 @@ html[data-theme="dark"] .toast { background: var(--surface); color: var(--ink); 
 html[data-theme="dark"] .sheet-overlay,
 html[data-theme="dark"] .modal-overlay { background: rgba(0, 0, 0, .7); }
 
-/* Floating theme toggle (top corner, above all screens) */
-.theme-fab {
+/* Floating controls (top corner, above all screens): home link + theme toggle */
+.top-fabs {
   position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 14px; z-index: 60;
+  display: flex; gap: 8px;
+}
+.fab {
   width: 40px; height: 40px; border-radius: 50%;
   border: 1px solid var(--line);
   background: rgba(246, 241, 230, .82);
@@ -344,5 +347,7 @@ html[data-theme="dark"] .modal-overlay { background: rgba(0, 0, 0, .7); }
   transition: transform .3s cubic-bezier(0.34,1.56,0.64,1), background .25s ease;
   -webkit-tap-highlight-color: transparent;
 }
+.fab:active { transform: scale(1.08); }
 .theme-fab:active { transform: rotate(20deg) scale(1.08); }
-html[data-theme="dark"] .theme-fab { background: rgba(13, 12, 10, .82); }
+.hub-fab svg { width: 20px; height: 20px; }
+html[data-theme="dark"] .fab { background: rgba(13, 12, 10, .82); }
