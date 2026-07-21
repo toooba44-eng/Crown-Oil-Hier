@@ -5,7 +5,7 @@ const BENEFITS = [
   { icon: '📆', title: 'روتين بسيط', desc: 'مرتان أسبوعياً فقط، ونتائج ملحوظة من أول 4 أسابيع.' },
 ];
 
-export default function Home({ onShop }) {
+export default function Home({ settings = {}, onShop }) {
   return (
     <div className="screen home-screen">
       <div className="home-hero">
@@ -13,7 +13,7 @@ export default function Home({ onShop }) {
         <div className="home-hero-overlay" />
         <div className="home-hero-content">
           <img className="home-logo" src="assets/logo.jpg" alt="" />
-          <p className="home-eyebrow">مزيج زيوت طبيعية 100٪</p>
+          <p className="home-eyebrow">{settings.tagline || 'مزيج زيوت طبيعية 100٪'}</p>
           <h1>سرّ الشعر الطويل والكثيف</h1>
           <p className="home-sub">زيت واحد مركّز من الأرغان والروزماري وزيت الزيتون، يغذّي شعرك من الجذور.</p>
           <button className="btn btn-primary" onClick={onShop}>تسوّقي الآن</button>

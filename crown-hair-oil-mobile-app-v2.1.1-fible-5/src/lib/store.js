@@ -6,7 +6,6 @@
    re-resolved from the catalog so it can never go stale.
    ============================================================ */
 
-export const ADMIN_PASSWORD = "crown2026";
 export const SHIPPING_FLAT = 20;
 export const FREE_SHIP_OVER = 200;
 const MAX_IMAGE_EDGE = 800;
@@ -16,6 +15,35 @@ export const PAY_METHOD_LABELS = {
   bank: "تحويل بنكي",
   card: "بطاقة مدى / فيزا",
 };
+
+/* ---------------- site settings (admin dashboard) ----------------
+   Persisted in localStorage under crown_settings; loadSettings merges
+   the saved values over the defaults so new keys always exist.
+   NOTE: this is a static site, so admin auth is a client-side gate —
+   see the security note in the admin login. adminPassHash is the
+   SHA-256 of the password. */
+const DEFAULT_SETTINGS = {
+  storeName: "Crown Hair Oil",
+  tagline: "مزيج زيوت طبيعية 100٪",
+  shippingFlat: SHIPPING_FLAT,
+  freeShipOver: FREE_SHIP_OVER,
+  freeShipEnabled: true,
+  payCod: true,
+  payBank: true,
+  payCard: false,
+  instagram: "@CrownHairOil_KSA",
+  website: "",
+  adminEmail: "toooba44@gmail.com",
+  adminPassHash: "ea92397a70d82dc8600e989548443d31bc01b878e33e617da8ea7e46c871e194",
+};
+export function loadSettings() { return { ...DEFAULT_SETTINGS, ...readJSON("crown_settings", {}) }; }
+export function persistSettings(next) { return writeJSON("crown_settings", { ...loadSettings(), ...next }); }
+
+/** SHA-256 hex of a string (used to verify the admin password client-side). */
+export async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 // V2.1.1: the retired default product photo, migrated to the new white shot.
 const LEGACY_PRODUCT_IMAGE = "assets/hero-light.jpg";
@@ -150,7 +178,9 @@ export function cartSubtotal(cart, products) {
   return resolveCart(cart, products).reduce((s, l) => s + l.product.price * l.qty, 0);
 }
 export function shippingFor(subtotal) {
-  return subtotal >= FREE_SHIP_OVER ? 0 : SHIPPING_FLAT;
+  const s = loadSettings();
+  if (s.freeShipEnabled && subtotal >= s.freeShipOver) return 0;
+  return s.shippingFlat;
 }
 
 /* ---------------- cart mutations (pure) ---------------- */
