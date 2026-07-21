@@ -13,6 +13,31 @@ function stockNote(stock) {
   return <span className="stock-note">متوفر</span>;
 }
 
+function ResultSlide({ r, ariaHidden }) {
+  return (
+    <figure className="result-slide" aria-hidden={ariaHidden || undefined}>
+      {r.image ? (
+        <div className="result-frame">
+          <img src={r.image} alt="نتيجة قبل وبعد استخدام الزيت" />
+        </div>
+      ) : (
+        <div className="result-frame">
+          <div className="result-pair">
+            <div className="result-img"><span className="result-tag after">بعد</span><img src={r.after} alt="بعد الاستخدام" /></div>
+            <div className="result-img"><span className="result-tag">قبل</span><img src={r.before} alt="قبل الاستخدام" /></div>
+          </div>
+        </div>
+      )}
+      {(r.weeks || r.caption) && (
+        <figcaption className="result-cap">
+          {r.weeks ? <span className="result-weeks">النتيجة بعد {r.weeks} أسابيع</span> : null}
+          {r.caption ? <span className="result-name">{r.caption}</span> : null}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
 export default function Store({ products, results = [], onAdd }) {
   const [cat, setCat] = useState('الكل');
   const [detail, setDetail] = useState(null); // product shown in the bottom sheet
@@ -66,25 +91,12 @@ export default function Store({ products, results = [], onAdd }) {
             <h2>نتائج حقيقية</h2>
             <p>صور فعلية من عميلاتنا قبل وبعد استخدام الزيت.</p>
           </div>
-          <div className="results-list">
-            {results.map((r) => (
-              <figure className="result-card" key={r.id}>
-                <div className="result-pair">
-                  <div className="result-img">
-                    <span className="result-tag">قبل</span>
-                    <img src={r.before} alt="قبل الاستخدام" loading="lazy" />
-                  </div>
-                  <div className="result-img">
-                    <span className="result-tag after">بعد</span>
-                    <img src={r.after} alt="بعد الاستخدام" loading="lazy" />
-                  </div>
-                </div>
-                <figcaption className="result-cap">
-                  {r.weeks ? <span className="result-weeks">النتيجة بعد {r.weeks} أسابيع</span> : null}
-                  {r.caption ? <span className="result-name">{r.caption}</span> : null}
-                </figcaption>
-              </figure>
-            ))}
+          <div className="results-viewport">
+            <div className="results-track" style={{ '--result-count': results.length }}>
+              {[...results, ...results].map((r, idx) => (
+                <ResultSlide key={r.id + '-' + idx} r={r} ariaHidden={idx >= results.length} />
+              ))}
+            </div>
           </div>
         </section>
       )}

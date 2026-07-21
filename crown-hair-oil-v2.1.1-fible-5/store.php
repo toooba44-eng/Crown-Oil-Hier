@@ -56,7 +56,9 @@
       <h2>نتائج حقيقية</h2>
       <p>صور فعلية من عميلاتنا قبل وبعد استخدام الزيت.</p>
     </div>
-    <div class="results-grid" id="resultsGrid"></div>
+  </div>
+  <div class="results-viewport">
+    <div class="results-track" id="resultsTrack"></div>
   </div>
 </section>
 
