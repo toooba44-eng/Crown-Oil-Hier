@@ -29,17 +29,27 @@ function ResultSlide({ r, theme, ariaHidden }) {
           </div>
         </div>
       )}
-      {(r.weeks || r.caption) && (
+      {(r.weeks || r.name || r.comment || r.caption) && (
         <figcaption className="result-cap">
           {r.weeks ? <span className="result-weeks">النتيجة بعد {r.weeks} أسابيع</span> : null}
-          {r.caption ? <span className="result-name">{r.caption}</span> : null}
+          {(r.name || r.caption) ? <span className="result-name">{r.name || r.caption}</span> : null}
+          {r.comment ? <span className="result-comment">”{r.comment}“</span> : null}
         </figcaption>
       )}
     </figure>
   );
 }
 
-export default function Store({ products, results = [], theme, onAdd }) {
+function Stars({ rating }) {
+  const n = Math.max(0, Math.min(5, Math.round(rating || 0)));
+  return (
+    <span className="stars" aria-label={`${n} من 5`}>
+      {'★★★★★☆☆☆☆☆'.slice(5 - n, 10 - n)}
+    </span>
+  );
+}
+
+export default function Store({ products, results = [], reviews = [], theme, onAdd }) {
   const [cat, setCat] = useState('الكل');
   const [detail, setDetail] = useState(null); // product shown in the bottom sheet
 
@@ -98,6 +108,29 @@ export default function Store({ products, results = [], theme, onAdd }) {
                 <ResultSlide key={r.id + '-' + idx} r={r} theme={theme} ariaHidden={idx >= results.length} />
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {reviews.length > 0 && (
+        <section className="reviews-section">
+          <div className="results-head">
+            <h2>تقييمات العملاء</h2>
+            <p>آراء حقيقية من عميلاتنا بعد التجربة.</p>
+          </div>
+          <div className="reviews-list">
+            {reviews.map((rv) => (
+              <article className="review-card" key={rv.id}>
+                <div className="review-top">
+                  <span className="review-avatar" aria-hidden="true">{(rv.name || '؟').trim().charAt(0)}</span>
+                  <div className="review-id">
+                    <b>{rv.name || 'عميلة'}</b>
+                    <Stars rating={rv.rating} />
+                  </div>
+                </div>
+                <p className="review-comment">{rv.comment}</p>
+              </article>
+            ))}
           </div>
         </section>
       )}

@@ -118,6 +118,18 @@ export function loadUserResults() { return readJSON("crown_results", []); }
 export function persistUserResults(list) { return writeJSON("crown_results", list); }
 export function loadResults() { return [...DEFAULT_RESULTS, ...loadUserResults()]; }
 
+/* ---------------- customer reviews ----------------
+   Genuine customer reviews only. DEFAULT_REVIEWS holds committed
+   reviews (public to every visitor); user reviews in localStorage are
+   managed from the admin panel. A review = { id, name, rating, comment }. */
+const DEFAULT_REVIEWS = [
+  // Add real reviews here, e.g.:
+  // { id: "rv-1", name: "سارة", rating: 5, comment: "نتيجة رائعة خلال شهر." },
+];
+export function loadUserReviews() { return readJSON("crown_reviews", []); }
+export function persistUserReviews(list) { return writeJSON("crown_reviews", list); }
+export function loadReviews() { return [...DEFAULT_REVIEWS, ...loadUserReviews()]; }
+
 /* ---------------- derived state ---------------- */
 
 /** Join cart lines with the catalog; drop deleted products, clamp to stock. */

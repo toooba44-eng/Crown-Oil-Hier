@@ -145,6 +145,20 @@ function getUserResults() { return readJSON("crown_results", []); }
 function saveUserResults(list) { return writeJSON("crown_results", list); }
 function getResults() { return [...DEFAULT_RESULTS, ...getUserResults()]; }
 
+/* Genuine customer reviews. DEFAULT_REVIEWS is committed (public to all);
+   user reviews live in localStorage, managed from the admin panel. */
+const DEFAULT_REVIEWS = [
+  // { id: "rv-1", name: "سارة", rating: 5, comment: "نتيجة رائعة خلال شهر." },
+];
+function getUserReviews() { return readJSON("crown_reviews", []); }
+function saveUserReviews(list) { return writeJSON("crown_reviews", list); }
+function getReviews() { return [...DEFAULT_REVIEWS, ...getUserReviews()]; }
+
+function starString(rating) {
+  const n = Math.max(0, Math.min(5, Math.round(rating || 0)));
+  return "★".repeat(n) + "☆".repeat(5 - n);
+}
+
 /**
  * Resolve cart lines against the current catalog.
  * Deleted products are dropped; quantities are clamped to stock.
@@ -192,11 +206,37 @@ function resultSlideHTML(r, ariaHidden) {
          <div class="result-img"><span class="result-tag after">بعد</span><img src="${esc(r.after)}" alt="بعد الاستخدام"></div>
          <div class="result-img"><span class="result-tag">قبل</span><img src="${esc(r.before)}" alt="قبل الاستخدام"></div>
        </div></div>`;
-  const cap = (r.weeks || r.caption) ? `<figcaption class="result-cap">
+  const name = r.name || r.caption;
+  const cap = (r.weeks || name || r.comment) ? `<figcaption class="result-cap">
       ${r.weeks ? `<span class="result-weeks">النتيجة بعد ${esc(r.weeks)} أسابيع</span>` : ""}
-      ${r.caption ? `<span class="result-name">${esc(r.caption)}</span>` : ""}
+      ${name ? `<span class="result-name">${esc(name)}</span>` : ""}
+      ${r.comment ? `<span class="result-comment">”${esc(r.comment)}“</span>` : ""}
     </figcaption>` : "";
   return `<figure class="result-slide"${hidden}>${frame}${cap}</figure>`;
+}
+
+function renderReviews() {
+  const section = document.getElementById("reviewsSection");
+  const grid = document.getElementById("reviewsGrid");
+  if (!section || !grid) return;
+  const reviews = getReviews();
+  if (!reviews.length) {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+  grid.innerHTML = reviews.map((rv) => `
+    <article class="review-card">
+      <div class="review-top">
+        <span class="review-avatar">${esc((rv.name || "؟").trim().charAt(0))}</span>
+        <div class="review-id">
+          <b>${esc(rv.name || "عميلة")}</b>
+          <span class="stars">${starString(rv.rating)}</span>
+        </div>
+      </div>
+      <p class="review-comment">${esc(rv.comment || "")}</p>
+    </article>
+  `).join("");
 }
 
 function renderResults() {
@@ -584,7 +624,7 @@ function renderAdminResults() {
       <img src="${esc(r.before)}" alt="قبل">
       <img src="${esc(r.after)}" alt="بعد">
       <div class="grow">
-        <b>${esc(r.caption || "نتيجة")}</b>
+        <b>${esc(r.name || r.caption || "نتيجة")}</b>
         <span>${r.weeks ? `بعد ${esc(r.weeks)} أسابيع` : "—"}</span>
       </div>
       <button class="icon-btn" title="حذف" data-action="delete-result" data-id="${esc(r.id)}">🗑</button>
@@ -632,7 +672,8 @@ async function submitNewResult(e) {
     id: uid("r"),
     before,
     after,
-    caption: data.get("caption") || "",
+    name: data.get("name") || "",
+    comment: data.get("comment") || "",
     weeks: Number(data.get("weeks")) || 0,
   });
   if (!saveUserResults(list)) return; // quota hit
@@ -640,6 +681,68 @@ async function submitNewResult(e) {
   renderResults();
   form.reset();
   toast("تمت إضافة النتيجة");
+}
+
+/* ---------------- admin: reviews ---------------- */
+
+function renderAdminReviews() {
+  const list = document.getElementById("adminReviewList");
+  if (!list) return;
+  const reviews = getUserReviews();
+  if (!reviews.length) {
+    list.innerHTML = `<div class="empty-state">لا توجد تقييمات بعد. أضيفي أول تقييم من الأسفل.</div>`;
+    return;
+  }
+  list.innerHTML = reviews.map((rv) => `
+    <div class="admin-list-item">
+      <div class="grow">
+        <b>${esc(rv.name || "عميلة")} · <span class="stars">${starString(rv.rating)}</span></b>
+        <span>${esc(rv.comment || "")}</span>
+      </div>
+      <button class="icon-btn" title="حذف" data-action="delete-review" data-id="${esc(rv.id)}">🗑</button>
+    </div>
+  `).join("");
+}
+
+function handleDeleteReview(btn, id) {
+  if (btn.dataset.armed !== "1") {
+    btn.dataset.armed = "1";
+    btn.textContent = "تأكيد؟";
+    btn.classList.add("danger");
+    setTimeout(() => {
+      btn.dataset.armed = "0";
+      btn.textContent = "🗑";
+      btn.classList.remove("danger");
+    }, 2600);
+    return;
+  }
+  saveUserReviews(getUserReviews().filter((r) => r.id !== id));
+  renderAdminReviews();
+  renderReviews();
+  toast("تم حذف التقييم");
+}
+
+function submitNewReview(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  const comment = (data.get("comment") || "").trim();
+  if (!comment) {
+    toast("اكتبي نص التقييم");
+    return;
+  }
+  const list = getUserReviews();
+  list.push({
+    id: uid("rv"),
+    name: (data.get("name") || "").trim() || "عميلة",
+    rating: Number(data.get("rating")) || 5,
+    comment,
+  });
+  if (!saveUserReviews(list)) return;
+  renderAdminReviews();
+  renderReviews();
+  form.reset();
+  toast("تمت إضافة التقييم");
 }
 
 /* ---------------- admin: gate & tabs ---------------- */
@@ -653,6 +756,7 @@ function checkAdminPassword(e) {
     renderAdminProductList();
     renderAdminOrders();
     renderAdminResults();
+    renderAdminReviews();
   } else {
     toast("كلمة المرور غير صحيحة");
   }
@@ -732,6 +836,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCartDrawer();
   renderCheckoutSummary();
   renderResults();
+  renderReviews();
 
   // category filter (delegated)
   document.getElementById("tagFilter")?.addEventListener("click", (e) => {
@@ -763,6 +868,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = e.target.closest("button[data-action='delete-result']");
     if (btn) handleDeleteResult(btn, btn.dataset.id);
   });
+  document.getElementById("adminReviewList")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action='delete-review']");
+    if (btn) handleDeleteReview(btn, btn.dataset.id);
+  });
   document.getElementById("adminTabs")?.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-tab]");
     if (btn) switchAdminTab(btn.dataset.tab);
@@ -776,6 +885,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("adminLockForm")?.addEventListener("submit", checkAdminPassword);
   document.getElementById("newProductForm")?.addEventListener("submit", submitNewProduct);
   document.getElementById("newResultForm")?.addEventListener("submit", submitNewResult);
+  document.getElementById("newReviewForm")?.addEventListener("submit", submitNewReview);
   document.getElementById("adminToggleBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.add("open"));
   document.getElementById("adminCloseBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.remove("open"));
 });
