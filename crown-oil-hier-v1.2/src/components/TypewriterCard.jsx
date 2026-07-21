@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { Activity } from 'lucide-react';
-
-const MESSAGES = [
-  'Initializing follicle scan…',
-  'Week 1: absorption rate nominal.',
-  'Week 4: +12% visible thickness detected.',
-  'Week 8: root strength stabilized.',
-  'Week 12: shine index at peak.',
-];
+import { useLang } from '../i18n.jsx';
 
 export default function TypewriterCard() {
+  const { lang, t } = useLang();
   const [lines, setLines] = useState([]);
   const [current, setCurrent] = useState('');
   const msgIndex = useRef(0);
   const charIndex = useRef(0);
 
   useEffect(() => {
+    const MESSAGES = [t('feed.msg1'), t('feed.msg2'), t('feed.msg3'), t('feed.msg4'), t('feed.msg5')];
+    // Restart the feed cleanly whenever the language changes.
+    msgIndex.current = 0;
+    charIndex.current = 0;
+    setLines([]);
+    setCurrent('');
     const tick = setInterval(() => {
       const msg = MESSAGES[msgIndex.current];
       if (charIndex.current < msg.length) {
@@ -29,7 +29,8 @@ export default function TypewriterCard() {
       }
     }, 38);
     return () => clearInterval(tick);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   return (
     <div className="bg-void rounded-2xl border border-plasma/20 shadow-plasma p-7 flex flex-col">
@@ -38,7 +39,7 @@ export default function TypewriterCard() {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-plasma opacity-75" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-plasma" />
         </span>
-        <h3 className="font-sora font-semibold text-sm tracking-wide text-ghost">Live Feed</h3>
+        <h3 className="font-sora font-semibold text-sm tracking-wide text-ghost">{t('feed.title')}</h3>
         <Activity size={14} className="text-plasma ml-auto" />
       </div>
 

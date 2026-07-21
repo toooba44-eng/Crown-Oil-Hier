@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Leaf } from 'lucide-react';
-
-const ITEMS = [
-  { name: 'Argan Oil', note: 'Vitamin E · deep shine' },
-  { name: 'Rosemary Extract', note: 'Follicle stimulation' },
-  { name: 'Cold-Pressed Olive', note: 'Root-to-tip nourishment' },
-];
+import { useLang } from '../i18n.jsx';
 
 export default function ShufflerCard() {
+  const { t } = useLang();
+  const ITEMS = [
+    { name: t('shuffler.item1'), note: t('shuffler.item1n') },
+    { name: t('shuffler.item2'), note: t('shuffler.item2n') },
+    { name: t('shuffler.item3'), note: t('shuffler.item3n') },
+  ];
   const [order, setOrder] = useState([0, 1, 2]);
 
   useEffect(() => {
@@ -25,10 +26,10 @@ export default function ShufflerCard() {
     <div className="bg-cream dark:bg-charcoal rounded-2xl border border-charcoal/10 dark:border-ghost/10 shadow-xl shadow-charcoal/5 dark:shadow-black/40 p-7 flex flex-col">
       <div className="flex items-center gap-2 mb-5">
         <Leaf size={16} className="text-moss" />
-        <h3 className="font-jakarta font-bold text-lg text-charcoal dark:text-ghost">Botanical Complex</h3>
+        <h3 className="font-jakarta font-bold text-lg text-charcoal dark:text-ghost">{t('shuffler.title')}</h3>
       </div>
       <p className="text-sm text-charcoal/60 dark:text-ghost/60 font-jakarta mb-6">
-        Three actives, one formula — cycling through the ritual stack.
+        {t('shuffler.sub')}
       </p>
 
       <div className="relative h-40 flex-1">

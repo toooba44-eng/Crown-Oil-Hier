@@ -4,31 +4,18 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import RotatingRings from './protocol/RotatingRings.jsx';
 import ScanGrid from './protocol/ScanGrid.jsx';
 import Waveform from './protocol/Waveform.jsx';
+import { useLang } from '../i18n.jsx';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const STEPS = [
-  {
-    n: '01',
-    title: 'Extraction',
-    desc: 'Argan, rosemary and cold-pressed olive oil sourced and blended without heat, preserving every active compound.',
-    Visual: RotatingRings,
-  },
-  {
-    n: '02',
-    title: 'Absorption',
-    desc: 'Massaged into the scalp, the formula maps and penetrates each follicle for direct, root-level delivery.',
-    Visual: ScanGrid,
-  },
-  {
-    n: '03',
-    title: 'Regeneration',
-    desc: 'Root activity increases. Strands emerge stronger, visibly thicker and shinier within weeks.',
-    Visual: Waveform,
-  },
+  { n: '01', key: 'step1', Visual: RotatingRings },
+  { n: '02', key: 'step2', Visual: ScanGrid },
+  { n: '03', key: 'step3', Visual: Waveform },
 ];
 
 export default function Protocol() {
+  const { t } = useLang();
   const sectionRef = useRef(null);
   const cardRefs = useRef([]);
 
@@ -76,10 +63,10 @@ export default function Protocol() {
             <div>
               <span className="font-code text-plasma text-sm tracking-widest">{step.n} / 03</span>
               <h3 className="font-sora font-bold text-ghost text-[clamp(2rem,5vw,3.5rem)] mt-3 tracking-tight">
-                {step.title}
+                {t(`proto.${step.key}t`)}
               </h3>
               <p className="font-instrument italic text-ghost/60 text-lg md:text-xl mt-5 max-w-md leading-relaxed">
-                {step.desc}
+                {t(`proto.${step.key}d`)}
               </p>
             </div>
             <div className="flex items-center justify-center">

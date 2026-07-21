@@ -1,29 +1,38 @@
-const BENEFITS = [
-  { icon: '🌿', title: 'مكونات طبيعية 100٪', desc: 'أرغان، روزماري، وزيت زيتون بكر — بدون سيليكون أو كبريتات.' },
-  { icon: '📏', title: 'تطويل وتكثيف', desc: 'يحفّز البصيلات ويقلّل التساقط لنمو أكثر كثافة.' },
-  { icon: '✨', title: 'لمعان من أول استخدام', desc: 'لمسة حريرية وبريق طبيعي دون أثر دهني ثقيل.' },
-  { icon: '📆', title: 'روتين بسيط', desc: 'مرتان أسبوعياً فقط، ونتائج ملحوظة من أول 4 أسابيع.' },
-];
+import { money } from '../lib/store.js';
 
-export default function Home({ settings = {}, onShop }) {
+const DEFAULT_TAGLINE = 'مزيج زيوت طبيعية 100٪';
+
+export default function Home({ settings = {}, lang = 'ar', t, onShop }) {
+  const benefits = [
+    { icon: '🌿', title: t('home.benefit1.t'), desc: t('home.benefit1.d') },
+    { icon: '📏', title: t('home.benefit2.t'), desc: t('home.benefit2.d') },
+    { icon: '✨', title: t('home.benefit3.t'), desc: t('home.benefit3.d') },
+    { icon: '📆', title: t('home.benefit4.t'), desc: t('home.benefit4.d') },
+  ];
+  // Show the admin's custom tagline as entered; fall back to the localized default.
+  const tagline = settings.tagline && settings.tagline !== DEFAULT_TAGLINE
+    ? settings.tagline
+    : t('home.eyebrow');
+  const freeOver = settings.freeShipOver ?? 200;
+
   return (
     <div className="screen home-screen">
       <div className="home-hero">
-        <img src="assets/hero-light-crop.jpg" alt="زجاجة Crown Hair Oil بين الأعشاب" />
+        <img src="assets/hero-light-crop.jpg" alt="Crown Hair Oil" />
         <div className="home-hero-overlay" />
         <div className="home-hero-content">
           <img className="home-logo" src="assets/logo.jpg" alt="" />
-          <p className="home-eyebrow">{settings.tagline || 'مزيج زيوت طبيعية 100٪'}</p>
-          <h1>سرّ الشعر الطويل والكثيف</h1>
-          <p className="home-sub">زيت واحد مركّز من الأرغان والروزماري وزيت الزيتون، يغذّي شعرك من الجذور.</p>
-          <button className="btn btn-primary" onClick={onShop}>تسوّقي الآن</button>
+          <p className="home-eyebrow">{tagline}</p>
+          <h1>{t('home.title')}</h1>
+          <p className="home-sub">{t('home.sub')}</p>
+          <button className="btn btn-primary" onClick={onShop}>{t('home.shop')}</button>
         </div>
       </div>
 
       <section className="home-section">
-        <h2>لماذا Crown؟</h2>
+        <h2>{t('home.why')}</h2>
         <div className="benefit-list">
-          {BENEFITS.map((b) => (
+          {benefits.map((b) => (
             <div className="benefit-item" key={b.title}>
               <span className="benefit-icon" aria-hidden="true">{b.icon}</span>
               <div>
@@ -36,20 +45,20 @@ export default function Home({ settings = {}, onShop }) {
       </section>
 
       <section className="home-section">
-        <h2>طريقة الاستخدام</h2>
+        <h2>{t('home.how')}</h2>
         <ol className="steps-list">
-          <li><b>١</b> قسّمي الشعر لأقسام صغيرة.</li>
-          <li><b>٢</b> دلّكي فروة الرأس بالزيت لدقيقتين.</li>
-          <li><b>٣</b> مرّري الزيت حتى الأطراف واتركيه قبل الغسل.</li>
+          <li><b>{lang === 'en' ? '1' : '١'}</b> {t('home.step1')}</li>
+          <li><b>{lang === 'en' ? '2' : '٢'}</b> {t('home.step2')}</li>
+          <li><b>{lang === 'en' ? '3' : '٣'}</b> {t('home.step3')}</li>
         </ol>
       </section>
 
       <section className="home-cta">
         <img src="assets/hero-dark-crop.jpg" alt="" />
         <div>
-          <h2>جرّبي Crown Hair Oil الآن</h2>
-          <p>توصيل لجميع مناطق المملكة — شحن مجاني فوق 200 ر.س.</p>
-          <button className="btn btn-light" onClick={onShop}>اطلبي زجاجتك</button>
+          <h2>{t('home.ctaTitle')}</h2>
+          <p>{t('home.ctaSub', { money: money(freeOver) })}</p>
+          <button className="btn btn-light" onClick={onShop}>{t('home.ctaBtn')}</button>
         </div>
       </section>
     </div>
