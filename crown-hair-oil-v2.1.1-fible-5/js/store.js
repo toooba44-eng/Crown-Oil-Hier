@@ -135,11 +135,11 @@ function saveOrders(orders) { return writeJSON("crown_orders", orders); }
    committed to assets/results/ (public to every visitor); user results
    in localStorage are managed from the admin panel (per-device). */
 const DEFAULT_RESULTS = [
-  { id: "r-1", image: "assets/results/result-1.jpg" },
-  { id: "r-2", image: "assets/results/result-2.jpg" },
-  { id: "r-3", image: "assets/results/result-3.jpg" },
-  { id: "r-4", image: "assets/results/result-4.jpg" },
-  { id: "r-5", image: "assets/results/result-5.jpg" },
+  { id: "r-1", imageLight: "assets/results/result-1-light.jpg", imageDark: "assets/results/result-1-dark.jpg" },
+  { id: "r-2", imageLight: "assets/results/result-2-light.jpg", imageDark: "assets/results/result-2-dark.jpg" },
+  { id: "r-3", imageLight: "assets/results/result-3-light.jpg", imageDark: "assets/results/result-3-dark.jpg" },
+  { id: "r-4", imageLight: "assets/results/result-4-light.jpg", imageDark: "assets/results/result-4-dark.jpg" },
+  { id: "r-5", imageLight: "assets/results/result-5-light.jpg", imageDark: "assets/results/result-5-dark.jpg" },
 ];
 function getUserResults() { return readJSON("crown_results", []); }
 function saveUserResults(list) { return writeJSON("crown_results", list); }
@@ -184,8 +184,10 @@ function refreshAll() {
 /* ---------------- real results gallery ---------------- */
 function resultSlideHTML(r, ariaHidden) {
   const hidden = ariaHidden ? ' aria-hidden="true"' : "";
-  const frame = r.image
-    ? `<div class="result-frame"><img src="${esc(r.image)}" alt="نتيجة قبل وبعد استخدام الزيت"></div>`
+  const isDark = document.documentElement.dataset.theme === "dark";
+  const composite = r.imageLight ? (isDark ? r.imageDark : r.imageLight) : r.image;
+  const frame = composite
+    ? `<div class="result-frame"><img src="${esc(composite)}" alt="نتيجة قبل وبعد استخدام الزيت"></div>`
     : `<div class="result-frame"><div class="result-pair">
          <div class="result-img"><span class="result-tag after">بعد</span><img src="${esc(r.after)}" alt="بعد الاستخدام"></div>
          <div class="result-img"><span class="result-tag">قبل</span><img src="${esc(r.before)}" alt="قبل الاستخدام"></div>
@@ -671,6 +673,7 @@ function applyTheme(theme) {
     btn.setAttribute("aria-label", theme === "dark" ? "التبديل إلى الوضع العادي" : "التبديل إلى الوضع الداكن");
   }
   try { localStorage.setItem("crown_theme", theme); } catch { /* private mode */ }
+  renderResults(); // re-pick the theme-matched result images
 }
 
 function initThemeToggle() {

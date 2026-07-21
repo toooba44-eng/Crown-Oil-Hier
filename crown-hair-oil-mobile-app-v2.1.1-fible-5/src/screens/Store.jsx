@@ -13,12 +13,13 @@ function stockNote(stock) {
   return <span className="stock-note">متوفر</span>;
 }
 
-function ResultSlide({ r, ariaHidden }) {
+function ResultSlide({ r, theme, ariaHidden }) {
+  const composite = r.imageLight ? (theme === 'dark' ? r.imageDark : r.imageLight) : r.image;
   return (
     <figure className="result-slide" aria-hidden={ariaHidden || undefined}>
-      {r.image ? (
+      {composite ? (
         <div className="result-frame">
-          <img src={r.image} alt="نتيجة قبل وبعد استخدام الزيت" />
+          <img src={composite} alt="نتيجة قبل وبعد استخدام الزيت" />
         </div>
       ) : (
         <div className="result-frame">
@@ -38,7 +39,7 @@ function ResultSlide({ r, ariaHidden }) {
   );
 }
 
-export default function Store({ products, results = [], onAdd }) {
+export default function Store({ products, results = [], theme, onAdd }) {
   const [cat, setCat] = useState('الكل');
   const [detail, setDetail] = useState(null); // product shown in the bottom sheet
 
@@ -94,7 +95,7 @@ export default function Store({ products, results = [], onAdd }) {
           <div className="results-viewport">
             <div className="results-track" style={{ '--result-count': results.length }}>
               {[...results, ...results].map((r, idx) => (
-                <ResultSlide key={r.id + '-' + idx} r={r} ariaHidden={idx >= results.length} />
+                <ResultSlide key={r.id + '-' + idx} r={r} theme={theme} ariaHidden={idx >= results.length} />
               ))}
             </div>
           </div>

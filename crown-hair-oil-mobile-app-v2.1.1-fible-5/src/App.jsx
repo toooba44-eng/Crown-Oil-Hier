@@ -105,7 +105,7 @@ export default function App() {
       </div>
       <main className="screen-area">
         {tab === 'home' && <Home onShop={() => setTab('store')} />}
-        {tab === 'store' && <Store products={products} results={results} onAdd={handleAdd} />}
+        {tab === 'store' && <Store products={products} results={results} theme={theme} onAdd={handleAdd} />}
         {tab === 'cart' && (
           <Cart
             cart={cart} products={products}

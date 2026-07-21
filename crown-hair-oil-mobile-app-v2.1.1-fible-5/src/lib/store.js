@@ -106,12 +106,13 @@ export function persistOrders(orders) { return writeJSON("crown_orders", orders)
       (per-device — good for previewing before committing).
    A result = { id, before, after, caption, weeks }. */
 const DEFAULT_RESULTS = [
-  // Real customer before/after composites for the hair oil.
-  { id: "r-1", image: "assets/results/result-1.jpg" },
-  { id: "r-2", image: "assets/results/result-2.jpg" },
-  { id: "r-3", image: "assets/results/result-3.jpg" },
-  { id: "r-4", image: "assets/results/result-4.jpg" },
-  { id: "r-5", image: "assets/results/result-5.jpg" },
+  // Real customer before/after composites for the hair oil. The frame is
+  // recolored per theme: white in light mode, black in dark mode.
+  { id: "r-1", imageLight: "assets/results/result-1-light.jpg", imageDark: "assets/results/result-1-dark.jpg" },
+  { id: "r-2", imageLight: "assets/results/result-2-light.jpg", imageDark: "assets/results/result-2-dark.jpg" },
+  { id: "r-3", imageLight: "assets/results/result-3-light.jpg", imageDark: "assets/results/result-3-dark.jpg" },
+  { id: "r-4", imageLight: "assets/results/result-4-light.jpg", imageDark: "assets/results/result-4-dark.jpg" },
+  { id: "r-5", imageLight: "assets/results/result-5-light.jpg", imageDark: "assets/results/result-5-dark.jpg" },
 ];
 export function loadUserResults() { return readJSON("crown_results", []); }
 export function persistUserResults(list) { return writeJSON("crown_results", list); }

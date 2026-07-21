@@ -361,7 +361,7 @@ html[data-theme="dark"] .fab { background: rgba(13, 12, 10, .82); }
 .results-viewport { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
 .results-track {
   display: flex; width: max-content; direction: ltr; padding: 6px 18px;
-  animation: resultsScroll 34s linear infinite;
+  animation: resultsScroll 50s linear infinite;
 }
 .results-viewport:active .results-track, .results-viewport:hover .results-track { animation-play-state: paused; }
 @keyframes resultsScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }

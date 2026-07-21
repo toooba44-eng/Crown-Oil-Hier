@@ -569,7 +569,7 @@ html[data-theme="dark"] .cart-drawer{box-shadow:8px 0 30px rgba(0,0,0,.6);}
 }
 .results-track{
   display:flex;width:max-content;direction:ltr;padding:8px 28px;
-  animation:resultsScroll 40s linear infinite;
+  animation:resultsScroll 58s linear infinite;
 }
 .results-viewport:hover .results-track{animation-play-state:paused;}
 @keyframes resultsScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
