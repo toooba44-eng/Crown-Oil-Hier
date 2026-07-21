@@ -106,9 +106,12 @@ export function persistOrders(orders) { return writeJSON("crown_orders", orders)
       (per-device — good for previewing before committing).
    A result = { id, before, after, caption, weeks }. */
 const DEFAULT_RESULTS = [
-  // Add real committed photos here, e.g.:
-  // { id: "r-001", before: "assets/results/sara-before.jpg",
-  //   after: "assets/results/sara-after.jpg", caption: "سارة — الرياض", weeks: 6 },
+  // Real customer before/after composites for the hair oil.
+  { id: "r-1", image: "assets/results/result-1.jpg" },
+  { id: "r-2", image: "assets/results/result-2.jpg" },
+  { id: "r-3", image: "assets/results/result-3.jpg" },
+  { id: "r-4", image: "assets/results/result-4.jpg" },
+  { id: "r-5", image: "assets/results/result-5.jpg" },
 ];
 export function loadUserResults() { return readJSON("crown_results", []); }
 export function persistUserResults(list) { return writeJSON("crown_results", list); }

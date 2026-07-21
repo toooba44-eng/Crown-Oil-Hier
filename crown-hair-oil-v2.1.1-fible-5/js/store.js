@@ -135,8 +135,11 @@ function saveOrders(orders) { return writeJSON("crown_orders", orders); }
    committed to assets/results/ (public to every visitor); user results
    in localStorage are managed from the admin panel (per-device). */
 const DEFAULT_RESULTS = [
-  // { id: "r-001", before: "assets/results/sara-before.jpg",
-  //   after: "assets/results/sara-after.jpg", caption: "سارة — الرياض", weeks: 6 },
+  { id: "r-1", image: "assets/results/result-1.jpg" },
+  { id: "r-2", image: "assets/results/result-2.jpg" },
+  { id: "r-3", image: "assets/results/result-3.jpg" },
+  { id: "r-4", image: "assets/results/result-4.jpg" },
+  { id: "r-5", image: "assets/results/result-5.jpg" },
 ];
 function getUserResults() { return readJSON("crown_results", []); }
 function saveUserResults(list) { return writeJSON("crown_results", list); }
@@ -179,28 +182,33 @@ function refreshAll() {
 }
 
 /* ---------------- real results gallery ---------------- */
+function resultSlideHTML(r, ariaHidden) {
+  const hidden = ariaHidden ? ' aria-hidden="true"' : "";
+  const frame = r.image
+    ? `<div class="result-frame"><img src="${esc(r.image)}" alt="نتيجة قبل وبعد استخدام الزيت"></div>`
+    : `<div class="result-frame"><div class="result-pair">
+         <div class="result-img"><span class="result-tag after">بعد</span><img src="${esc(r.after)}" alt="بعد الاستخدام"></div>
+         <div class="result-img"><span class="result-tag">قبل</span><img src="${esc(r.before)}" alt="قبل الاستخدام"></div>
+       </div></div>`;
+  const cap = (r.weeks || r.caption) ? `<figcaption class="result-cap">
+      ${r.weeks ? `<span class="result-weeks">النتيجة بعد ${esc(r.weeks)} أسابيع</span>` : ""}
+      ${r.caption ? `<span class="result-name">${esc(r.caption)}</span>` : ""}
+    </figcaption>` : "";
+  return `<figure class="result-slide"${hidden}>${frame}${cap}</figure>`;
+}
+
 function renderResults() {
   const section = document.getElementById("resultsSection");
-  const grid = document.getElementById("resultsGrid");
-  if (!section || !grid) return;
+  const track = document.getElementById("resultsTrack");
+  if (!section || !track) return;
   const results = getResults();
   if (!results.length) {
     section.hidden = true;
     return;
   }
   section.hidden = false;
-  grid.innerHTML = results.map((r) => `
-    <figure class="result-card">
-      <div class="result-pair">
-        <div class="result-img"><span class="result-tag">قبل</span><img src="${esc(r.before)}" alt="قبل الاستخدام"></div>
-        <div class="result-img"><span class="result-tag after">بعد</span><img src="${esc(r.after)}" alt="بعد الاستخدام"></div>
-      </div>
-      <figcaption class="result-cap">
-        ${r.weeks ? `<span class="result-weeks">النتيجة بعد ${esc(r.weeks)} أسابيع</span>` : ""}
-        ${r.caption ? `<span class="result-name">${esc(r.caption)}</span>` : ""}
-      </figcaption>
-    </figure>
-  `).join("");
+  track.innerHTML = results.map((r) => resultSlideHTML(r, false)).join("")
+    + results.map((r) => resultSlideHTML(r, true)).join("");
 }
 
 function refreshCartBadge() {
