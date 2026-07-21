@@ -68,14 +68,21 @@ export default function App() {
 
   return (
     <div className="app" dir="rtl">
-      <button
-        className="theme-fab"
-        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        aria-label={theme === 'dark' ? 'التبديل إلى الوضع العادي' : 'التبديل إلى الوضع الداكن'}
-        title="الوضع الداكن / العادي"
-      >
-        {theme === 'dark' ? '☀️' : '🌙'}
-      </button>
+      <div className="top-fabs">
+        <a className="fab hub-fab" href="../" aria-label="الصفحة الرئيسية للموقع" title="الصفحة الرئيسية">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
+          </svg>
+        </a>
+        <button
+          className="fab theme-fab"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          aria-label={theme === 'dark' ? 'التبديل إلى الوضع العادي' : 'التبديل إلى الوضع الداكن'}
+          title="الوضع الداكن / العادي"
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+      </div>
       <main className="screen-area">
         {tab === 'home' && <Home onShop={() => setTab('store')} />}
         {tab === 'store' && <Store products={products} onAdd={handleAdd} />}

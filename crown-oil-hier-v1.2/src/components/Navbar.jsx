@@ -62,6 +62,18 @@ export default function Navbar() {
           ))}
         </ul>
 
+        <a
+          href="../"
+          aria-label="Home"
+          title="Home"
+          className={`hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full border lift-hover ${
+            scrolled ? 'border-charcoal/15 dark:border-ghost/20 text-charcoal dark:text-ghost' : 'border-ghost/30 text-ghost'
+          }`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+            <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
+          </svg>
+        </a>
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -96,6 +108,17 @@ export default function Navbar() {
       {open && (
         <div className="md:hidden px-5 pb-5 pt-1 rounded-b-[2rem] bg-cream/95 dark:bg-void/95 backdrop-blur-xl">
           <ul className="flex flex-col gap-3">
+            <li>
+              <a
+                href="../"
+                className="flex items-center gap-2 py-2 font-jakarta text-base font-medium text-moss dark:text-ghost/85"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                  <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
+                </svg>
+                Home
+              </a>
+            </li>
             {LINKS.map((l) => (
               <li key={l.href}>
                 <a
