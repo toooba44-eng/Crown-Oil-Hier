@@ -66,6 +66,19 @@ export default function App() {
 
   const count = cartCount(cart, products);
 
+  const shareSite = async () => {
+    const url = new URL('../', window.location.href).href; // the site home page
+    const data = { title: 'Crown Hair Oil', text: 'Crown Hair Oil — زيت شعر طبيعي 100٪ 🌿', url };
+    if (navigator.share) {
+      try { await navigator.share(data); } catch { /* dismissed */ }
+    } else if (navigator.clipboard) {
+      try { await navigator.clipboard.writeText(url); toast('تم نسخ رابط الموقع'); }
+      catch { window.prompt('انسخي الرابط:', url); }
+    } else {
+      window.prompt('انسخي الرابط:', url);
+    }
+  };
+
   return (
     <div className="app" dir="rtl">
       <div className="top-fabs">
@@ -74,6 +87,11 @@ export default function App() {
             <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
           </svg>
         </a>
+        <button className="fab share-fab" onClick={shareSite} aria-label="مشاركة الموقع" title="مشاركة الموقع">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+          </svg>
+        </button>
         <button
           className="fab theme-fab"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

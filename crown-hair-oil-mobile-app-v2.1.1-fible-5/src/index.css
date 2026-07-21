@@ -350,4 +350,5 @@ html[data-theme="dark"] .modal-overlay { background: rgba(0, 0, 0, .7); }
 .fab:active { transform: scale(1.08); }
 .theme-fab:active { transform: rotate(20deg) scale(1.08); }
 .hub-fab svg { width: 20px; height: 20px; }
+.share-fab svg { width: 19px; height: 19px; }
 html[data-theme="dark"] .fab { background: rgba(13, 12, 10, .82); }

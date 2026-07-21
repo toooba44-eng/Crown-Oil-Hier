@@ -16,6 +16,22 @@ export default function Navbar() {
     document.documentElement.dataset.theme = theme;
     try { localStorage.setItem('crown_theme', theme); } catch { /* private mode */ }
   }, [theme]);
+
+  const [copied, setCopied] = useState(false);
+  const shareSite = async () => {
+    const url = new URL('../', window.location.href).href; // the site home page
+    const data = { title: 'Crown Hair Oil', text: 'Crown Hair Oil — زيت شعر طبيعي 100٪ 🌿', url };
+    if (navigator.share) {
+      try { await navigator.share(data); } catch { /* dismissed */ }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1600);
+      } catch { window.prompt('Copy the link:', url); }
+    }
+  };
+
   const sentinelRef = useRef(null);
 
   useEffect(() => {
@@ -75,6 +91,20 @@ export default function Navbar() {
           </svg>
         </a>
         <button
+          onClick={shareSite}
+          aria-label="Share this site"
+          title={copied ? 'Link copied' : 'Share'}
+          className={`hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full border lift-hover ${
+            scrolled ? 'border-charcoal/15 dark:border-ghost/20 text-charcoal dark:text-ghost' : 'border-ghost/30 text-ghost'
+          }`}
+        >
+          {copied ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]"><path d="M5 12l4 4L19 7" /></svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
+          )}
+        </button>
+        <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           className={`hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full border text-base lift-hover ${
@@ -132,8 +162,17 @@ export default function Navbar() {
             ))}
             <li>
               <button
+                onClick={shareSite}
+                className="inline-flex items-center gap-2 py-2 font-jakarta text-base font-medium text-moss dark:text-ghost/85"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
+                {copied ? 'Link copied \u2713' : 'Share'}
+              </button>
+            </li>
+            <li>
+              <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="mt-1 inline-flex items-center gap-2 py-2 font-jakarta text-base font-medium text-moss dark:text-ghost/85"
+                className="inline-flex items-center gap-2 py-2 font-jakarta text-base font-medium text-moss dark:text-ghost/85"
               >
                 {theme === 'dark' ? '\u2600\uFE0F Light mode' : '\u{1F319} Dark mode'}
               </button>

@@ -91,6 +91,23 @@
   }
   .card:hover .card-cta{background:var(--terracotta-2);}
   .card-cta svg{width:16px; height:16px;}
+  .share{text-align:center; padding:8px 0 34px;}
+  .share h3{font-family:var(--font-display); font-size:16px; font-weight:700; margin:0 0 16px; color:var(--ink-soft);}
+  .share-row{display:flex; justify-content:center; flex-wrap:wrap; gap:12px;}
+  .share-btn{
+    width:48px; height:48px; border-radius:50%; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    transition:transform .25s cubic-bezier(0.34,1.56,0.64,1), background .25s ease, color .25s ease, border-color .25s ease;
+  }
+  .share-btn svg{width:22px; height:22px;}
+  .share-btn:hover{transform:translateY(-3px); color:#fff;}
+  .share-btn.wa:hover{background:#25D366; border-color:#25D366;}
+  .share-btn.x:hover{background:#000; border-color:#000;}
+  .share-btn.fb:hover{background:#1877F2; border-color:#1877F2;}
+  .share-btn.tg:hover{background:#229ED9; border-color:#229ED9;}
+  .share-btn.copy:hover,.share-btn.native:hover{background:var(--terracotta); border-color:var(--terracotta);}
+  .share-hint{display:block; min-height:18px; margin-top:14px; font-size:13px; color:var(--olive); font-weight:600;}
   footer{
     text-align:center; padding:22px 0 30px; color:var(--ink-soft); font-size:12.5px;
     border-top:1px solid var(--line);
@@ -146,6 +163,31 @@
       </a>
     </section>
 
+    <section class="share">
+      <h3>شاركي الموقع</h3>
+      <div class="share-row" id="shareRow">
+        <button class="share-btn native" id="shareNative" aria-label="مشاركة" title="مشاركة" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+        </button>
+        <a class="share-btn wa" data-net="whatsapp" href="#" target="_blank" rel="noopener" aria-label="واتساب" title="واتساب">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2m0 1.8a8.2 8.2 0 0 1 6.9 12.6l-.4.6.6 2.1-2.2-.6-.5.3A8.2 8.2 0 1 1 12 3.8m4.7 10.3c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-2-1.2 7.4 7.4 0 0 1-1.3-1.7c-.2-.3 0-.4.1-.6l.4-.4.2-.4a.5.5 0 0 0 0-.5l-.8-1.9c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c2 .8 2 .5 2.4.5a2.5 2.5 0 0 0 1.6-1.2 2 2 0 0 0 .2-1.2c-.1-.1-.2-.2-.4-.2"/></svg>
+        </a>
+        <a class="share-btn x" data-net="x" href="#" target="_blank" rel="noopener" aria-label="X" title="X">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.3 8.3L23 22h-6.8l-5.3-6.9L4.8 22H1.7l7.8-8.9L1 2h7l4.8 6.3zm-1.1 18h1.7L7.3 3.8H5.5z"/></svg>
+        </a>
+        <a class="share-btn fb" data-net="facebook" href="#" target="_blank" rel="noopener" aria-label="فيسبوك" title="فيسبوك">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12"/></svg>
+        </a>
+        <a class="share-btn tg" data-net="telegram" href="#" target="_blank" rel="noopener" aria-label="تيليجرام" title="تيليجرام">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.8 8.8-8c.4-.3-.1-.5-.6-.2L6.7 13.5l-4.7-1.5c-1-.3-1-1 .2-1.5l18.3-7c.9-.3 1.6.2 1.4 1.3"/></svg>
+        </a>
+        <button class="share-btn copy" id="shareCopy" data-net="copy" aria-label="نسخ الرابط" title="نسخ الرابط">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        </button>
+      </div>
+      <span class="share-hint" id="shareHint" aria-live="polite"></span>
+    </section>
+
     <footer>
       © <span id="year"></span> Crown Hair Oil — جميع الحقوق محفوظة <span class="dot"></span>
     </footer>
@@ -153,6 +195,49 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // ---- Share the site ----
+    (function(){
+      var shareUrl = location.origin + location.pathname;
+      var shareText = "Crown Hair Oil — زيت شعر طبيعي 100٪ 🌿";
+      var eu = encodeURIComponent(shareUrl);
+      var et = encodeURIComponent(shareText);
+      var links = {
+        whatsapp: "https://wa.me/?text=" + encodeURIComponent(shareText + " " + shareUrl),
+        x: "https://twitter.com/intent/tweet?text=" + et + "&url=" + eu,
+        facebook: "https://www.facebook.com/sharer/sharer.php?u=" + eu,
+        telegram: "https://t.me/share/url?url=" + eu + "&text=" + et,
+      };
+      document.querySelectorAll(".share-btn[data-net]").forEach(function(el){
+        var net = el.dataset.net;
+        if (links[net]) el.href = links[net];
+      });
+
+      var hint = document.getElementById("shareHint");
+      function flash(msg){
+        hint.textContent = msg;
+        clearTimeout(hint._t);
+        hint._t = setTimeout(function(){ hint.textContent = ""; }, 2400);
+      }
+
+      var copyBtn = document.getElementById("shareCopy");
+      copyBtn.addEventListener("click", function(){
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(shareUrl).then(function(){ flash("تم نسخ رابط الموقع ✓"); })
+            .catch(function(){ window.prompt("انسخي الرابط:", shareUrl); });
+        } else {
+          window.prompt("انسخي الرابط:", shareUrl);
+        }
+      });
+
+      var nativeBtn = document.getElementById("shareNative");
+      if (navigator.share) {
+        nativeBtn.hidden = false;
+        nativeBtn.addEventListener("click", function(){
+          navigator.share({ title: "Crown Hair Oil", text: shareText, url: shareUrl }).catch(function(){});
+        });
+      }
+    })();
 
     (function(){
       var btn = document.getElementById("themeToggle");
