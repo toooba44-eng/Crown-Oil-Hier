@@ -16,6 +16,35 @@ export const PAY_METHOD_LABELS = {
   card: "بطاقة مدى / فيزا",
 };
 
+/* ---------------- locale (AR / EN) ----------------
+   The i18n provider mirrors the active language here so that
+   money()/formatDate() and the pure cart helpers format and speak
+   in the right language without threading `lang` through every call. */
+let LOCALE = (() => {
+  try { return localStorage.getItem("crown_lang") === "en" ? "en" : "ar"; }
+  catch { return "ar"; }
+})();
+export function setLocale(lang) { LOCALE = lang === "en" ? "en" : "ar"; }
+export function getLocale() { return LOCALE; }
+
+const MSG = {
+  ar: {
+    outOfStock: "المنتج غير متوفر",
+    noMore: "لا تتوفر كمية أكبر من هذا المنتج",
+    maxQty: "وصلتِ للكمية المتوفرة كاملة",
+  },
+  en: {
+    outOfStock: "This product is unavailable",
+    noMore: "No more of this product is available",
+    maxQty: "You've reached the available quantity",
+  },
+};
+function msg(k) { return (MSG[LOCALE] || MSG.ar)[k]; }
+
+/** Localized product name/description; falls back to the canonical value. */
+export function pName(p, lang) { return lang === "en" && p && p.nameEn ? p.nameEn : (p ? p.name : ""); }
+export function pDesc(p, lang) { return lang === "en" && p && p.descEn ? p.descEn : (p ? p.desc : ""); }
+
 /* ---------------- site settings (admin dashboard) ----------------
    Persisted in localStorage under crown_settings; loadSettings merges
    the saved values over the defaults so new keys always exist.
@@ -53,11 +82,14 @@ const DEFAULT_PRODUCTS = [
   {
     id: "p-001",
     name: "Crown Hair Oil — زيت الشعر الأساسي",
+    nameEn: "Crown Hair Oil — Essential Hair Oil",
     desc: "مزيج 100٪ طبيعي من زيت الأرغان والروزماري وزيت الزيتون، لتطويل الشعر وتكثيفه وتغذيته من الجذور حتى الأطراف.",
+    descEn: "A 100% natural blend of argan, rosemary and olive oil to lengthen, thicken and nourish hair from root to tip.",
     price: 119,
     oldPrice: 149,
     stock: 24,
     category: "زيوت الشعر",
+    categoryEn: "Hair oils",
     image: "assets/product-white.png",
   },
 ];
@@ -82,12 +114,15 @@ function writeJSON(key, value) {
 }
 
 export function money(n) {
-  return Number(n).toLocaleString("ar-SA", { minimumFractionDigits: 0 }) + " ر.س";
+  const v = Number(n);
+  return LOCALE === "en"
+    ? v.toLocaleString("en-US", { minimumFractionDigits: 0 }) + " SAR"
+    : v.toLocaleString("ar-SA", { minimumFractionDigits: 0 }) + " ر.س";
 }
 
 export function formatDate(iso) {
   try {
-    return new Date(iso).toLocaleDateString("ar-SA", {
+    return new Date(iso).toLocaleDateString(LOCALE === "en" ? "en-GB" : "ar-SA", {
       year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
     });
   } catch {
@@ -188,10 +223,10 @@ export function shippingFor(subtotal) {
 /** Returns { cart, error } — error is an Arabic message when clamped. */
 export function addLine(cart, products, productId) {
   const product = products.find((p) => p.id === productId);
-  if (!product || product.stock <= 0) return { cart, error: "المنتج غير متوفر" };
+  if (!product || product.stock <= 0) return { cart, error: msg("outOfStock") };
   const existing = cart.find((i) => i.id === productId);
   const qty = existing ? existing.qty : 0;
-  if (qty + 1 > product.stock) return { cart, error: "لا تتوفر كمية أكبر من هذا المنتج" };
+  if (qty + 1 > product.stock) return { cart, error: msg("noMore") };
   const next = existing
     ? cart.map((i) => (i.id === productId ? { ...i, qty: i.qty + 1 } : i))
     : [...cart, { id: productId, qty: 1 }];
@@ -204,7 +239,7 @@ export function changeLineQty(cart, products, productId, delta) {
   if (delta > 0) {
     const product = products.find((p) => p.id === productId);
     if (product && item.qty + delta > product.stock) {
-      return { cart, error: "وصلتِ للكمية المتوفرة كاملة" };
+      return { cart, error: msg("maxQty") };
     }
   }
   const nextQty = item.qty + delta;

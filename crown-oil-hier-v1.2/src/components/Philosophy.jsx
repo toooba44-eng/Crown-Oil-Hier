@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useLang } from '../i18n.jsx';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Philosophy() {
+  const { t } = useLang();
   const scope = useRef(null);
 
   useEffect(() => {
@@ -30,8 +32,8 @@ export default function Philosophy() {
     return () => ctx.revert();
   }, []);
 
-  const line1 = 'Most hair care focuses on quick fixes and synthetic silicones.';
-  const line2 = 'We focus on root biology, patience, and three oils working as one.';
+  const line1 = t('phil.line1');
+  const line2 = t('phil.line2');
 
   return (
     <section id="philosophy" ref={scope} className="relative bg-void py-28 md:py-40 px-6 md:px-10 overflow-hidden">
@@ -50,7 +52,7 @@ export default function Philosophy() {
         </p>
         <p className="font-garamond italic text-[clamp(1.8rem,5vw,3.2rem)] leading-[1.15] text-ghost">
           {line2.split(' ').map((w, i) => {
-            const isKeyword = w.toLowerCase().includes('root') || w.toLowerCase().includes('biology,');
+            const isKeyword = w.toLowerCase().includes('root') || w.toLowerCase().includes('biology,') || w.includes('الجذور') || w.includes('بيولوجيا');
             return (
               <span
                 key={i}

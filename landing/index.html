@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>document.documentElement.dataset.theme = localStorage.getItem("crown_theme") || "light";</script>
+<script>(function(){var d=document.documentElement;d.dataset.theme=localStorage.getItem("crown_theme")||"light";var l=localStorage.getItem("crown_lang");l=(l==="en"||l==="ar")?l:"ar";d.lang=l;d.dir=l==="ar"?"rtl":"ltr";})();</script>
 <style>
   :root{
     --cream:#F6F1E6; --cream-2:#EFE7D8; --ink:#211D17; --ink-soft:#4A433A;
@@ -29,7 +29,7 @@
       radial-gradient(1200px 600px at 80% -10%, rgba(168,92,50,.14), transparent 60%),
       radial-gradient(900px 500px at 0% 110%, rgba(110,116,86,.16), transparent 55%),
       var(--cream);
-    color:var(--ink); direction:rtl;
+    color:var(--ink);
     display:flex; flex-direction:column;
     transition:background .35s ease, color .35s ease;
     -webkit-font-smoothing:antialiased;
@@ -41,13 +41,17 @@
   .brand img{height:46px; width:46px; border-radius:12px; object-fit:cover;}
   .brand b{font-family:var(--font-display); font-size:20px; font-weight:800; letter-spacing:.02em;}
   .brand span{display:block; font-size:10px; letter-spacing:.2em; color:var(--ink-soft); font-weight:600;}
-  .theme-toggle{
-    width:40px; height:40px; border-radius:50%; border:1px solid var(--line);
+  .head-actions{display:flex; align-items:center; gap:10px;}
+  .icon-btn{
+    height:40px; min-width:40px; padding:0 12px; border-radius:999px; border:1px solid var(--line);
     background:transparent; color:var(--ink); font-size:17px; cursor:pointer;
     display:inline-flex; align-items:center; justify-content:center;
     transition:transform .3s cubic-bezier(0.34,1.56,0.64,1), background .25s ease;
   }
+  .theme-toggle{width:40px; padding:0;}
   .theme-toggle:hover{transform:rotate(20deg) scale(1.08); background:var(--cream-2);}
+  .lang-toggle{font-family:var(--font-display); font-size:13px; font-weight:800; letter-spacing:.03em;}
+  .lang-toggle:hover{transform:scale(1.06); background:var(--cream-2);}
   .hero{text-align:center; padding:40px 0 30px;}
   .eyebrow{
     font-family:var(--font-display); font-size:13px; font-weight:700; letter-spacing:.14em;
@@ -76,7 +80,7 @@
   .card:hover .card-media img{transform:scale(1.06);}
   .card-media.contain img{object-fit:contain; background:#fff;}
   .badge{
-    position:absolute; top:14px; right:14px; z-index:2;
+    position:absolute; top:14px; inset-inline-end:14px; z-index:2;
     background:var(--terracotta); color:#fff; font-size:12px; font-weight:700;
     padding:5px 13px; border-radius:999px; font-family:var(--font-display);
   }
@@ -91,6 +95,7 @@
   }
   .card:hover .card-cta{background:var(--terracotta-2);}
   .card-cta svg{width:16px; height:16px;}
+  html[dir="ltr"] .card-cta svg{transform:scaleX(-1);}
   .share{text-align:center; padding:8px 0 34px;}
   .share h3{font-family:var(--font-display); font-size:16px; font-weight:700; margin:0 0 16px; color:var(--ink-soft);}
   .share-row{display:flex; justify-content:center; flex-wrap:wrap; gap:12px;}
@@ -122,26 +127,29 @@
         <img src="./assets/logo.jpg" alt="Crown Hair Oil">
         <span><b>Crown</b>HAIR OIL</span>
       </a>
-      <button class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع الداكن" title="الوضع الداكن / العادي">🌙</button>
+      <div class="head-actions">
+        <button class="icon-btn lang-toggle" id="langToggle" data-i18n-title="lang">EN</button>
+        <button class="icon-btn theme-toggle" id="themeToggle" data-i18n-title="theme">🌙</button>
+      </div>
     </header>
 
     <section class="hero">
-      <div class="eyebrow">مزيج زيوت طبيعية 100٪</div>
-      <h1>سرّ الشعر الطويل والكثيف</h1>
-      <p>Crown Hair Oil من الأرغان والروزماري وزيت الزيتون. اختاري الوجهة التي تناسبك — متجر التطبيق الكامل، أو النسخة التعريفية السينمائية.</p>
+      <div class="eyebrow" data-i18n="hero.eyebrow">مزيج زيوت طبيعية 100٪</div>
+      <h1 data-i18n="hero.h1">سرّ الشعر الطويل والكثيف</h1>
+      <p data-i18n="hero.p">Crown Hair Oil من الأرغان والروزماري وزيت الزيتون. اختاري الوجهة التي تناسبك — متجر التطبيق الكامل، أو النسخة التعريفية السينمائية.</p>
     </section>
 
     <section class="cards">
       <a class="card" href="./app/">
         <div class="card-media contain">
-          <span class="badge">المتجر · تطبيق</span>
-          <img src="./assets/product-white.png" alt="متجر Crown Hair Oil">
+          <span class="badge" data-i18n="card1.badge">المتجر · تطبيق</span>
+          <img src="./assets/product-white.png" alt="Crown Hair Oil">
         </div>
         <div class="card-body">
-          <h2>المتجر وتطبيق الجوال</h2>
-          <p>تصفّحي المنتجات، أضيفي للسلة، وأتمّي الطلب. تطبيق قابل للتثبيت على شاشة جوالك ويعمل دون اتصال، مع لوحة تحكم للإدارة.</p>
+          <h2 data-i18n="card1.h2">المتجر وتطبيق الجوال</h2>
+          <p data-i18n="card1.p">تصفّحي المنتجات، أضيفي للسلة، وأتمّي الطلب. تطبيق قابل للتثبيت على شاشة جوالك ويعمل دون اتصال، مع لوحة تحكم للإدارة.</p>
           <span class="card-cta">
-            ادخلي المتجر
+            <span data-i18n="card1.cta">ادخلي المتجر</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </span>
         </div>
@@ -149,14 +157,14 @@
 
       <a class="card" href="./v1.2/">
         <div class="card-media">
-          <span class="badge">تعريفي · سينمائي</span>
-          <img src="./assets/hero-dark-crop.jpg" alt="النسخة السينمائية">
+          <span class="badge" data-i18n="card2.badge">تعريفي · سينمائي</span>
+          <img src="./assets/hero-dark-crop.jpg" alt="Cinematic edition">
         </div>
         <div class="card-body">
-          <h2>النسخة السينمائية</h2>
-          <p>صفحة تعريفية غامرة بحركات وانتقالات ناعمة تحكي قصة المنتج ومكوّناته وطريقة عمله — تجربة بصرية فاخرة.</p>
+          <h2 data-i18n="card2.h2">النسخة السينمائية</h2>
+          <p data-i18n="card2.p">صفحة تعريفية غامرة بحركات وانتقالات ناعمة تحكي قصة المنتج ومكوّناته وطريقة عمله — تجربة بصرية فاخرة.</p>
           <span class="card-cta">
-            شاهدي التجربة
+            <span data-i18n="card2.cta">شاهدي التجربة</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </span>
         </div>
@@ -164,24 +172,24 @@
     </section>
 
     <section class="share">
-      <h3>شاركي الموقع</h3>
+      <h3 data-i18n="share.h3">شاركي الموقع</h3>
       <div class="share-row" id="shareRow">
-        <button class="share-btn native" id="shareNative" aria-label="مشاركة" title="مشاركة" hidden>
+        <button class="share-btn native" id="shareNative" data-i18n-title="share.native" hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
         </button>
-        <a class="share-btn wa" data-net="whatsapp" href="#" target="_blank" rel="noopener" aria-label="واتساب" title="واتساب">
+        <a class="share-btn wa" data-net="whatsapp" href="#" target="_blank" rel="noopener" data-i18n-title="share.wa">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2m0 1.8a8.2 8.2 0 0 1 6.9 12.6l-.4.6.6 2.1-2.2-.6-.5.3A8.2 8.2 0 1 1 12 3.8m4.7 10.3c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-2-1.2 7.4 7.4 0 0 1-1.3-1.7c-.2-.3 0-.4.1-.6l.4-.4.2-.4a.5.5 0 0 0 0-.5l-.8-1.9c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c2 .8 2 .5 2.4.5a2.5 2.5 0 0 0 1.6-1.2 2 2 0 0 0 .2-1.2c-.1-.1-.2-.2-.4-.2"/></svg>
         </a>
-        <a class="share-btn x" data-net="x" href="#" target="_blank" rel="noopener" aria-label="X" title="X">
+        <a class="share-btn x" data-net="x" href="#" target="_blank" rel="noopener" data-i18n-title="share.x">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.3 8.3L23 22h-6.8l-5.3-6.9L4.8 22H1.7l7.8-8.9L1 2h7l4.8 6.3zm-1.1 18h1.7L7.3 3.8H5.5z"/></svg>
         </a>
-        <a class="share-btn fb" data-net="facebook" href="#" target="_blank" rel="noopener" aria-label="فيسبوك" title="فيسبوك">
+        <a class="share-btn fb" data-net="facebook" href="#" target="_blank" rel="noopener" data-i18n-title="share.fb">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12"/></svg>
         </a>
-        <a class="share-btn tg" data-net="telegram" href="#" target="_blank" rel="noopener" aria-label="تيليجرام" title="تيليجرام">
+        <a class="share-btn tg" data-net="telegram" href="#" target="_blank" rel="noopener" data-i18n-title="share.tg">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.8 8.8-8c.4-.3-.1-.5-.6-.2L6.7 13.5l-4.7-1.5c-1-.3-1-1 .2-1.5l18.3-7c.9-.3 1.6.2 1.4 1.3"/></svg>
         </a>
-        <button class="share-btn copy" id="shareCopy" data-net="copy" aria-label="نسخ الرابط" title="نسخ الرابط">
+        <button class="share-btn copy" id="shareCopy" data-net="copy" data-i18n-title="share.copy">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
         </button>
       </div>
@@ -189,29 +197,112 @@
     </section>
 
     <footer>
-      © <span id="year"></span> Crown Hair Oil — جميع الحقوق محفوظة <span class="dot"></span>
+      © <span id="year"></span> Crown Hair Oil — <span data-i18n="footer.rights">جميع الحقوق محفوظة</span> <span class="dot"></span>
     </footer>
   </div>
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
+    // ---- i18n (shares crown_lang with the app + v1.2) ----
+    var I18N = {
+      ar: {
+        "meta.title": "Crown Hair Oil — الصفحة الرئيسية",
+        "theme": "الوضع الداكن / العادي",
+        "lang": "English",
+        "hero.eyebrow": "مزيج زيوت طبيعية 100٪",
+        "hero.h1": "سرّ الشعر الطويل والكثيف",
+        "hero.p": "Crown Hair Oil من الأرغان والروزماري وزيت الزيتون. اختاري الوجهة التي تناسبك — متجر التطبيق الكامل، أو النسخة التعريفية السينمائية.",
+        "card1.badge": "المتجر · تطبيق",
+        "card1.h2": "المتجر وتطبيق الجوال",
+        "card1.p": "تصفّحي المنتجات، أضيفي للسلة، وأتمّي الطلب. تطبيق قابل للتثبيت على شاشة جوالك ويعمل دون اتصال، مع لوحة تحكم للإدارة.",
+        "card1.cta": "ادخلي المتجر",
+        "card2.badge": "تعريفي · سينمائي",
+        "card2.h2": "النسخة السينمائية",
+        "card2.p": "صفحة تعريفية غامرة بحركات وانتقالات ناعمة تحكي قصة المنتج ومكوّناته وطريقة عمله — تجربة بصرية فاخرة.",
+        "card2.cta": "شاهدي التجربة",
+        "share.h3": "شاركي الموقع",
+        "share.wa": "واتساب", "share.x": "X", "share.fb": "فيسبوك", "share.tg": "تيليجرام", "share.copy": "نسخ الرابط", "share.native": "مشاركة",
+        "footer.rights": "جميع الحقوق محفوظة",
+        "msg.copied": "تم نسخ رابط الموقع ✓",
+        "msg.copyPrompt": "انسخي الرابط:",
+        "share.text": "Crown Hair Oil — زيت شعر طبيعي 100٪ 🌿"
+      },
+      en: {
+        "meta.title": "Crown Hair Oil — Home",
+        "theme": "Dark / light mode",
+        "lang": "العربية",
+        "hero.eyebrow": "100% natural oil blend",
+        "hero.h1": "The secret to long, thick hair",
+        "hero.p": "Crown Hair Oil from argan, rosemary and olive oil. Choose the experience that suits you — the full app store, or the cinematic showcase.",
+        "card1.badge": "Store · App",
+        "card1.h2": "Store & mobile app",
+        "card1.p": "Browse products, add to cart and check out. An installable app for your phone that works offline, with an admin dashboard.",
+        "card1.cta": "Enter the store",
+        "card2.badge": "Showcase · Cinematic",
+        "card2.h2": "Cinematic edition",
+        "card2.p": "An immersive showcase with smooth motion and transitions telling the product's story, ingredients and how it works — a premium visual experience.",
+        "card2.cta": "See the experience",
+        "share.h3": "Share the site",
+        "share.wa": "WhatsApp", "share.x": "X", "share.fb": "Facebook", "share.tg": "Telegram", "share.copy": "Copy link", "share.native": "Share",
+        "footer.rights": "All rights reserved",
+        "msg.copied": "Site link copied ✓",
+        "msg.copyPrompt": "Copy the link:",
+        "share.text": "Crown Hair Oil — 100% natural hair oil 🌿"
+      }
+    };
+
+    function getLang(){ var l = document.documentElement.lang; return (l === "en" || l === "ar") ? l : "ar"; }
+    function dict(){ return I18N[getLang()] || I18N.ar; }
+
+    function applyLang(lang){
+      var d = document.documentElement;
+      d.lang = lang;
+      d.dir = lang === "ar" ? "rtl" : "ltr";
+      var t = I18N[lang] || I18N.ar;
+      document.querySelectorAll("[data-i18n]").forEach(function(el){
+        var k = el.getAttribute("data-i18n");
+        if (t[k] != null) el.textContent = t[k];
+      });
+      document.querySelectorAll("[data-i18n-title]").forEach(function(el){
+        var k = el.getAttribute("data-i18n-title");
+        if (t[k] != null) { el.title = t[k]; el.setAttribute("aria-label", t[k]); }
+      });
+      document.title = t["meta.title"];
+      var langBtn = document.getElementById("langToggle");
+      if (langBtn) langBtn.textContent = lang === "ar" ? "EN" : "ع";
+      try { localStorage.setItem("crown_lang", lang); } catch (e) {}
+    }
+
+    applyLang(getLang());
+    document.getElementById("langToggle").addEventListener("click", function(){
+      applyLang(getLang() === "ar" ? "en" : "ar");
+    });
+
     // ---- Share the site ----
     (function(){
       var shareUrl = location.origin + location.pathname;
-      var shareText = "Crown Hair Oil — زيت شعر طبيعي 100٪ 🌿";
-      var eu = encodeURIComponent(shareUrl);
-      var et = encodeURIComponent(shareText);
-      var links = {
-        whatsapp: "https://wa.me/?text=" + encodeURIComponent(shareText + " " + shareUrl),
-        x: "https://twitter.com/intent/tweet?text=" + et + "&url=" + eu,
-        facebook: "https://www.facebook.com/sharer/sharer.php?u=" + eu,
-        telegram: "https://t.me/share/url?url=" + eu + "&text=" + et,
-      };
-      document.querySelectorAll(".share-btn[data-net]").forEach(function(el){
-        var net = el.dataset.net;
-        if (links[net]) el.href = links[net];
-      });
+      function buildLinks(){
+        var text = dict()["share.text"];
+        var eu = encodeURIComponent(shareUrl);
+        var et = encodeURIComponent(text);
+        return {
+          whatsapp: "https://wa.me/?text=" + encodeURIComponent(text + " " + shareUrl),
+          x: "https://twitter.com/intent/tweet?text=" + et + "&url=" + eu,
+          facebook: "https://www.facebook.com/sharer/sharer.php?u=" + eu,
+          telegram: "https://t.me/share/url?url=" + eu + "&text=" + et
+        };
+      }
+      function refreshLinks(){
+        var links = buildLinks();
+        document.querySelectorAll(".share-btn[data-net]").forEach(function(el){
+          var net = el.dataset.net;
+          if (links[net]) el.href = links[net];
+        });
+      }
+      refreshLinks();
+      // Keep share links in the current language.
+      document.getElementById("langToggle").addEventListener("click", refreshLinks);
 
       var hint = document.getElementById("shareHint");
       function flash(msg){
@@ -223,10 +314,10 @@
       var copyBtn = document.getElementById("shareCopy");
       copyBtn.addEventListener("click", function(){
         if (navigator.clipboard) {
-          navigator.clipboard.writeText(shareUrl).then(function(){ flash("تم نسخ رابط الموقع ✓"); })
-            .catch(function(){ window.prompt("انسخي الرابط:", shareUrl); });
+          navigator.clipboard.writeText(shareUrl).then(function(){ flash(dict()["msg.copied"]); })
+            .catch(function(){ window.prompt(dict()["msg.copyPrompt"], shareUrl); });
         } else {
-          window.prompt("انسخي الرابط:", shareUrl);
+          window.prompt(dict()["msg.copyPrompt"], shareUrl);
         }
       });
 
@@ -234,7 +325,7 @@
       if (navigator.share) {
         nativeBtn.hidden = false;
         nativeBtn.addEventListener("click", function(){
-          navigator.share({ title: "Crown Hair Oil", text: shareText, url: shareUrl }).catch(function(){});
+          navigator.share({ title: "Crown Hair Oil", text: dict()["share.text"], url: shareUrl }).catch(function(){});
         });
       }
     })();

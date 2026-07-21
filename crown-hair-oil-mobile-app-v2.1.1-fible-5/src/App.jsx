@@ -14,8 +14,10 @@ import {
   loadSettings, persistSettings,
   cartCount, addLine, changeLineQty, removeLine, buildOrder,
 } from './lib/store.js';
+import { useLang } from './lib/i18n.jsx';
 
 export default function App() {
+  const { lang, setLang, t, dir } = useLang();
   const [tab, setTab] = useState('home');           // home | store | cart | admin
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
@@ -50,7 +52,7 @@ export default function App() {
     const { cart: next, error } = addLine(cart, products, productId);
     if (error) { toast(error); return; }
     setCart(next);
-    toast('تمت إضافة المنتج إلى السلة');
+    toast(t('toast.added'));
   };
 
   const handleQty = (productId, delta) => {
@@ -74,45 +76,54 @@ export default function App() {
 
   const shareSite = async () => {
     const url = new URL('../', window.location.href).href; // the site home page
-    const data = { title: 'Crown Hair Oil', text: 'Crown Hair Oil — زيت شعر طبيعي 100٪ 🌿', url };
+    const data = { title: 'Crown Hair Oil', text: t('share.text'), url };
     if (navigator.share) {
       try { await navigator.share(data); } catch { /* dismissed */ }
     } else if (navigator.clipboard) {
-      try { await navigator.clipboard.writeText(url); toast('تم نسخ رابط الموقع'); }
-      catch { window.prompt('انسخي الرابط:', url); }
+      try { await navigator.clipboard.writeText(url); toast(t('toast.linkCopied')); }
+      catch { window.prompt(t('share.copyPrompt'), url); }
     } else {
-      window.prompt('انسخي الرابط:', url);
+      window.prompt(t('share.copyPrompt'), url);
     }
   };
 
   return (
-    <div className="app" dir="rtl">
+    <div className="app" dir={dir}>
       <div className="top-fabs">
-        <a className="fab hub-fab" href="../" aria-label="الصفحة الرئيسية للموقع" title="الصفحة الرئيسية">
+        <a className="fab hub-fab" href="../" aria-label={t('a11y.home')} title={t('a11y.homeTitle')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
           </svg>
         </a>
-        <button className="fab share-fab" onClick={shareSite} aria-label="مشاركة الموقع" title="مشاركة الموقع">
+        <button className="fab share-fab" onClick={shareSite} aria-label={t('a11y.share')} title={t('a11y.share')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
           </svg>
         </button>
         <button
+          className="fab lang-fab"
+          onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+          aria-label={t('a11y.lang')}
+          title={t('a11y.lang')}
+        >
+          {lang === 'ar' ? 'EN' : 'ع'}
+        </button>
+        <button
           className="fab theme-fab"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          aria-label={theme === 'dark' ? 'التبديل إلى الوضع العادي' : 'التبديل إلى الوضع الداكن'}
-          title="الوضع الداكن / العادي"
+          aria-label={theme === 'dark' ? t('a11y.themeToLight') : t('a11y.themeToDark')}
+          title={t('a11y.theme')}
         >
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
       </div>
       <main className="screen-area">
-        {tab === 'home' && <Home settings={settings} onShop={() => setTab('store')} />}
-        {tab === 'store' && <Store products={products} results={results} reviews={reviews} theme={theme} onAdd={handleAdd} />}
+        {tab === 'home' && <Home settings={settings} lang={lang} t={t} onShop={() => setTab('store')} />}
+        {tab === 'store' && <Store products={products} results={results} reviews={reviews} theme={theme} lang={lang} t={t} onAdd={handleAdd} />}
         {tab === 'cart' && (
           <Cart
             cart={cart} products={products}
+            lang={lang} t={t}
             onQty={handleQty} onRemove={handleRemove}
             onCheckout={() => { setLastOrder(null); setCheckoutOpen(true); }}
             lastOrder={lastOrder}
@@ -125,6 +136,7 @@ export default function App() {
             userResults={loadUserResults()}
             userReviews={loadUserReviews()}
             settings={settings}
+            lang={lang} t={t}
             onSaveProducts={(p) => setProducts(p)}
             onSaveResults={(list) => { persistUserResults(list); setResults(loadResults()); }}
             onSaveReviews={(list) => { persistUserReviews(list); setReviews(loadReviews()); }}
@@ -138,17 +150,18 @@ export default function App() {
         <Checkout
           cart={cart} products={products}
           settings={settings}
+          lang={lang} t={t}
           onClose={() => setCheckoutOpen(false)}
           onSubmit={(fields) => {
             const order = handleOrder(fields);
             setCheckoutOpen(false);
-            toast('تم استلام طلبك: ' + order.id);
+            toast(t('toast.orderReceived', { id: order.id }));
           }}
           toast={toast}
         />
       )}
 
-      <TabBar tab={tab} count={count} onChange={setTab} />
+      <TabBar tab={tab} count={count} onChange={setTab} t={t} />
 
       <div className={'toast' + (toastMsg ? ' show' : '')} role="status" aria-live="polite">{toastMsg}</div>
     </div>

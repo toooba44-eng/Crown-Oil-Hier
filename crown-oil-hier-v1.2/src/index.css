@@ -73,6 +73,21 @@ body {
   text-shadow: 0 0 24px rgba(123, 97, 255, 0.6);
 }
 
+/* ---------- Arabic (RTL) typography ----------
+   The English design leans on Latin display faces (garamond italic,
+   jakarta, sora…). In Arabic we swap every font utility to an
+   Arabic-native family and drop italics, which Arabic script doesn't use. */
+html[dir="rtl"] body,
+html[dir="rtl"] .font-jakarta,
+html[dir="rtl"] .font-garamond,
+html[dir="rtl"] .font-sora,
+html[dir="rtl"] .font-instrument,
+html[dir="rtl"] .font-mono,
+html[dir="rtl"] .font-code {
+  font-family: 'Cairo', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+}
+html[dir="rtl"] .italic { font-style: normal; }
+
 /* ---------- Dark mode (html[data-theme="dark"]) ---------- */
 body { transition: background 0.35s ease, color 0.35s ease; }
 html[data-theme="dark"] body {

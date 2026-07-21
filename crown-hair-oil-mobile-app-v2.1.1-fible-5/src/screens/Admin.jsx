@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import {
   PAY_METHOD_LABELS, DEFAULT_PRODUCT_IMAGE,
-  money, formatDate, uid, compressImage, sha256Hex,
+  money, formatDate, uid, compressImage, sha256Hex, pName,
 } from '../lib/store.js';
 
-export default function Admin({ products, orders, userResults = [], userReviews = [], settings = {}, onSaveProducts, onSaveResults, onSaveReviews, onSaveSettings, toast }) {
+export default function Admin({ products, orders, userResults = [], userReviews = [], settings = {}, lang = 'ar', t, onSaveProducts, onSaveResults, onSaveReviews, onSaveSettings, toast }) {
   const [unlocked, setUnlocked] = useState(false);
   const [pane, setPane] = useState('products'); // products | orders | results | reviews | settings
   const [armedDelete, setArmedDelete] = useState(null);
   const [savingResult, setSavingResult] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [checking, setChecking] = useState(false);
+
+  const payLabel = (m) => ({ cod: t('co.codT'), bank: t('co.bankT'), card: t('co.cardT') }[m] || PAY_METHOD_LABELS[m] || m);
 
   const login = async (e) => {
     e.preventDefault();
@@ -24,10 +26,10 @@ export default function Admin({ products, orders, userResults = [], userReviews 
       if (emailOk && hash === settings.adminPassHash) {
         setUnlocked(true);
       } else {
-        toast('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+        toast(t('admin.badCreds'));
       }
     } catch {
-      toast('تعذّر التحقق — حدّثي المتصفح وحاولي مجدداً');
+      toast(t('admin.verifyErr'));
     } finally {
       setChecking(false);
     }
@@ -41,7 +43,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     }
     onSaveProducts(products.filter((p) => p.id !== id));
     setArmedDelete(null);
-    toast('تم حذف المنتج');
+    toast(t('admin.productDeleted'));
   };
 
   const addProduct = async (e) => {
@@ -53,7 +55,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     let image = null;
     if (file) {
       try { image = await compressImage(file); }
-      catch { toast('تعذّر قراءة الصورة — سيُستخدم شكل افتراضي'); }
+      catch { toast(t('admin.imgReadErr')); }
     }
 
     onSaveProducts([
@@ -70,7 +72,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
       },
     ]);
     form.reset();
-    toast('تمت إضافة المنتج بنجاح');
+    toast(t('admin.productAdded'));
   };
 
   const deleteResult = (id) => {
@@ -81,7 +83,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     }
     onSaveResults(userResults.filter((r) => r.id !== id));
     setArmedDelete(null);
-    toast('تم حذف النتيجة');
+    toast(t('admin.resultDeleted'));
   };
 
   const addResult = async (e) => {
@@ -90,7 +92,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     const data = new FormData(form);
     const beforeFile = form.querySelector('[name="before"]').files[0];
     const afterFile = form.querySelector('[name="after"]').files[0];
-    if (!beforeFile || !afterFile) { toast('أضيفي صورتي "قبل" و"بعد"'); return; }
+    if (!beforeFile || !afterFile) { toast(t('admin.needBothImages')); return; }
 
     setSavingResult(true);
     try {
@@ -107,9 +109,9 @@ export default function Admin({ products, orders, userResults = [], userReviews 
         },
       ]);
       form.reset();
-      toast('تمت إضافة النتيجة');
+      toast(t('admin.resultAdded'));
     } catch {
-      toast('تعذّر قراءة الصور');
+      toast(t('admin.imgsReadErr'));
     } finally {
       setSavingResult(false);
     }
@@ -123,7 +125,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     }
     onSaveReviews(userReviews.filter((r) => r.id !== id));
     setArmedDelete(null);
-    toast('تم حذف التقييم');
+    toast(t('admin.reviewDeleted'));
   };
 
   const addReview = (e) => {
@@ -131,18 +133,18 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     const form = e.target;
     const data = new FormData(form);
     const comment = (data.get('comment') || '').trim();
-    if (!comment) { toast('اكتبي نص التقييم'); return; }
+    if (!comment) { toast(t('admin.rvNeed')); return; }
     onSaveReviews([
       ...userReviews,
       {
         id: uid('rv'),
-        name: (data.get('name') || '').trim() || 'عميلة',
+        name: (data.get('name') || '').trim() || t('store.customer'),
         rating: Number(data.get('rating')) || 5,
         comment,
       },
     ]);
     form.reset();
-    toast('تمت إضافة التقييم');
+    toast(t('admin.reviewAdded'));
   };
 
   const saveSettings = async (e) => {
@@ -153,10 +155,10 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     const payCod = data.get('payCod') === 'on';
     const payBank = data.get('payBank') === 'on';
     const payCard = data.get('payCard') === 'on';
-    if (!payCod && !payBank && !payCard) { toast('فعّلي طريقة دفع واحدة على الأقل'); return; }
+    if (!payCod && !payBank && !payCard) { toast(t('admin.needPay')); return; }
 
     const adminEmail = (data.get('adminEmail') || '').trim();
-    if (!adminEmail) { toast('البريد الإلكتروني للمشرف مطلوب'); return; }
+    if (!adminEmail) { toast(t('admin.needEmail')); return; }
 
     const next = {
       storeName: (data.get('storeName') || '').trim() || settings.storeName,
@@ -172,7 +174,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
 
     const newPass = (data.get('newPass') || '').trim();
     if (newPass) {
-      if (newPass.length < 6) { toast('كلمة المرور يجب أن تكون 6 أحرف على الأقل'); return; }
+      if (newPass.length < 6) { toast(t('admin.passTooShort')); return; }
       next.adminPassHash = await sha256Hex(newPass);
     }
 
@@ -181,7 +183,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
       onSaveSettings(next);
       const passField = form.querySelector('[name="newPass"]');
       if (passField) passField.value = '';
-      toast(newPass ? 'تم حفظ الإعدادات وتحديث كلمة المرور' : 'تم حفظ الإعدادات');
+      toast(newPass ? t('admin.settingsSavedPass') : t('admin.settingsSaved'));
     } finally {
       setSavingSettings(false);
     }
@@ -190,26 +192,23 @@ export default function Admin({ products, orders, userResults = [], userReviews 
   if (!unlocked) {
     return (
       <div className="screen admin-screen">
-        <header className="screen-head"><h1>لوحة التحكم</h1></header>
+        <header className="screen-head"><h1>{t('admin.title')}</h1></header>
         <div className="lock-card">
-          <p>هذه المنطقة لإدارة المتجر فقط. سجّلي الدخول بالبريد الإلكتروني وكلمة المرور.</p>
+          <p>{t('admin.lockIntro')}</p>
           <form onSubmit={login}>
             <label className="field">
-              <span>البريد الإلكتروني</span>
+              <span>{t('admin.email')}</span>
               <input name="email" type="email" required autoComplete="username" inputMode="email" placeholder="you@example.com" defaultValue={settings.adminEmail} />
             </label>
             <label className="field">
-              <span>كلمة المرور</span>
+              <span>{t('admin.password')}</span>
               <input name="password" type="password" required autoComplete="current-password" />
             </label>
             <button type="submit" className="btn btn-primary btn-block" disabled={checking}>
-              {checking ? 'جارٍ التحقق…' : 'دخول'}
+              {checking ? t('admin.checking') : t('admin.login')}
             </button>
           </form>
-          <p className="muted small lock-note">
-            ملاحظة أمنية: هذا موقع ثابت بدون خادم، لذا يتم التحقق من الدخول داخل المتصفح فقط.
-            هذه بوابة لإخفاء الأدوات عن الزوّار وليست حماية كاملة. لا تستخدمي كلمة مرور تستعملينها في مواقع أخرى.
-          </p>
+          <p className="muted small lock-note">{t('admin.lockNote')}</p>
         </div>
       </div>
     );
@@ -218,13 +217,13 @@ export default function Admin({ products, orders, userResults = [], userReviews 
   return (
     <div className="screen admin-screen">
       <header className="screen-head">
-        <h1>لوحة التحكم</h1>
+        <h1>{t('admin.title')}</h1>
         <div className="chip-row">
-          <button className={'chip' + (pane === 'products' ? ' active' : '')} onClick={() => setPane('products')}>المنتجات</button>
-          <button className={'chip' + (pane === 'orders' ? ' active' : '')} onClick={() => setPane('orders')}>الطلبات ({orders.length})</button>
-          <button className={'chip' + (pane === 'results' ? ' active' : '')} onClick={() => setPane('results')}>النتائج ({userResults.length})</button>
-          <button className={'chip' + (pane === 'reviews' ? ' active' : '')} onClick={() => setPane('reviews')}>التقييمات ({userReviews.length})</button>
-          <button className={'chip' + (pane === 'settings' ? ' active' : '')} onClick={() => setPane('settings')}>الإعدادات</button>
+          <button className={'chip' + (pane === 'products' ? ' active' : '')} onClick={() => setPane('products')}>{t('admin.tabProducts')}</button>
+          <button className={'chip' + (pane === 'orders' ? ' active' : '')} onClick={() => setPane('orders')}>{t('admin.tabOrders', { n: orders.length })}</button>
+          <button className={'chip' + (pane === 'results' ? ' active' : '')} onClick={() => setPane('results')}>{t('admin.tabResults', { n: userResults.length })}</button>
+          <button className={'chip' + (pane === 'reviews' ? ' active' : '')} onClick={() => setPane('reviews')}>{t('admin.tabReviews', { n: userReviews.length })}</button>
+          <button className={'chip' + (pane === 'settings' ? ' active' : '')} onClick={() => setPane('settings')}>{t('admin.tabSettings')}</button>
         </div>
       </header>
 
@@ -233,39 +232,39 @@ export default function Admin({ products, orders, userResults = [], userReviews 
           <div className="admin-list">
             {products.map((p) => (
               <div className="admin-item" key={p.id}>
-                <img src={p.image} alt={p.name} />
+                <img src={p.image} alt={pName(p, lang)} />
                 <div className="grow">
-                  <b>{p.name}</b>
-                  <span>{money(p.price)} · {p.category || 'بدون تصنيف'} · المخزون: {p.stock}</span>
+                  <b>{pName(p, lang)}</b>
+                  <span>{money(p.price)} · {p.category || t('admin.noCategory')} · {t('admin.stock')}: {p.stock}</span>
                 </div>
                 <button
                   className={'icon-btn' + (armedDelete === p.id ? ' danger' : '')}
                   onClick={() => deleteProduct(p.id)}
                 >
-                  {armedDelete === p.id ? 'تأكيد؟' : '🗑'}
+                  {armedDelete === p.id ? t('admin.confirm') : '🗑'}
                 </button>
               </div>
             ))}
           </div>
 
-          <h2 className="sub-head">إضافة منتج جديد</h2>
+          <h2 className="sub-head">{t('admin.addProduct')}</h2>
           <form onSubmit={addProduct} className="admin-form">
-            <label className="field"><span>اسم المنتج</span><input name="name" type="text" required /></label>
-            <label className="field"><span>الوصف</span><textarea name="desc" rows="2" /></label>
+            <label className="field"><span>{t('admin.pName')}</span><input name="name" type="text" required /></label>
+            <label className="field"><span>{t('admin.pDesc')}</span><textarea name="desc" rows="2" /></label>
             <div className="field-row">
-              <label className="field"><span>السعر (ر.س)</span><input name="price" type="number" min="0" step="0.5" required /></label>
-              <label className="field"><span>قبل الخصم</span><input name="oldPrice" type="number" min="0" step="0.5" /></label>
+              <label className="field"><span>{t('admin.pPrice')}</span><input name="price" type="number" min="0" step="0.5" required /></label>
+              <label className="field"><span>{t('admin.pOld')}</span><input name="oldPrice" type="number" min="0" step="0.5" /></label>
             </div>
             <div className="field-row">
-              <label className="field"><span>الكمية</span><input name="stock" type="number" min="0" required /></label>
-              <label className="field"><span>التصنيف</span><input name="category" type="text" /></label>
+              <label className="field"><span>{t('admin.pStock')}</span><input name="stock" type="number" min="0" required /></label>
+              <label className="field"><span>{t('admin.pCat')}</span><input name="category" type="text" /></label>
             </div>
             <label className="field">
-              <span>صورة المنتج</span>
+              <span>{t('admin.pImage')}</span>
               <input name="image" type="file" accept="image/*" />
-              <small className="muted small">تُضغط الصورة تلقائياً لتناسب التخزين.</small>
+              <small className="muted small">{t('admin.imgHint')}</small>
             </label>
-            <button type="submit" className="btn btn-primary btn-block">حفظ المنتج</button>
+            <button type="submit" className="btn btn-primary btn-block">{t('admin.saveProduct')}</button>
           </form>
         </>
       )}
@@ -273,15 +272,15 @@ export default function Admin({ products, orders, userResults = [], userReviews 
       {pane === 'orders' && (
         <div className="admin-list">
           {orders.length === 0 ? (
-            <div className="empty-state">لا توجد طلبات بعد.</div>
+            <div className="empty-state">{t('admin.noOrders')}</div>
           ) : orders.map((o) => (
             <div className="admin-item column" key={o.id}>
               <div className="order-head">
                 <b>{o.id}</b>
-                <span className="order-status">{o.status || 'جديد'}</span>
+                <span className="order-status">{o.status && o.status !== 'جديد' ? o.status : t('admin.orderNew')}</span>
               </div>
               <span>{o.name} · {o.phone} · {o.city}</span>
-              <span>{money(o.total)} · {PAY_METHOD_LABELS[o.payMethod] || o.payMethod}</span>
+              <span>{money(o.total)} · {payLabel(o.payMethod)}</span>
               <span className="muted small">{formatDate(o.date)}</span>
             </div>
           ))}
@@ -290,42 +289,42 @@ export default function Admin({ products, orders, userResults = [], userReviews 
 
       {pane === 'results' && (
         <>
-          <p className="results-note">أضيفي صوراً <b>حقيقية</b> من نتائج عميلاتك (قبل/بعد) وبإذنهنّ. تجنّبي الصور غير الحقيقية حتى لا يكون العرض مضلِّلاً.</p>
+          <p className="results-note">{t('admin.resultsNote')}</p>
           <div className="admin-list">
             {userResults.length === 0 ? (
-              <div className="empty-state">لا توجد نتائج بعد. أضيفي أول نتيجة من الأسفل.</div>
+              <div className="empty-state">{t('admin.noResults')}</div>
             ) : userResults.map((r) => (
               <div className="admin-item" key={r.id}>
-                <img src={r.before} alt="قبل" />
-                <img src={r.after} alt="بعد" />
+                <img src={r.before} alt={t('store.before')} />
+                <img src={r.after} alt={t('store.after')} />
                 <div className="grow">
-                  <b>{r.name || 'نتيجة'}</b>
-                  <span>{r.weeks ? `بعد ${r.weeks} أسابيع` : '—'}</span>
+                  <b>{r.name || t('admin.result')}</b>
+                  <span>{r.weeks ? t('admin.afterWeeks', { n: r.weeks }) : '—'}</span>
                 </div>
                 <button
                   className={'icon-btn' + (armedDelete === r.id ? ' danger' : '')}
                   onClick={() => deleteResult(r.id)}
                 >
-                  {armedDelete === r.id ? 'تأكيد؟' : '🗑'}
+                  {armedDelete === r.id ? t('admin.confirm') : '🗑'}
                 </button>
               </div>
             ))}
           </div>
 
-          <h2 className="sub-head">إضافة نتيجة جديدة</h2>
+          <h2 className="sub-head">{t('admin.addResult')}</h2>
           <form onSubmit={addResult} className="admin-form">
             <div className="field-row">
-              <label className="field"><span>صورة "قبل"</span><input name="before" type="file" accept="image/*" required /></label>
-              <label className="field"><span>صورة "بعد"</span><input name="after" type="file" accept="image/*" required /></label>
+              <label className="field"><span>{t('admin.imgBefore')}</span><input name="before" type="file" accept="image/*" required /></label>
+              <label className="field"><span>{t('admin.imgAfter')}</span><input name="after" type="file" accept="image/*" required /></label>
             </div>
             <div className="field-row">
-              <label className="field"><span>اسم العميلة (اختياري)</span><input name="name" type="text" placeholder="مثال: سارة — الرياض" /></label>
-              <label className="field"><span>عدد الأسابيع</span><input name="weeks" type="number" min="0" placeholder="6" /></label>
+              <label className="field"><span>{t('admin.clientName')}</span><input name="name" type="text" placeholder={t('admin.clientNamePh')} /></label>
+              <label className="field"><span>{t('admin.weeks')}</span><input name="weeks" type="number" min="0" placeholder="6" /></label>
             </div>
-            <label className="field"><span>تعليق تحت الصورة (اختياري)</span><input name="comment" type="text" placeholder="مثال: لاحظت فرقاً واضحاً في الكثافة" /></label>
-            <small className="muted small">تُضغط الصور تلقائياً لتناسب التخزين.</small>
+            <label className="field"><span>{t('admin.resultComment')}</span><input name="comment" type="text" placeholder={t('admin.resultCommentPh')} /></label>
+            <small className="muted small">{t('admin.imgHint')}</small>
             <button type="submit" className="btn btn-primary btn-block" disabled={savingResult}>
-              {savingResult ? 'جارٍ الحفظ…' : 'حفظ النتيجة'}
+              {savingResult ? t('admin.saving') : t('admin.saveResult')}
             </button>
           </form>
         </>
@@ -333,10 +332,10 @@ export default function Admin({ products, orders, userResults = [], userReviews 
 
       {pane === 'reviews' && (
         <>
-          <p className="results-note">أضيفي تقييمات <b>حقيقية</b> من عميلاتك وبإذنهنّ. تجنّبي التقييمات غير الحقيقية حتى لا يكون العرض مضلِّلاً.</p>
+          <p className="results-note">{t('admin.reviewsNote')}</p>
           <div className="admin-list">
             {userReviews.length === 0 ? (
-              <div className="empty-state">لا توجد تقييمات بعد. أضيفي أول تقييم من الأسفل.</div>
+              <div className="empty-state">{t('admin.noReviews')}</div>
             ) : userReviews.map((rv) => (
               <div className="admin-item" key={rv.id}>
                 <div className="grow">
@@ -347,17 +346,17 @@ export default function Admin({ products, orders, userResults = [], userReviews 
                   className={'icon-btn' + (armedDelete === rv.id ? ' danger' : '')}
                   onClick={() => deleteReview(rv.id)}
                 >
-                  {armedDelete === rv.id ? 'تأكيد؟' : '🗑'}
+                  {armedDelete === rv.id ? t('admin.confirm') : '🗑'}
                 </button>
               </div>
             ))}
           </div>
 
-          <h2 className="sub-head">إضافة تقييم جديد</h2>
+          <h2 className="sub-head">{t('admin.addReview')}</h2>
           <form onSubmit={addReview} className="admin-form">
             <div className="field-row">
-              <label className="field"><span>اسم العميلة</span><input name="name" type="text" placeholder="مثال: نورة" /></label>
-              <label className="field"><span>التقييم</span>
+              <label className="field"><span>{t('admin.rvName')}</span><input name="name" type="text" placeholder={t('admin.rvNamePh')} /></label>
+              <label className="field"><span>{t('admin.rvRating')}</span>
                 <select name="rating" defaultValue="5">
                   <option value="5">★★★★★ (5)</option>
                   <option value="4">★★★★☆ (4)</option>
@@ -367,61 +366,58 @@ export default function Admin({ products, orders, userResults = [], userReviews 
                 </select>
               </label>
             </div>
-            <label className="field"><span>نص التقييم</span><textarea name="comment" rows="3" placeholder="مثال: منتج ممتاز، لاحظت فرقاً خلال شهر." required /></label>
-            <button type="submit" className="btn btn-primary btn-block">حفظ التقييم</button>
+            <label className="field"><span>{t('admin.rvComment')}</span><textarea name="comment" rows="3" placeholder={t('admin.rvCommentPh')} required /></label>
+            <button type="submit" className="btn btn-primary btn-block">{t('admin.saveReview')}</button>
           </form>
         </>
       )}
 
       {pane === 'settings' && (
         <form onSubmit={saveSettings} className="admin-form settings-form" key={settings.adminPassHash}>
-          <h2 className="sub-head">هوية المتجر</h2>
-          <label className="field"><span>اسم المتجر</span><input name="storeName" type="text" defaultValue={settings.storeName} /></label>
-          <label className="field"><span>الجملة التعريفية (تظهر في الصفحة الرئيسية)</span><input name="tagline" type="text" defaultValue={settings.tagline} /></label>
+          <h2 className="sub-head">{t('admin.setIdentity')}</h2>
+          <label className="field"><span>{t('admin.setStoreName')}</span><input name="storeName" type="text" defaultValue={settings.storeName} /></label>
+          <label className="field"><span>{t('admin.setTagline')}</span><input name="tagline" type="text" defaultValue={settings.tagline} /></label>
 
-          <h2 className="sub-head">الشحن</h2>
+          <h2 className="sub-head">{t('admin.setShipping')}</h2>
           <div className="field-row">
-            <label className="field"><span>رسوم الشحن (ر.س)</span><input name="shippingFlat" type="number" min="0" step="0.5" defaultValue={settings.shippingFlat} /></label>
-            <label className="field"><span>شحن مجاني فوق (ر.س)</span><input name="freeShipOver" type="number" min="0" step="1" defaultValue={settings.freeShipOver} /></label>
+            <label className="field"><span>{t('admin.setShipFlat')}</span><input name="shippingFlat" type="number" min="0" step="0.5" defaultValue={settings.shippingFlat} /></label>
+            <label className="field"><span>{t('admin.setFreeOver')}</span><input name="freeShipOver" type="number" min="0" step="1" defaultValue={settings.freeShipOver} /></label>
           </div>
           <label className="switch-row">
             <input name="freeShipEnabled" type="checkbox" defaultChecked={settings.freeShipEnabled} />
-            <span>تفعيل الشحن المجاني عند تجاوز الحد</span>
+            <span>{t('admin.setFreeEnabled')}</span>
           </label>
 
-          <h2 className="sub-head">طرق الدفع</h2>
+          <h2 className="sub-head">{t('admin.setPay')}</h2>
           <label className="switch-row">
             <input name="payCod" type="checkbox" defaultChecked={settings.payCod} />
-            <span>الدفع عند الاستلام</span>
+            <span>{t('co.codT')}</span>
           </label>
           <label className="switch-row">
             <input name="payBank" type="checkbox" defaultChecked={settings.payBank} />
-            <span>تحويل بنكي</span>
+            <span>{t('co.bankT')}</span>
           </label>
           <label className="switch-row">
             <input name="payCard" type="checkbox" defaultChecked={settings.payCard} />
-            <span>بطاقة مدى / فيزا</span>
+            <span>{t('co.cardT')}</span>
           </label>
 
-          <h2 className="sub-head">التواصل</h2>
-          <label className="field"><span>حساب إنستغرام</span><input name="instagram" type="text" defaultValue={settings.instagram} placeholder="@CrownHairOil" /></label>
-          <label className="field"><span>الموقع الإلكتروني (اختياري)</span><input name="website" type="url" defaultValue={settings.website} placeholder="https://" /></label>
+          <h2 className="sub-head">{t('admin.setContact')}</h2>
+          <label className="field"><span>{t('admin.setInstagram')}</span><input name="instagram" type="text" defaultValue={settings.instagram} placeholder="@CrownHairOil" /></label>
+          <label className="field"><span>{t('admin.setWebsite')}</span><input name="website" type="url" defaultValue={settings.website} placeholder="https://" /></label>
 
-          <h2 className="sub-head">بيانات الدخول للوحة التحكم</h2>
-          <label className="field"><span>البريد الإلكتروني للمشرف</span><input name="adminEmail" type="email" defaultValue={settings.adminEmail} inputMode="email" /></label>
+          <h2 className="sub-head">{t('admin.setCreds')}</h2>
+          <label className="field"><span>{t('admin.setAdminEmail')}</span><input name="adminEmail" type="email" defaultValue={settings.adminEmail} inputMode="email" /></label>
           <label className="field">
-            <span>كلمة مرور جديدة (اتركيها فارغة لعدم التغيير)</span>
+            <span>{t('admin.setNewPass')}</span>
             <input name="newPass" type="password" autoComplete="new-password" placeholder="••••••" />
-            <small className="muted small">6 أحرف على الأقل. تُخزَّن مشفّرة (SHA-256) وليس كنص صريح.</small>
+            <small className="muted small">{t('admin.setPassHint')}</small>
           </label>
 
-          <p className="muted small lock-note">
-            تنبيه أمني: لأن الموقع ثابت بدون خادم، تُحفظ الإعدادات في هذا المتصفح فقط،
-            والتحقق من الدخول يتم داخل المتصفح. هذه بوابة إدارية وليست حماية كاملة.
-          </p>
+          <p className="muted small lock-note">{t('admin.setNote')}</p>
 
           <button type="submit" className="btn btn-primary btn-block" disabled={savingSettings}>
-            {savingSettings ? 'جارٍ الحفظ…' : 'حفظ الإعدادات'}
+            {savingSettings ? t('admin.saving') : t('admin.saveSettings')}
           </button>
         </form>
       )}

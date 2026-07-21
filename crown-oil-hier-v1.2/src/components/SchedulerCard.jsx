@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { CalendarCheck2, MousePointer2 } from 'lucide-react';
+import { useLang } from '../i18n.jsx';
 
 const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const DAYS_AR = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
 const TARGET_DAYS = [2, 5]; // Tuesday, Friday — the twice-weekly ritual
 
 export default function SchedulerCard() {
+  const { lang, t } = useLang();
+  const days = lang === 'ar' ? DAYS_AR : DAYS;
   const wrapRef = useRef(null);
   const cursorRef = useRef(null);
   const cellRefs = useRef([]);
@@ -72,15 +76,15 @@ export default function SchedulerCard() {
     <div className="bg-cream dark:bg-charcoal rounded-2xl border border-charcoal/10 dark:border-ghost/10 shadow-xl shadow-charcoal/5 dark:shadow-black/40 p-7 flex flex-col">
       <div className="flex items-center gap-2 mb-5">
         <CalendarCheck2 size={16} className="text-clay" />
-        <h3 className="font-jakarta font-bold text-lg text-charcoal dark:text-ghost">Twice-Weekly Ritual</h3>
+        <h3 className="font-jakarta font-bold text-lg text-charcoal dark:text-ghost">{t('sched.title')}</h3>
       </div>
       <p className="text-sm text-charcoal/60 dark:text-ghost/60 font-jakarta mb-6">
-        Two sessions a week. No complicated routine — just consistency.
+        {t('sched.sub')}
       </p>
 
       <div ref={wrapRef} className="relative flex-1">
         <div className="grid grid-cols-7 gap-1.5">
-          {DAYS.map((d, i) => (
+          {days.map((d, i) => (
             <div
               key={i}
               ref={(el) => (cellRefs.current[i] = el)}
@@ -103,7 +107,7 @@ export default function SchedulerCard() {
             saved ? 'bg-moss text-ghost' : 'bg-charcoal/5 dark:bg-ghost/10 text-charcoal/40 dark:text-ghost/40'
           }`}
         >
-          {saved ? 'Saved to Routine ✓' : 'Save'}
+          {saved ? t('sched.saved') : t('sched.save')}
         </button>
 
         <div

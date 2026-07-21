@@ -2,10 +2,12 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, ShieldCheck, Truck } from 'lucide-react';
+import { useLang } from '../i18n.jsx';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function GetStarted() {
+  const { t } = useLang();
   const scope = useRef(null);
 
   useEffect(() => {
@@ -33,20 +35,20 @@ export default function GetStarted() {
         <div className="relative grid md:grid-cols-2 items-center gap-10 p-8 md:p-16">
           <div>
             <p className="start-reveal font-mono text-xs tracking-[0.3em] uppercase text-ghost/60 mb-5">
-              Begin the Ritual
+              {t('start.eyebrow')}
             </p>
             <h2 className="start-reveal font-jakarta font-extrabold text-ghost text-[clamp(1.9rem,4.5vw,3.2rem)] leading-tight tracking-tight">
-              Ready for
-              <span className="font-garamond italic font-medium text-clay"> visible </span>
-              results?
+              {t('start.h1')}
+              <span className="font-garamond italic font-medium text-clay"> {t('start.em')} </span>
+              {t('start.h2')}
             </h2>
             <p className="start-reveal mt-5 text-ghost/70 font-jakarta max-w-sm leading-relaxed">
-              One bottle. Three botanical oils. A protocol your roots will recognize in four weeks.
+              {t('start.sub')}
             </p>
 
             <div className="start-reveal mt-8 flex items-baseline gap-3">
-              <span className="font-jakarta font-extrabold text-ghost text-3xl">119 SAR</span>
-              <span className="font-jakarta text-ghost/40 line-through text-sm">149 SAR</span>
+              <span className="font-jakarta font-extrabold text-ghost text-3xl">{t('start.price')}</span>
+              <span className="font-jakarta text-ghost/40 line-through text-sm">{t('start.oldPrice')}</span>
             </div>
 
             <a
@@ -55,13 +57,13 @@ export default function GetStarted() {
             >
               <span className="btn-bg bg-plasma" />
               <span className="relative z-10 flex items-center gap-2">
-                Order Your Bottle <ArrowUpRight size={16} />
+                {t('start.order')} <ArrowUpRight size={16} />
               </span>
             </a>
 
             <div className="start-reveal mt-8 flex flex-wrap gap-6 text-ghost/60 text-xs font-mono">
-              <span className="flex items-center gap-1.5"><Truck size={14} /> Free shipping over 200 SAR</span>
-              <span className="flex items-center gap-1.5"><ShieldCheck size={14} /> 100% natural formula</span>
+              <span className="flex items-center gap-1.5"><Truck size={14} /> {t('start.ship')}</span>
+              <span className="flex items-center gap-1.5"><ShieldCheck size={14} /> {t('start.natural')}</span>
             </div>
           </div>
 
