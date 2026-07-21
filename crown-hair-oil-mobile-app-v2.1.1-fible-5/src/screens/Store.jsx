@@ -13,7 +13,7 @@ function stockNote(stock) {
   return <span className="stock-note">متوفر</span>;
 }
 
-export default function Store({ products, onAdd }) {
+export default function Store({ products, results = [], onAdd }) {
   const [cat, setCat] = useState('الكل');
   const [detail, setDetail] = useState(null); // product shown in the bottom sheet
 
@@ -58,6 +58,35 @@ export default function Store({ products, onAdd }) {
             </article>
           ))}
         </div>
+      )}
+
+      {results.length > 0 && (
+        <section className="results-section">
+          <div className="results-head">
+            <h2>نتائج حقيقية</h2>
+            <p>صور فعلية من عميلاتنا قبل وبعد استخدام الزيت.</p>
+          </div>
+          <div className="results-list">
+            {results.map((r) => (
+              <figure className="result-card" key={r.id}>
+                <div className="result-pair">
+                  <div className="result-img">
+                    <span className="result-tag">قبل</span>
+                    <img src={r.before} alt="قبل الاستخدام" loading="lazy" />
+                  </div>
+                  <div className="result-img">
+                    <span className="result-tag after">بعد</span>
+                    <img src={r.after} alt="بعد الاستخدام" loading="lazy" />
+                  </div>
+                </div>
+                <figcaption className="result-cap">
+                  {r.weeks ? <span className="result-weeks">النتيجة بعد {r.weeks} أسابيع</span> : null}
+                  {r.caption ? <span className="result-name">{r.caption}</span> : null}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
       )}
 
       {detail && (

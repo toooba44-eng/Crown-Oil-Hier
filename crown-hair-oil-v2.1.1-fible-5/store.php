@@ -48,6 +48,18 @@
   </div>
 </section>
 
+<!-- REAL RESULTS -->
+<section class="section-tint" id="resultsSection" hidden>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">قبل / بعد</div>
+      <h2>نتائج حقيقية</h2>
+      <p>صور فعلية من عميلاتنا قبل وبعد استخدام الزيت.</p>
+    </div>
+    <div class="results-grid" id="resultsGrid"></div>
+  </div>
+</section>
+
 <!-- CHECKOUT -->
 <section class="section-tint" id="checkout">
   <div class="wrap">
@@ -163,6 +175,7 @@
       <div class="admin-tabs" id="adminTabs">
         <button class="active" data-tab="products">المنتجات</button>
         <button data-tab="orders">الطلبات</button>
+        <button data-tab="results">النتائج</button>
       </div>
 
       <div class="admin-pane active" id="pane-products">
@@ -211,6 +224,38 @@
       <div class="admin-pane" id="pane-orders">
         <h3 style="font-size:16px;margin-bottom:14px;">الطلبات الواردة</h3>
         <div id="adminOrderList"></div>
+      </div>
+
+      <div class="admin-pane" id="pane-results">
+        <p class="field-hint" style="margin-bottom:14px;">أضيفي صوراً <b>حقيقية</b> من نتائج عميلاتك (قبل/بعد) وبإذنهنّ. تجنّبي الصور غير الحقيقية حتى لا يكون العرض مضلِّلاً.</p>
+        <h3 style="font-size:16px;margin-bottom:14px;">النتائج الحالية</h3>
+        <div id="adminResultList"></div>
+
+        <h3 style="font-size:16px;margin:30px 0 14px;">إضافة نتيجة جديدة</h3>
+        <form id="newResultForm">
+          <div class="field-row">
+            <div class="field">
+              <label for="r-before">صورة "قبل"</label>
+              <input id="r-before" type="file" name="before" accept="image/*" required>
+            </div>
+            <div class="field">
+              <label for="r-after">صورة "بعد"</label>
+              <input id="r-after" type="file" name="after" accept="image/*" required>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="r-caption">التعليق (اسم / مدينة)</label>
+              <input id="r-caption" type="text" name="caption" placeholder="مثال: سارة — الرياض">
+            </div>
+            <div class="field">
+              <label for="r-weeks">عدد الأسابيع</label>
+              <input id="r-weeks" type="number" name="weeks" min="0" placeholder="6">
+            </div>
+          </div>
+          <small class="field-hint">تُضغط الصور تلقائياً لتناسب التخزين المحلي.</small>
+          <button type="submit" class="btn btn-primary" style="margin-top:14px;">حفظ النتيجة</button>
+        </form>
       </div>
     </div>
   </div>
