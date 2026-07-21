@@ -4,10 +4,11 @@ import {
   money, formatDate, uid, compressImage,
 } from '../lib/store.js';
 
-export default function Admin({ products, orders, onSaveProducts, toast }) {
+export default function Admin({ products, orders, userResults = [], onSaveProducts, onSaveResults, toast }) {
   const [unlocked, setUnlocked] = useState(false);
-  const [pane, setPane] = useState('products'); // products | orders
+  const [pane, setPane] = useState('products'); // products | orders | results
   const [armedDelete, setArmedDelete] = useState(null);
+  const [savingResult, setSavingResult] = useState(false);
 
   const login = (e) => {
     e.preventDefault();
@@ -56,6 +57,47 @@ export default function Admin({ products, orders, onSaveProducts, toast }) {
     toast('تمت إضافة المنتج بنجاح');
   };
 
+  const deleteResult = (id) => {
+    if (armedDelete !== id) {
+      setArmedDelete(id);
+      setTimeout(() => setArmedDelete((cur) => (cur === id ? null : cur)), 2600);
+      return;
+    }
+    onSaveResults(userResults.filter((r) => r.id !== id));
+    setArmedDelete(null);
+    toast('تم حذف النتيجة');
+  };
+
+  const addResult = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    const beforeFile = form.querySelector('[name="before"]').files[0];
+    const afterFile = form.querySelector('[name="after"]').files[0];
+    if (!beforeFile || !afterFile) { toast('أضيفي صورتي "قبل" و"بعد"'); return; }
+
+    setSavingResult(true);
+    try {
+      const [before, after] = await Promise.all([compressImage(beforeFile), compressImage(afterFile)]);
+      onSaveResults([
+        ...userResults,
+        {
+          id: uid('r'),
+          before,
+          after,
+          caption: data.get('caption') || '',
+          weeks: Number(data.get('weeks')) || 0,
+        },
+      ]);
+      form.reset();
+      toast('تمت إضافة النتيجة');
+    } catch {
+      toast('تعذّر قراءة الصور');
+    } finally {
+      setSavingResult(false);
+    }
+  };
+
   if (!unlocked) {
     return (
       <div className="screen admin-screen">
@@ -81,6 +123,7 @@ export default function Admin({ products, orders, onSaveProducts, toast }) {
         <div className="chip-row">
           <button className={'chip' + (pane === 'products' ? ' active' : '')} onClick={() => setPane('products')}>المنتجات</button>
           <button className={'chip' + (pane === 'orders' ? ' active' : '')} onClick={() => setPane('orders')}>الطلبات ({orders.length})</button>
+          <button className={'chip' + (pane === 'results' ? ' active' : '')} onClick={() => setPane('results')}>النتائج ({userResults.length})</button>
         </div>
       </header>
 
@@ -142,6 +185,48 @@ export default function Admin({ products, orders, onSaveProducts, toast }) {
             </div>
           ))}
         </div>
+      )}
+
+      {pane === 'results' && (
+        <>
+          <p className="results-note">أضيفي صوراً <b>حقيقية</b> من نتائج عميلاتك (قبل/بعد) وبإذنهنّ. تجنّبي الصور غير الحقيقية حتى لا يكون العرض مضلِّلاً.</p>
+          <div className="admin-list">
+            {userResults.length === 0 ? (
+              <div className="empty-state">لا توجد نتائج بعد. أضيفي أول نتيجة من الأسفل.</div>
+            ) : userResults.map((r) => (
+              <div className="admin-item" key={r.id}>
+                <img src={r.before} alt="قبل" />
+                <img src={r.after} alt="بعد" />
+                <div className="grow">
+                  <b>{r.caption || 'نتيجة'}</b>
+                  <span>{r.weeks ? `بعد ${r.weeks} أسابيع` : '—'}</span>
+                </div>
+                <button
+                  className={'icon-btn' + (armedDelete === r.id ? ' danger' : '')}
+                  onClick={() => deleteResult(r.id)}
+                >
+                  {armedDelete === r.id ? 'تأكيد؟' : '🗑'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <h2 className="sub-head">إضافة نتيجة جديدة</h2>
+          <form onSubmit={addResult} className="admin-form">
+            <div className="field-row">
+              <label className="field"><span>صورة "قبل"</span><input name="before" type="file" accept="image/*" required /></label>
+              <label className="field"><span>صورة "بعد"</span><input name="after" type="file" accept="image/*" required /></label>
+            </div>
+            <div className="field-row">
+              <label className="field"><span>التعليق (اسم/مدينة)</span><input name="caption" type="text" placeholder="مثال: سارة — الرياض" /></label>
+              <label className="field"><span>عدد الأسابيع</span><input name="weeks" type="number" min="0" placeholder="6" /></label>
+            </div>
+            <small className="muted small">تُضغط الصور تلقائياً لتناسب التخزين.</small>
+            <button type="submit" className="btn btn-primary btn-block" disabled={savingResult}>
+              {savingResult ? 'جارٍ الحفظ…' : 'حفظ النتيجة'}
+            </button>
+          </form>
+        </>
       )}
     </div>
   );

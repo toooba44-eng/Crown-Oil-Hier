@@ -9,6 +9,7 @@ import {
   loadProducts, persistProducts,
   loadCart, persistCart,
   loadOrders, persistOrders,
+  loadResults, loadUserResults, persistUserResults,
   cartCount, addLine, changeLineQty, removeLine, buildOrder,
 } from './lib/store.js';
 
@@ -19,6 +20,7 @@ export default function App() {
   const [products, setProducts] = useState(loadProducts);
   const [cart, setCart] = useState(loadCart);
   const [orders, setOrders] = useState(loadOrders);
+  const [results, setResults] = useState(loadResults);
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
 
@@ -103,7 +105,7 @@ export default function App() {
       </div>
       <main className="screen-area">
         {tab === 'home' && <Home onShop={() => setTab('store')} />}
-        {tab === 'store' && <Store products={products} onAdd={handleAdd} />}
+        {tab === 'store' && <Store products={products} results={results} onAdd={handleAdd} />}
         {tab === 'cart' && (
           <Cart
             cart={cart} products={products}
@@ -116,7 +118,9 @@ export default function App() {
         {tab === 'admin' && (
           <Admin
             products={products} orders={orders}
+            userResults={loadUserResults()}
             onSaveProducts={(p) => setProducts(p)}
+            onSaveResults={(list) => { persistUserResults(list); setResults(loadResults()); }}
             toast={toast}
           />
         )}

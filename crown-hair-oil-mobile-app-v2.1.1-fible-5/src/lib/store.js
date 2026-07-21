@@ -98,6 +98,22 @@ export function persistCart(cart) { return writeJSON("crown_cart", cart); }
 export function loadOrders() { return readJSON("crown_orders", []); }
 export function persistOrders(orders) { return writeJSON("crown_orders", orders); }
 
+/* ---------------- real results gallery ----------------
+   Genuine customer before/after photos only. Two sources:
+   1. DEFAULT_RESULTS: real photos committed to public/assets/results/
+      (visible to every visitor of the deployed site).
+   2. User results in localStorage, managed from the admin panel
+      (per-device — good for previewing before committing).
+   A result = { id, before, after, caption, weeks }. */
+const DEFAULT_RESULTS = [
+  // Add real committed photos here, e.g.:
+  // { id: "r-001", before: "assets/results/sara-before.jpg",
+  //   after: "assets/results/sara-after.jpg", caption: "سارة — الرياض", weeks: 6 },
+];
+export function loadUserResults() { return readJSON("crown_results", []); }
+export function persistUserResults(list) { return writeJSON("crown_results", list); }
+export function loadResults() { return [...DEFAULT_RESULTS, ...loadUserResults()]; }
+
 /* ---------------- derived state ---------------- */
 
 /** Join cart lines with the catalog; drop deleted products, clamp to stock. */

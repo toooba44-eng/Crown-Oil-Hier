@@ -131,6 +131,17 @@ function saveCart(cart) { return writeJSON("crown_cart", cart); }
 function getOrders() { return readJSON("crown_orders", []); }
 function saveOrders(orders) { return writeJSON("crown_orders", orders); }
 
+/* Real customer before/after results. DEFAULT_RESULTS holds photos
+   committed to assets/results/ (public to every visitor); user results
+   in localStorage are managed from the admin panel (per-device). */
+const DEFAULT_RESULTS = [
+  // { id: "r-001", before: "assets/results/sara-before.jpg",
+  //   after: "assets/results/sara-after.jpg", caption: "سارة — الرياض", weeks: 6 },
+];
+function getUserResults() { return readJSON("crown_results", []); }
+function saveUserResults(list) { return writeJSON("crown_results", list); }
+function getResults() { return [...DEFAULT_RESULTS, ...getUserResults()]; }
+
 /**
  * Resolve cart lines against the current catalog.
  * Deleted products are dropped; quantities are clamped to stock.
@@ -164,6 +175,32 @@ function refreshAll() {
   renderProductGrid(activeCategory);
   renderCartDrawer();
   renderCheckoutSummary();
+  renderResults();
+}
+
+/* ---------------- real results gallery ---------------- */
+function renderResults() {
+  const section = document.getElementById("resultsSection");
+  const grid = document.getElementById("resultsGrid");
+  if (!section || !grid) return;
+  const results = getResults();
+  if (!results.length) {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+  grid.innerHTML = results.map((r) => `
+    <figure class="result-card">
+      <div class="result-pair">
+        <div class="result-img"><span class="result-tag">قبل</span><img src="${esc(r.before)}" alt="قبل الاستخدام"></div>
+        <div class="result-img"><span class="result-tag after">بعد</span><img src="${esc(r.after)}" alt="بعد الاستخدام"></div>
+      </div>
+      <figcaption class="result-cap">
+        ${r.weeks ? `<span class="result-weeks">النتيجة بعد ${esc(r.weeks)} أسابيع</span>` : ""}
+        ${r.caption ? `<span class="result-name">${esc(r.caption)}</span>` : ""}
+      </figcaption>
+    </figure>
+  `).join("");
 }
 
 function refreshCartBadge() {
@@ -522,6 +559,79 @@ function renderAdminOrders() {
   `).join("");
 }
 
+/* ---------------- admin: results ---------------- */
+
+function renderAdminResults() {
+  const list = document.getElementById("adminResultList");
+  if (!list) return;
+  const results = getUserResults();
+  if (!results.length) {
+    list.innerHTML = `<div class="empty-state">لا توجد نتائج بعد. أضيفي أول نتيجة من الأسفل.</div>`;
+    return;
+  }
+  list.innerHTML = results.map((r) => `
+    <div class="admin-list-item">
+      <img src="${esc(r.before)}" alt="قبل">
+      <img src="${esc(r.after)}" alt="بعد">
+      <div class="grow">
+        <b>${esc(r.caption || "نتيجة")}</b>
+        <span>${r.weeks ? `بعد ${esc(r.weeks)} أسابيع` : "—"}</span>
+      </div>
+      <button class="icon-btn" title="حذف" data-action="delete-result" data-id="${esc(r.id)}">🗑</button>
+    </div>
+  `).join("");
+}
+
+function handleDeleteResult(btn, id) {
+  if (btn.dataset.armed !== "1") {
+    btn.dataset.armed = "1";
+    btn.textContent = "تأكيد؟";
+    btn.classList.add("danger");
+    setTimeout(() => {
+      btn.dataset.armed = "0";
+      btn.textContent = "🗑";
+      btn.classList.remove("danger");
+    }, 2600);
+    return;
+  }
+  saveUserResults(getUserResults().filter((r) => r.id !== id));
+  renderAdminResults();
+  renderResults();
+  toast("تم حذف النتيجة");
+}
+
+async function submitNewResult(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  const beforeFile = form.querySelector('[name="before"]').files[0];
+  const afterFile = form.querySelector('[name="after"]').files[0];
+  if (!beforeFile || !afterFile) {
+    toast('أضيفي صورتي "قبل" و"بعد"');
+    return;
+  }
+  let before, after;
+  try {
+    [before, after] = await Promise.all([compressImage(beforeFile), compressImage(afterFile)]);
+  } catch {
+    toast("تعذّر قراءة الصور");
+    return;
+  }
+  const list = getUserResults();
+  list.push({
+    id: uid("r"),
+    before,
+    after,
+    caption: data.get("caption") || "",
+    weeks: Number(data.get("weeks")) || 0,
+  });
+  if (!saveUserResults(list)) return; // quota hit
+  renderAdminResults();
+  renderResults();
+  form.reset();
+  toast("تمت إضافة النتيجة");
+}
+
 /* ---------------- admin: gate & tabs ---------------- */
 
 function checkAdminPassword(e) {
@@ -532,6 +642,7 @@ function checkAdminPassword(e) {
     document.getElementById("adminContent").hidden = false;
     renderAdminProductList();
     renderAdminOrders();
+    renderAdminResults();
   } else {
     toast("كلمة المرور غير صحيحة");
   }
@@ -609,6 +720,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderProductGrid();
   renderCartDrawer();
   renderCheckoutSummary();
+  renderResults();
 
   // category filter (delegated)
   document.getElementById("tagFilter")?.addEventListener("click", (e) => {
@@ -636,6 +748,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = e.target.closest("button[data-action='delete-product']");
     if (btn) handleDeleteProduct(btn, btn.dataset.id);
   });
+  document.getElementById("adminResultList")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action='delete-result']");
+    if (btn) handleDeleteResult(btn, btn.dataset.id);
+  });
   document.getElementById("adminTabs")?.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-tab]");
     if (btn) switchAdminTab(btn.dataset.tab);
@@ -648,6 +764,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("checkoutForm")?.addEventListener("submit", submitOrder);
   document.getElementById("adminLockForm")?.addEventListener("submit", checkAdminPassword);
   document.getElementById("newProductForm")?.addEventListener("submit", submitNewProduct);
+  document.getElementById("newResultForm")?.addEventListener("submit", submitNewResult);
   document.getElementById("adminToggleBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.add("open"));
   document.getElementById("adminCloseBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.remove("open"));
 });
