@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crown Hair Oil — الصفحة الرئيسية</title>
+<meta name="description" content="Crown Hair Oil — زيت شعر طبيعي 100%. اختاري بين متجر التطبيق والنسخة السينمائية التعريفية.">
+<meta name="theme-color" content="#F6F1E6">
+<link rel="icon" type="image/jpeg" href="./assets/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.dataset.theme = localStorage.getItem("crown_theme") || "light";</script>
+<style>
+  :root{
+    --cream:#F6F1E6; --cream-2:#EFE7D8; --ink:#211D17; --ink-soft:#4A433A;
+    --terracotta:#A85C32; --terracotta-2:#8C4A26; --gold:#B8924A; --olive:#6E7456;
+    --line:#D9CBAE; --surface:#ffffff;
+    --font-display:'Cairo',sans-serif; --font-body:'IBM Plex Sans Arabic',sans-serif;
+  }
+  html[data-theme="dark"]{
+    --cream:#0D0C0A; --cream-2:#16130E; --ink:#F6F1E6; --ink-soft:#C9BFAF;
+    --terracotta-2:#D98B5F; --line:#3A3328; --surface:#1C1913;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; font-family:var(--font-body);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(168,92,50,.14), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, rgba(110,116,86,.16), transparent 55%),
+      var(--cream);
+    color:var(--ink); direction:rtl;
+    display:flex; flex-direction:column;
+    transition:background .35s ease, color .35s ease;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit; text-decoration:none;}
+  .wrap{width:100%; max-width:1000px; margin:0 auto; padding:0 24px; flex:1; display:flex; flex-direction:column;}
+  header{display:flex; align-items:center; justify-content:space-between; padding:26px 0;}
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand img{height:46px; width:46px; border-radius:12px; object-fit:cover;}
+  .brand b{font-family:var(--font-display); font-size:20px; font-weight:800; letter-spacing:.02em;}
+  .brand span{display:block; font-size:10px; letter-spacing:.2em; color:var(--ink-soft); font-weight:600;}
+  .theme-toggle{
+    width:40px; height:40px; border-radius:50%; border:1px solid var(--line);
+    background:transparent; color:var(--ink); font-size:17px; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:transform .3s cubic-bezier(0.34,1.56,0.64,1), background .25s ease;
+  }
+  .theme-toggle:hover{transform:rotate(20deg) scale(1.08); background:var(--cream-2);}
+  .hero{text-align:center; padding:40px 0 30px;}
+  .eyebrow{
+    font-family:var(--font-display); font-size:13px; font-weight:700; letter-spacing:.14em;
+    color:var(--terracotta-2); text-transform:uppercase; margin-bottom:16px;
+  }
+  .hero h1{
+    font-family:var(--font-display); font-weight:800; margin:0 0 16px;
+    font-size:clamp(30px,6vw,52px); line-height:1.15;
+  }
+  .hero p{max-width:560px; margin:0 auto; color:var(--ink-soft); font-size:clamp(15px,2.4vw,18px); line-height:1.9;}
+  .cards{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:22px;
+    padding:22px 0 40px;
+  }
+  @media (max-width:720px){ .cards{grid-template-columns:1fr;} }
+  .card{
+    position:relative; border-radius:26px; overflow:hidden;
+    border:1px solid var(--line); background:var(--surface);
+    display:flex; flex-direction:column; min-height:340px;
+    box-shadow:0 20px 45px -30px rgba(33,29,23,.5);
+    transition:transform .4s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow .4s ease;
+  }
+  .card:hover{transform:translateY(-6px); box-shadow:0 30px 60px -30px rgba(33,29,23,.55);}
+  .card-media{position:relative; height:200px; overflow:hidden; background:var(--cream-2);}
+  .card-media img{width:100%; height:100%; object-fit:cover; transition:transform .6s ease;}
+  .card:hover .card-media img{transform:scale(1.06);}
+  .card-media.contain img{object-fit:contain; background:#fff;}
+  .badge{
+    position:absolute; top:14px; right:14px; z-index:2;
+    background:var(--terracotta); color:#fff; font-size:12px; font-weight:700;
+    padding:5px 13px; border-radius:999px; font-family:var(--font-display);
+  }
+  .card-body{padding:22px 22px 24px; display:flex; flex-direction:column; gap:8px; flex:1;}
+  .card-body h2{font-family:var(--font-display); font-size:21px; font-weight:700; margin:0;}
+  .card-body p{margin:0; color:var(--ink-soft); font-size:14px; line-height:1.8; flex:1;}
+  .card-cta{
+    margin-top:12px; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--terracotta); color:#fff; font-family:var(--font-display); font-weight:700;
+    font-size:15px; padding:13px 22px; border-radius:999px;
+    transition:background .25s ease, transform .25s ease;
+  }
+  .card:hover .card-cta{background:var(--terracotta-2);}
+  .card-cta svg{width:16px; height:16px;}
+  footer{
+    text-align:center; padding:22px 0 30px; color:var(--ink-soft); font-size:12.5px;
+    border-top:1px solid var(--line);
+  }
+  footer .dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--olive); margin-inline-start:6px; vertical-align:middle;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="./">
+        <img src="./assets/logo.jpg" alt="Crown Hair Oil">
+        <span><b>Crown</b>HAIR OIL</span>
+      </a>
+      <button class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع الداكن" title="الوضع الداكن / العادي">🌙</button>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">مزيج زيوت طبيعية 100٪</div>
+      <h1>سرّ الشعر الطويل والكثيف</h1>
+      <p>Crown Hair Oil من الأرغان والروزماري وزيت الزيتون. اختاري الوجهة التي تناسبك — متجر التطبيق الكامل، أو النسخة التعريفية السينمائية.</p>
+    </section>
+
+    <section class="cards">
+      <a class="card" href="./app/">
+        <div class="card-media contain">
+          <span class="badge">المتجر · تطبيق</span>
+          <img src="./assets/product-white.png" alt="متجر Crown Hair Oil">
+        </div>
+        <div class="card-body">
+          <h2>المتجر وتطبيق الجوال</h2>
+          <p>تصفّحي المنتجات، أضيفي للسلة، وأتمّي الطلب. تطبيق قابل للتثبيت على شاشة جوالك ويعمل دون اتصال، مع لوحة تحكم للإدارة.</p>
+          <span class="card-cta">
+            ادخلي المتجر
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <a class="card" href="./v1.2/">
+        <div class="card-media">
+          <span class="badge">تعريفي · سينمائي</span>
+          <img src="./assets/hero-dark-crop.jpg" alt="النسخة السينمائية">
+        </div>
+        <div class="card-body">
+          <h2>النسخة السينمائية</h2>
+          <p>صفحة تعريفية غامرة بحركات وانتقالات ناعمة تحكي قصة المنتج ومكوّناته وطريقة عمله — تجربة بصرية فاخرة.</p>
+          <span class="card-cta">
+            شاهدي التجربة
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </span>
+        </div>
+      </a>
+    </section>
+
+    <footer>
+      © <span id="year"></span> Crown Hair Oil — جميع الحقوق محفوظة <span class="dot"></span>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    (function(){
+      var btn = document.getElementById("themeToggle");
+      function apply(theme){
+        document.documentElement.dataset.theme = theme;
+        btn.textContent = theme === "dark" ? "☀️" : "🌙";
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "dark" ? "#0D0C0A" : "#F6F1E6");
+        try { localStorage.setItem("crown_theme", theme); } catch (e) {}
+      }
+      apply(document.documentElement.dataset.theme || "light");
+      btn.addEventListener("click", function(){
+        apply(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+      });
+    })();
+
+    // Retire the old root-scoped service worker from when the app lived at the
+    // site root, so returning visitors get this hub instead of the cached app.
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        regs.forEach(function(reg){
+          if (reg.active && reg.scope.endsWith("/") && !reg.scope.endsWith("/app/") && !reg.scope.endsWith("/v1.2/")) {
+            reg.unregister();
+          }
+        });
+      }).catch(function(){});
+    }
+  </script>
+</body>
+</html>
