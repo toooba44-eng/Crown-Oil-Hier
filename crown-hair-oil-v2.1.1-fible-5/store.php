@@ -62,6 +62,18 @@
   </div>
 </section>
 
+<!-- CUSTOMER REVIEWS -->
+<section class="section-cream" id="reviewsSection" hidden>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">آراء العميلات</div>
+      <h2>تقييمات العملاء</h2>
+      <p>آراء حقيقية من عميلاتنا بعد التجربة.</p>
+    </div>
+    <div class="reviews-grid" id="reviewsGrid"></div>
+  </div>
+</section>
+
 <!-- CHECKOUT -->
 <section class="section-tint" id="checkout">
   <div class="wrap">
@@ -178,6 +190,7 @@
         <button class="active" data-tab="products">المنتجات</button>
         <button data-tab="orders">الطلبات</button>
         <button data-tab="results">النتائج</button>
+        <button data-tab="reviews">التقييمات</button>
       </div>
 
       <div class="admin-pane active" id="pane-products">
@@ -247,16 +260,51 @@
           </div>
           <div class="field-row">
             <div class="field">
-              <label for="r-caption">التعليق (اسم / مدينة)</label>
-              <input id="r-caption" type="text" name="caption" placeholder="مثال: سارة — الرياض">
+              <label for="r-name">اسم العميلة (اختياري)</label>
+              <input id="r-name" type="text" name="name" placeholder="مثال: سارة — الرياض">
             </div>
             <div class="field">
               <label for="r-weeks">عدد الأسابيع</label>
               <input id="r-weeks" type="number" name="weeks" min="0" placeholder="6">
             </div>
           </div>
+          <div class="field">
+            <label for="r-comment">تعليق تحت الصورة (اختياري)</label>
+            <input id="r-comment" type="text" name="comment" placeholder="مثال: لاحظت فرقاً واضحاً في الكثافة">
+          </div>
           <small class="field-hint">تُضغط الصور تلقائياً لتناسب التخزين المحلي.</small>
           <button type="submit" class="btn btn-primary" style="margin-top:14px;">حفظ النتيجة</button>
+        </form>
+      </div>
+
+      <div class="admin-pane" id="pane-reviews">
+        <p class="field-hint" style="margin-bottom:14px;">أضيفي تقييمات <b>حقيقية</b> من عميلاتك وبإذنهنّ. تجنّبي التقييمات غير الحقيقية حتى لا يكون العرض مضلِّلاً.</p>
+        <h3 style="font-size:16px;margin-bottom:14px;">التقييمات الحالية</h3>
+        <div id="adminReviewList"></div>
+
+        <h3 style="font-size:16px;margin:30px 0 14px;">إضافة تقييم جديد</h3>
+        <form id="newReviewForm">
+          <div class="field-row">
+            <div class="field">
+              <label for="rv-name">اسم العميلة</label>
+              <input id="rv-name" type="text" name="name" placeholder="مثال: نورة">
+            </div>
+            <div class="field">
+              <label for="rv-rating">التقييم</label>
+              <select id="rv-rating" name="rating">
+                <option value="5">★★★★★ (5)</option>
+                <option value="4">★★★★☆ (4)</option>
+                <option value="3">★★★☆☆ (3)</option>
+                <option value="2">★★☆☆☆ (2)</option>
+                <option value="1">★☆☆☆☆ (1)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="rv-comment">نص التقييم</label>
+            <textarea id="rv-comment" name="comment" rows="3" required placeholder="مثال: منتج ممتاز، لاحظت فرقاً خلال شهر."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">حفظ التقييم</button>
         </form>
       </div>
     </div>
