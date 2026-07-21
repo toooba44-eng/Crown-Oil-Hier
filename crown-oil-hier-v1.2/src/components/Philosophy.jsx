@@ -36,7 +36,7 @@ export default function Philosophy() {
   return (
     <section id="philosophy" ref={scope} className="relative bg-void py-28 md:py-40 px-6 md:px-10 overflow-hidden">
       <div className="philosophy-bg absolute inset-0 opacity-20">
-        <img src="/assets/hero-detail.jpg" alt="" className="w-full h-full object-cover scale-110" />
+        <img src={import.meta.env.BASE_URL + 'assets/hero-detail.jpg'} alt="" className="w-full h-full object-cover scale-110" />
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-void via-void/90 to-void" />
 

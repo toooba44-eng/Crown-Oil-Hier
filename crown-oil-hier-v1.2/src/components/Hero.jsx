@@ -28,7 +28,7 @@ export default function Hero() {
 
       <div className="hero-media absolute inset-0 z-0 overflow-hidden">
         <img
-          src="/assets/hero-dark.jpg"
+          src={import.meta.env.BASE_URL + 'assets/hero-dark.jpg'}
           alt="Crown Hair Oil bottle in botanical light"
           className="w-full h-full object-cover"
         />

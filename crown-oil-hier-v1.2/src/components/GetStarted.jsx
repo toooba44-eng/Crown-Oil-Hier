@@ -67,7 +67,7 @@ export default function GetStarted() {
 
           <div className="start-reveal relative rounded-3xl overflow-hidden aspect-[4/5] md:aspect-auto md:h-full">
             <img
-              src="/assets/hero-light-crop.jpg"
+              src={import.meta.env.BASE_URL + 'assets/hero-light-crop.jpg'}
               alt="Crown Hair Oil bottle among rosemary and olive branches"
               className="w-full h-full object-cover"
             />
