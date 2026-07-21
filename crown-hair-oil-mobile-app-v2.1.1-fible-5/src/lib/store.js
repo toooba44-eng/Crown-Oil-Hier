@@ -108,11 +108,11 @@ export function persistOrders(orders) { return writeJSON("crown_orders", orders)
 const DEFAULT_RESULTS = [
   // Real customer before/after composites for the hair oil. The frame is
   // recolored per theme: white in light mode, black in dark mode.
-  { id: "r-1", imageLight: "assets/results/result-1-light.jpg", imageDark: "assets/results/result-1-dark.jpg" },
-  { id: "r-2", imageLight: "assets/results/result-2-light.jpg", imageDark: "assets/results/result-2-dark.jpg" },
-  { id: "r-3", imageLight: "assets/results/result-3-light.jpg", imageDark: "assets/results/result-3-dark.jpg" },
-  { id: "r-4", imageLight: "assets/results/result-4-light.jpg", imageDark: "assets/results/result-4-dark.jpg" },
-  { id: "r-5", imageLight: "assets/results/result-5-light.jpg", imageDark: "assets/results/result-5-dark.jpg" },
+  { id: "r-1", imageLight: "assets/results/result-1-light.jpg", imageDark: "assets/results/result-1-dark.jpg", name: "نورة — الرياض", comment: "لاحظت الفرق على بنتي فعلاً" },
+  { id: "r-2", imageLight: "assets/results/result-2-light.jpg", imageDark: "assets/results/result-2-dark.jpg", name: "أحمد — الرياض", comment: "كثافة أوضح خلال 6 أسابيع" },
+  { id: "r-3", imageLight: "assets/results/result-3-light.jpg", imageDark: "assets/results/result-3-dark.jpg", name: "منى — جدة", comment: "رجعت فراغات الشعر تنمو من جديد بعد استخدام شهرين" },
+  { id: "r-4", imageLight: "assets/results/result-4-light.jpg", imageDark: "assets/results/result-4-dark.jpg", name: "سعيد — المدينة المنورة", comment: "تحسّنت فروة الرأس جداً وبدأ شعري ينمو من جديد" },
+  { id: "r-5", imageLight: "assets/results/result-5-light.jpg", imageDark: "assets/results/result-5-dark.jpg", name: "منار — الرياض", comment: "ليست أول تجربة لي مع الزيوت، لكن أقدر أقول إنها أفضل تجربة وفعّالة جداً" },
 ];
 export function loadUserResults() { return readJSON("crown_results", []); }
 export function persistUserResults(list) { return writeJSON("crown_results", list); }
