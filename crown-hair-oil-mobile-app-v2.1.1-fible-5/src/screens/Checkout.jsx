@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { money, resolveCart, cartSubtotal, shippingFor } from '../lib/store.js';
 
-export default function Checkout({ cart, products, onClose, onSubmit, toast }) {
-  const [payMethod, setPayMethod] = useState('cod');
+export default function Checkout({ cart, products, settings = {}, onClose, onSubmit, toast }) {
+  const firstMethod = settings.payCod ? 'cod' : settings.payBank ? 'bank' : 'card';
+  const [payMethod, setPayMethod] = useState(firstMethod);
   const lines = resolveCart(cart, products);
   const subtotal = cartSubtotal(cart, products);
   const shipping = shippingFor(subtotal);
@@ -10,7 +11,7 @@ export default function Checkout({ cart, products, onClose, onSubmit, toast }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!lines.length) { toast('السلة فارغة'); return; }
-    if (payMethod === 'card') { toast('الدفع بالبطاقة غير مفعّل بعد'); return; }
+    if (payMethod === 'card' && !settings.payCard) { toast('الدفع بالبطاقة غير مفعّل بعد'); return; }
     const data = new FormData(e.target);
     onSubmit({
       name: data.get('name'),
@@ -56,18 +57,29 @@ export default function Checkout({ cart, products, onClose, onSubmit, toast }) {
 
           <fieldset className="pay-methods">
             <legend>طريقة الدفع</legend>
-            <label className={'pay-option' + (payMethod === 'cod' ? ' active' : '')}>
-              <input type="radio" name="payMethod" value="cod" checked={payMethod === 'cod'} onChange={() => setPayMethod('cod')} />
-              <span><strong>الدفع عند الاستلام</strong><small>نقداً أو بالشبكة عند وصول الطلب.</small></span>
-            </label>
-            <label className={'pay-option' + (payMethod === 'bank' ? ' active' : '')}>
-              <input type="radio" name="payMethod" value="bank" checked={payMethod === 'bank'} onChange={() => setPayMethod('bank')} />
-              <span><strong>تحويل بنكي</strong><small>يُرسل رقم الحساب بعد تأكيد الطلب.</small></span>
-            </label>
-            <label className="pay-option disabled">
-              <input type="radio" name="payMethod" value="card" disabled />
-              <span><strong>بطاقة مدى / فيزا — قريباً</strong><small>الدفع الإلكتروني قيد التفعيل.</small></span>
-            </label>
+            {settings.payCod && (
+              <label className={'pay-option' + (payMethod === 'cod' ? ' active' : '')}>
+                <input type="radio" name="payMethod" value="cod" checked={payMethod === 'cod'} onChange={() => setPayMethod('cod')} />
+                <span><strong>الدفع عند الاستلام</strong><small>نقداً أو بالشبكة عند وصول الطلب.</small></span>
+              </label>
+            )}
+            {settings.payBank && (
+              <label className={'pay-option' + (payMethod === 'bank' ? ' active' : '')}>
+                <input type="radio" name="payMethod" value="bank" checked={payMethod === 'bank'} onChange={() => setPayMethod('bank')} />
+                <span><strong>تحويل بنكي</strong><small>يُرسل رقم الحساب بعد تأكيد الطلب.</small></span>
+              </label>
+            )}
+            {settings.payCard ? (
+              <label className={'pay-option' + (payMethod === 'card' ? ' active' : '')}>
+                <input type="radio" name="payMethod" value="card" checked={payMethod === 'card'} onChange={() => setPayMethod('card')} />
+                <span><strong>بطاقة مدى / فيزا</strong><small>الدفع الإلكتروني المباشر.</small></span>
+              </label>
+            ) : (
+              <label className="pay-option disabled">
+                <input type="radio" name="payMethod" value="card" disabled />
+                <span><strong>بطاقة مدى / فيزا — قريباً</strong><small>الدفع الإلكتروني قيد التفعيل.</small></span>
+              </label>
+            )}
           </fieldset>
 
           <div className="cart-summary flat">

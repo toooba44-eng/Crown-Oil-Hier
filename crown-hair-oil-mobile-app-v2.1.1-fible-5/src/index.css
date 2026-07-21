@@ -293,6 +293,18 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 }
 .admin-form { padding: 0 18px 18px; }
 
+.lock-note { text-align: right; line-height: 1.7; margin: 4px 0 0; }
+
+/* ---------------- admin: settings ---------------- */
+.settings-form .sub-head { margin: 22px 0 12px; }
+.settings-form .sub-head:first-child { margin-top: 4px; }
+.switch-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  padding: 13px 15px; margin-bottom: 9px; cursor: pointer; font-size: 14px; font-weight: 600;
+}
+.switch-row input { width: 20px; height: 20px; accent-color: var(--terracotta); flex-shrink: 0; }
+
 /* ---------------- toast ---------------- */
 .toast {
   position: fixed; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 14px);

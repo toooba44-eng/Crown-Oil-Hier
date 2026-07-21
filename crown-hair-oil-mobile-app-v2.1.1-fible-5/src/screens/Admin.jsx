@@ -1,20 +1,36 @@
 import { useState } from 'react';
 import {
-  ADMIN_PASSWORD, PAY_METHOD_LABELS, DEFAULT_PRODUCT_IMAGE,
-  money, formatDate, uid, compressImage,
+  PAY_METHOD_LABELS, DEFAULT_PRODUCT_IMAGE,
+  money, formatDate, uid, compressImage, sha256Hex,
 } from '../lib/store.js';
 
-export default function Admin({ products, orders, userResults = [], userReviews = [], onSaveProducts, onSaveResults, onSaveReviews, toast }) {
+export default function Admin({ products, orders, userResults = [], userReviews = [], settings = {}, onSaveProducts, onSaveResults, onSaveReviews, onSaveSettings, toast }) {
   const [unlocked, setUnlocked] = useState(false);
-  const [pane, setPane] = useState('products'); // products | orders | results | reviews
+  const [pane, setPane] = useState('products'); // products | orders | results | reviews | settings
   const [armedDelete, setArmedDelete] = useState(null);
   const [savingResult, setSavingResult] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [checking, setChecking] = useState(false);
 
-  const login = (e) => {
+  const login = async (e) => {
     e.preventDefault();
-    const val = new FormData(e.target).get('password');
-    if (val === ADMIN_PASSWORD) setUnlocked(true);
-    else toast('كلمة المرور غير صحيحة');
+    const data = new FormData(e.target);
+    const email = (data.get('email') || '').trim().toLowerCase();
+    const password = data.get('password') || '';
+    setChecking(true);
+    try {
+      const hash = await sha256Hex(password);
+      const emailOk = email === (settings.adminEmail || '').trim().toLowerCase();
+      if (emailOk && hash === settings.adminPassHash) {
+        setUnlocked(true);
+      } else {
+        toast('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+      }
+    } catch {
+      toast('تعذّر التحقق — حدّثي المتصفح وحاولي مجدداً');
+    } finally {
+      setChecking(false);
+    }
   };
 
   const deleteProduct = (id) => {
@@ -129,19 +145,71 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     toast('تمت إضافة التقييم');
   };
 
+  const saveSettings = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+
+    const payCod = data.get('payCod') === 'on';
+    const payBank = data.get('payBank') === 'on';
+    const payCard = data.get('payCard') === 'on';
+    if (!payCod && !payBank && !payCard) { toast('فعّلي طريقة دفع واحدة على الأقل'); return; }
+
+    const adminEmail = (data.get('adminEmail') || '').trim();
+    if (!adminEmail) { toast('البريد الإلكتروني للمشرف مطلوب'); return; }
+
+    const next = {
+      storeName: (data.get('storeName') || '').trim() || settings.storeName,
+      tagline: (data.get('tagline') || '').trim(),
+      shippingFlat: Math.max(0, Number(data.get('shippingFlat')) || 0),
+      freeShipOver: Math.max(0, Number(data.get('freeShipOver')) || 0),
+      freeShipEnabled: data.get('freeShipEnabled') === 'on',
+      payCod, payBank, payCard,
+      instagram: (data.get('instagram') || '').trim(),
+      website: (data.get('website') || '').trim(),
+      adminEmail,
+    };
+
+    const newPass = (data.get('newPass') || '').trim();
+    if (newPass) {
+      if (newPass.length < 6) { toast('كلمة المرور يجب أن تكون 6 أحرف على الأقل'); return; }
+      next.adminPassHash = await sha256Hex(newPass);
+    }
+
+    setSavingSettings(true);
+    try {
+      onSaveSettings(next);
+      const passField = form.querySelector('[name="newPass"]');
+      if (passField) passField.value = '';
+      toast(newPass ? 'تم حفظ الإعدادات وتحديث كلمة المرور' : 'تم حفظ الإعدادات');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   if (!unlocked) {
     return (
       <div className="screen admin-screen">
         <header className="screen-head"><h1>لوحة التحكم</h1></header>
         <div className="lock-card">
-          <p>هذه المنطقة لإدارة المتجر فقط. أدخلي كلمة المرور للاستمرار.</p>
+          <p>هذه المنطقة لإدارة المتجر فقط. سجّلي الدخول بالبريد الإلكتروني وكلمة المرور.</p>
           <form onSubmit={login}>
+            <label className="field">
+              <span>البريد الإلكتروني</span>
+              <input name="email" type="email" required autoComplete="username" inputMode="email" placeholder="you@example.com" defaultValue={settings.adminEmail} />
+            </label>
             <label className="field">
               <span>كلمة المرور</span>
               <input name="password" type="password" required autoComplete="current-password" />
             </label>
-            <button type="submit" className="btn btn-primary btn-block">دخول</button>
+            <button type="submit" className="btn btn-primary btn-block" disabled={checking}>
+              {checking ? 'جارٍ التحقق…' : 'دخول'}
+            </button>
           </form>
+          <p className="muted small lock-note">
+            ملاحظة أمنية: هذا موقع ثابت بدون خادم، لذا يتم التحقق من الدخول داخل المتصفح فقط.
+            هذه بوابة لإخفاء الأدوات عن الزوّار وليست حماية كاملة. لا تستخدمي كلمة مرور تستعملينها في مواقع أخرى.
+          </p>
         </div>
       </div>
     );
@@ -156,6 +224,7 @@ export default function Admin({ products, orders, userResults = [], userReviews 
           <button className={'chip' + (pane === 'orders' ? ' active' : '')} onClick={() => setPane('orders')}>الطلبات ({orders.length})</button>
           <button className={'chip' + (pane === 'results' ? ' active' : '')} onClick={() => setPane('results')}>النتائج ({userResults.length})</button>
           <button className={'chip' + (pane === 'reviews' ? ' active' : '')} onClick={() => setPane('reviews')}>التقييمات ({userReviews.length})</button>
+          <button className={'chip' + (pane === 'settings' ? ' active' : '')} onClick={() => setPane('settings')}>الإعدادات</button>
         </div>
       </header>
 
@@ -302,6 +371,59 @@ export default function Admin({ products, orders, userResults = [], userReviews 
             <button type="submit" className="btn btn-primary btn-block">حفظ التقييم</button>
           </form>
         </>
+      )}
+
+      {pane === 'settings' && (
+        <form onSubmit={saveSettings} className="admin-form settings-form" key={settings.adminPassHash}>
+          <h2 className="sub-head">هوية المتجر</h2>
+          <label className="field"><span>اسم المتجر</span><input name="storeName" type="text" defaultValue={settings.storeName} /></label>
+          <label className="field"><span>الجملة التعريفية (تظهر في الصفحة الرئيسية)</span><input name="tagline" type="text" defaultValue={settings.tagline} /></label>
+
+          <h2 className="sub-head">الشحن</h2>
+          <div className="field-row">
+            <label className="field"><span>رسوم الشحن (ر.س)</span><input name="shippingFlat" type="number" min="0" step="0.5" defaultValue={settings.shippingFlat} /></label>
+            <label className="field"><span>شحن مجاني فوق (ر.س)</span><input name="freeShipOver" type="number" min="0" step="1" defaultValue={settings.freeShipOver} /></label>
+          </div>
+          <label className="switch-row">
+            <input name="freeShipEnabled" type="checkbox" defaultChecked={settings.freeShipEnabled} />
+            <span>تفعيل الشحن المجاني عند تجاوز الحد</span>
+          </label>
+
+          <h2 className="sub-head">طرق الدفع</h2>
+          <label className="switch-row">
+            <input name="payCod" type="checkbox" defaultChecked={settings.payCod} />
+            <span>الدفع عند الاستلام</span>
+          </label>
+          <label className="switch-row">
+            <input name="payBank" type="checkbox" defaultChecked={settings.payBank} />
+            <span>تحويل بنكي</span>
+          </label>
+          <label className="switch-row">
+            <input name="payCard" type="checkbox" defaultChecked={settings.payCard} />
+            <span>بطاقة مدى / فيزا</span>
+          </label>
+
+          <h2 className="sub-head">التواصل</h2>
+          <label className="field"><span>حساب إنستغرام</span><input name="instagram" type="text" defaultValue={settings.instagram} placeholder="@CrownHairOil" /></label>
+          <label className="field"><span>الموقع الإلكتروني (اختياري)</span><input name="website" type="url" defaultValue={settings.website} placeholder="https://" /></label>
+
+          <h2 className="sub-head">بيانات الدخول للوحة التحكم</h2>
+          <label className="field"><span>البريد الإلكتروني للمشرف</span><input name="adminEmail" type="email" defaultValue={settings.adminEmail} inputMode="email" /></label>
+          <label className="field">
+            <span>كلمة مرور جديدة (اتركيها فارغة لعدم التغيير)</span>
+            <input name="newPass" type="password" autoComplete="new-password" placeholder="••••••" />
+            <small className="muted small">6 أحرف على الأقل. تُخزَّن مشفّرة (SHA-256) وليس كنص صريح.</small>
+          </label>
+
+          <p className="muted small lock-note">
+            تنبيه أمني: لأن الموقع ثابت بدون خادم، تُحفظ الإعدادات في هذا المتصفح فقط،
+            والتحقق من الدخول يتم داخل المتصفح. هذه بوابة إدارية وليست حماية كاملة.
+          </p>
+
+          <button type="submit" className="btn btn-primary btn-block" disabled={savingSettings}>
+            {savingSettings ? 'جارٍ الحفظ…' : 'حفظ الإعدادات'}
+          </button>
+        </form>
       )}
     </div>
   );
