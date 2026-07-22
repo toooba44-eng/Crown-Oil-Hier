@@ -67,6 +67,34 @@ function productImages(p) {
   return [DEFAULT_PRODUCT_IMAGE];
 }
 
+/* ---------------- site settings (admin dashboard) ----------------
+   Persisted in localStorage under crown_settings; loadSettings merges
+   saved values over the defaults so new keys always exist. This is a
+   client-side gate on a static site — see the security note in the
+   admin login. adminPassHash is the SHA-256 of the password. */
+const DEFAULT_SETTINGS = {
+  storeName: "Crown Hair Oil",
+  tagline: "مزيج زيوت طبيعية 100٪",
+  shippingFlat: SHIPPING_FLAT,
+  freeShipOver: FREE_SHIP_OVER,
+  freeShipEnabled: true,
+  payCod: true,
+  payBank: true,
+  payCard: false,
+  instagram: "@CrownHairOil_KSA",
+  website: "",
+  adminEmail: "toooba44@gmail.com",
+  adminPassHash: "ea92397a70d82dc8600e989548443d31bc01b878e33e617da8ea7e46c871e194",
+};
+function loadSettings() { return { ...DEFAULT_SETTINGS, ...readJSON("crown_settings", {}) }; }
+function persistSettings(next) { return writeJSON("crown_settings", { ...loadSettings(), ...next }); }
+
+/** SHA-256 hex of a string (used to verify the admin password client-side). */
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 /** Localized product name/description; falls back to the canonical value. */
 function pName(p) { return lang() === "en" && p && p.nameEn ? p.nameEn : (p ? p.name : ""); }
 function pDesc(p) { return lang() === "en" && p && p.descEn ? p.descEn : (p ? (p.desc || "") : ""); }
@@ -223,7 +251,9 @@ function cartSubtotal() {
   return resolvedCart().reduce((sum, l) => sum + l.product.price * l.qty, 0);
 }
 function shippingFor(subtotal) {
-  return subtotal >= FREE_SHIP_OVER ? 0 : SHIPPING_FLAT;
+  const s = loadSettings();
+  if (s.freeShipEnabled && subtotal >= s.freeShipOver) return 0;
+  return s.shippingFlat;
 }
 
 /* ---------------- rendering: shared ---------------- */
@@ -250,7 +280,9 @@ window.__crownRerender = function () {
     renderAdminReviews();
     renderProductImgDraft();
     setProductFormMode();
+    renderSettings();
   }
+  renderPaymentOptions();
 };
 
 /* ---------------- real results gallery ---------------- */
@@ -513,7 +545,7 @@ function submitOrder(e) {
   }
   const data = new FormData(e.target);
   const payMethod = data.get("payMethod");
-  if (payMethod === "card") {
+  if (payMethod === "card" && !loadSettings().payCard) {
     toast(T("js.cardOff"));
     return;
   }
@@ -912,24 +944,129 @@ function submitNewReview(e) {
 
 /* ---------------- admin: gate & tabs ---------------- */
 
-function checkAdminPassword(e) {
+async function checkAdminLogin(e) {
   e.preventDefault();
-  const val = document.getElementById("adminPasswordInput").value;
-  if (val === ADMIN_PASSWORD) {
-    document.getElementById("adminLock").style.display = "none";
-    document.getElementById("adminContent").hidden = false;
-    renderAdminProductList();
-    renderAdminOrders();
-    renderAdminResults();
-    renderAdminReviews();
-  } else {
-    toast(T("js.badPassword"));
+  const email = (document.getElementById("adminEmailInput")?.value || "").trim().toLowerCase();
+  const pass = document.getElementById("adminPasswordInput")?.value || "";
+  const s = loadSettings();
+  const btn = document.getElementById("adminLoginBtn");
+  if (btn) btn.disabled = true;
+  try {
+    const hash = await sha256Hex(pass);
+    if (email === (s.adminEmail || "").trim().toLowerCase() && hash === s.adminPassHash) {
+      document.getElementById("adminLock").style.display = "none";
+      document.getElementById("adminContent").hidden = false;
+      renderAdminProductList();
+      renderAdminOrders();
+      renderAdminResults();
+      renderAdminReviews();
+      renderSettings();
+    } else {
+      toast(T("js.badCreds"));
+    }
+  } catch {
+    toast(T("js.verifyErr"));
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
 function switchAdminTab(tab) {
   document.querySelectorAll("#adminTabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
   document.querySelectorAll(".admin-pane").forEach((p) => p.classList.toggle("active", p.id === "pane-" + tab));
+}
+
+/* ---------------- admin: settings ---------------- */
+
+function renderSettings() {
+  const f = document.getElementById("settingsForm");
+  if (!f) return;
+  const s = loadSettings();
+  const set = (name, val) => { const el = f.querySelector(`[name="${name}"]`); if (el) el.value = val; };
+  const check = (name, on) => { const el = f.querySelector(`[name="${name}"]`); if (el) el.checked = !!on; };
+  set("storeName", s.storeName || "");
+  set("tagline", s.tagline || "");
+  set("shippingFlat", s.shippingFlat);
+  set("freeShipOver", s.freeShipOver);
+  check("freeShipEnabled", s.freeShipEnabled);
+  check("payCod", s.payCod);
+  check("payBank", s.payBank);
+  check("payCard", s.payCard);
+  set("instagram", s.instagram || "");
+  set("website", s.website || "");
+  set("adminEmail", s.adminEmail || "");
+  set("newPass", "");
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+  const f = e.target;
+  const d = new FormData(f);
+  const payCod = d.get("payCod") === "on";
+  const payBank = d.get("payBank") === "on";
+  const payCard = d.get("payCard") === "on";
+  if (!payCod && !payBank && !payCard) { toast(T("js.needPay")); return; }
+  const adminEmail = (d.get("adminEmail") || "").trim();
+  if (!adminEmail) { toast(T("js.needEmail")); return; }
+
+  const next = {
+    storeName: (d.get("storeName") || "").trim() || loadSettings().storeName,
+    tagline: (d.get("tagline") || "").trim(),
+    shippingFlat: Math.max(0, Number(d.get("shippingFlat")) || 0),
+    freeShipOver: Math.max(0, Number(d.get("freeShipOver")) || 0),
+    freeShipEnabled: d.get("freeShipEnabled") === "on",
+    payCod, payBank, payCard,
+    instagram: (d.get("instagram") || "").trim(),
+    website: (d.get("website") || "").trim(),
+    adminEmail,
+  };
+  const newPass = (d.get("newPass") || "").trim();
+  if (newPass) {
+    if (newPass.length < 6) { toast(T("js.passTooShort")); return; }
+    next.adminPassHash = await sha256Hex(newPass);
+  }
+
+  persistSettings(next);
+  const pf = f.querySelector('[name="newPass"]');
+  if (pf) pf.value = "";
+  renderPaymentOptions();
+  refreshAll();
+  toast(newPass ? T("js.settingsSavedPass") : T("js.settingsSaved"));
+}
+
+/** Show/hide the checkout payment options per the saved settings. */
+function renderPaymentOptions() {
+  const s = loadSettings();
+  const cod = document.getElementById("payOptCod");
+  const bank = document.getElementById("payOptBank");
+  const card = document.getElementById("payOptCard");
+  if (cod) cod.hidden = !s.payCod;
+  if (bank) bank.hidden = !s.payBank;
+  if (card) {
+    const radio = card.querySelector('input[type="radio"]');
+    const strong = card.querySelector("strong");
+    const desc = card.querySelector("span > span, small");
+    if (s.payCard) {
+      card.hidden = false;
+      card.classList.remove("disabled");
+      if (radio) radio.disabled = false;
+      if (strong) { strong.setAttribute("data-i18n", "pay.cardOnT"); strong.textContent = T("pay.cardOnT"); }
+      if (desc) { desc.setAttribute("data-i18n", "pay.cardOnD"); desc.textContent = T("pay.cardOnD"); }
+    } else {
+      card.hidden = false;
+      card.classList.add("disabled");
+      if (radio) radio.disabled = true;
+      if (strong) { strong.setAttribute("data-i18n", "pay.cardT"); strong.textContent = T("pay.cardT"); }
+      if (desc) { desc.setAttribute("data-i18n", "pay.cardD"); desc.textContent = T("pay.cardD"); }
+    }
+  }
+  // Make sure a visible, enabled option stays selected.
+  const checked = document.querySelector('input[name="payMethod"]:checked');
+  const isUsable = (r) => r && !r.disabled && !(r.closest(".pay-option") && r.closest(".pay-option").hidden);
+  if (!isUsable(checked)) {
+    const first = [...document.querySelectorAll('input[name="payMethod"]')].find(isUsable);
+    if (first) first.checked = true;
+  }
 }
 
 /* ---------------- theme (dark mode) ---------------- */
@@ -1001,6 +1138,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCheckoutSummary();
   renderResults();
   renderReviews();
+  renderPaymentOptions();
 
   // category filter (delegated)
   document.getElementById("tagFilter")?.addEventListener("click", (e) => {
@@ -1071,10 +1209,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("cartOverlay")?.addEventListener("click", closeCart);
   document.getElementById("goCheckout")?.addEventListener("click", closeCart);
   document.getElementById("checkoutForm")?.addEventListener("submit", submitOrder);
-  document.getElementById("adminLockForm")?.addEventListener("submit", checkAdminPassword);
+  document.getElementById("adminLockForm")?.addEventListener("submit", checkAdminLogin);
   document.getElementById("newProductForm")?.addEventListener("submit", submitProductForm);
   document.getElementById("newResultForm")?.addEventListener("submit", submitNewResult);
   document.getElementById("newReviewForm")?.addEventListener("submit", submitNewReview);
+  document.getElementById("settingsForm")?.addEventListener("submit", saveSettings);
   document.getElementById("adminToggleBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.add("open"));
   document.getElementById("adminCloseBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.remove("open"));
 });
