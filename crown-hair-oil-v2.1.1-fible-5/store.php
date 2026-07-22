@@ -114,15 +114,15 @@
           <div class="field">
             <label data-i18n="f.pay">طريقة الدفع</label>
             <div class="pay-options">
-              <label class="pay-option">
+              <label class="pay-option" id="payOptCod">
                 <input type="radio" name="payMethod" value="cod" checked>
                 <span><strong data-i18n="pay.codT">الدفع عند الاستلام</strong><span data-i18n="pay.codD">تدفعين نقداً أو بالشبكة عند وصول الطلب لبابك.</span></span>
               </label>
-              <label class="pay-option">
+              <label class="pay-option" id="payOptBank">
                 <input type="radio" name="payMethod" value="bank">
                 <span><strong data-i18n="pay.bankT">تحويل بنكي</strong><span data-i18n="pay.bankD">سيتم إرسال رقم الحساب لتأكيد الطلب بعد إرساله.</span></span>
               </label>
-              <label class="pay-option disabled">
+              <label class="pay-option disabled" id="payOptCard">
                 <input type="radio" name="payMethod" value="card" disabled>
                 <span><strong data-i18n="pay.cardT">بطاقة مدى / فيزا — قريباً</strong><span data-i18n="pay.cardD">الدفع الإلكتروني المباشر قيد التفعيل حالياً.</span></span>
               </label>
@@ -179,11 +179,13 @@
     </div>
 
     <div id="adminLock" class="lock-screen">
-      <p style="margin-bottom:16px;" data-i18n="admin.lockIntro">هذه المنطقة لإدارة المتجر فقط. أدخلي كلمة المرور للاستمرار.</p>
+      <p style="margin-bottom:16px;" data-i18n="admin.lockIntro">هذه المنطقة لإدارة المتجر فقط. سجّلي الدخول بالبريد الإلكتروني وكلمة المرور.</p>
       <form id="adminLockForm">
-        <input type="password" id="adminPasswordInput" placeholder="كلمة المرور" required autocomplete="current-password" data-i18n-ph="admin.passPh">
-        <button type="submit" class="btn btn-dark" data-i18n="admin.login">دخول</button>
+        <input type="email" id="adminEmailInput" value="toooba44@gmail.com" placeholder="you@example.com" required autocomplete="username" inputmode="email">
+        <input type="password" id="adminPasswordInput" placeholder="كلمة المرور" required autocomplete="current-password" data-i18n-ph="admin.password">
+        <button type="submit" id="adminLoginBtn" class="btn btn-dark" data-i18n="admin.login">دخول</button>
       </form>
+      <p class="field-hint lock-note" data-i18n="admin.lockNote">ملاحظة أمنية: هذا موقع ثابت بدون خادم، لذا يتم التحقق من الدخول داخل المتصفح فقط. هذه بوابة لإخفاء الأدوات عن الزوّار وليست حماية كاملة. لا تستخدمي كلمة مرور تستعملينها في مواقع أخرى.</p>
     </div>
 
     <div id="adminContent" hidden>
@@ -192,6 +194,7 @@
         <button data-tab="orders" data-i18n="admin.tabOrders">الطلبات</button>
         <button data-tab="results" data-i18n="admin.tabResults">النتائج</button>
         <button data-tab="reviews" data-i18n="admin.tabReviews">التقييمات</button>
+        <button data-tab="settings" data-i18n="admin.tabSettings">الإعدادات</button>
       </div>
 
       <div class="admin-pane active" id="pane-products">
@@ -307,6 +310,37 @@
             <textarea id="rv-comment" name="comment" rows="3" required placeholder="مثال: منتج ممتاز، لاحظت فرقاً خلال شهر." data-i18n-ph="admin.rvCommentPh"></textarea>
           </div>
           <button type="submit" class="btn btn-primary" data-i18n="admin.saveReview">حفظ التقييم</button>
+        </form>
+      </div>
+
+      <div class="admin-pane" id="pane-settings">
+        <form id="settingsForm">
+          <h3 style="font-size:16px;margin:0 0 14px;" data-i18n="admin.setIdentity">هوية المتجر</h3>
+          <div class="field"><label data-i18n="admin.setStoreName">اسم المتجر</label><input type="text" name="storeName"></div>
+          <div class="field"><label data-i18n="admin.setTagline">الجملة التعريفية (تظهر في الصفحة الرئيسية)</label><input type="text" name="tagline"></div>
+
+          <h3 style="font-size:16px;margin:26px 0 14px;" data-i18n="admin.setShipping">الشحن</h3>
+          <div class="field-row">
+            <div class="field"><label data-i18n="admin.setShipFlat">رسوم الشحن (ر.س)</label><input type="number" name="shippingFlat" min="0" step="0.5"></div>
+            <div class="field"><label data-i18n="admin.setFreeOver">شحن مجاني فوق (ر.س)</label><input type="number" name="freeShipOver" min="0" step="1"></div>
+          </div>
+          <label class="switch-row"><input type="checkbox" name="freeShipEnabled"><span data-i18n="admin.setFreeEnabled">تفعيل الشحن المجاني عند تجاوز الحد</span></label>
+
+          <h3 style="font-size:16px;margin:26px 0 14px;" data-i18n="admin.setPay">طرق الدفع</h3>
+          <label class="switch-row"><input type="checkbox" name="payCod"><span data-i18n="pay.codT">الدفع عند الاستلام</span></label>
+          <label class="switch-row"><input type="checkbox" name="payBank"><span data-i18n="pay.bankT">تحويل بنكي</span></label>
+          <label class="switch-row"><input type="checkbox" name="payCard"><span data-i18n="pay.cardOnT">بطاقة مدى / فيزا</span></label>
+
+          <h3 style="font-size:16px;margin:26px 0 14px;" data-i18n="admin.setContact">التواصل</h3>
+          <div class="field"><label data-i18n="admin.setInstagram">حساب إنستغرام</label><input type="text" name="instagram" placeholder="@CrownHairOil"></div>
+          <div class="field"><label data-i18n="admin.setWebsite">الموقع الإلكتروني (اختياري)</label><input type="url" name="website" placeholder="https://"></div>
+
+          <h3 style="font-size:16px;margin:26px 0 14px;" data-i18n="admin.setCreds">بيانات الدخول للوحة التحكم</h3>
+          <div class="field"><label data-i18n="admin.setAdminEmail">البريد الإلكتروني للمشرف</label><input type="email" name="adminEmail" inputmode="email"></div>
+          <div class="field"><label data-i18n="admin.setNewPass">كلمة مرور جديدة (اتركيها فارغة لعدم التغيير)</label><input type="password" name="newPass" autocomplete="new-password" placeholder="••••••"><small class="field-hint" data-i18n="admin.setPassHint">6 أحرف على الأقل. تُخزَّن مشفّرة (SHA-256) وليس كنص صريح.</small></div>
+
+          <p class="field-hint lock-note" data-i18n="admin.setNote">تنبيه أمني: لأن الموقع ثابت بدون خادم، تُحفظ الإعدادات في هذا المتصفح فقط، والتحقق من الدخول يتم داخل المتصفح. هذه بوابة إدارية وليست حماية كاملة.</p>
+          <button type="submit" class="btn btn-primary" data-i18n="admin.saveSettings">حفظ الإعدادات</button>
         </form>
       </div>
     </div>

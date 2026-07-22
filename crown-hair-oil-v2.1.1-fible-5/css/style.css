@@ -384,6 +384,7 @@ footer{background:var(--night-2);color:rgba(246,241,230,.7);padding:64px 0 28px;
 }
 .pay-option input{margin-top:3px;}
 .pay-option.disabled{opacity:.5;cursor:not-allowed;}
+.pay-option[hidden]{display:none;}
 .pay-option strong{display:block;font-size:14.5px;margin-bottom:3px;}
 .pay-option span{font-size:12.5px;color:var(--ink-soft);}
 .order-summary{
@@ -446,7 +447,13 @@ footer{background:var(--night-2);color:rgba(246,241,230,.7);padding:64px 0 28px;
 .thumb-dot img{width:100%;height:100%;object-fit:cover;display:block;}
 .thumb-dot.active{border-color:var(--terracotta);box-shadow:0 0 0 1px var(--terracotta);}
 
+/* settings pane: toggles + notes */
+.switch-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px;cursor:pointer;font-size:14px;font-weight:600;}
+.switch-row input{width:20px;height:20px;accent-color:var(--terracotta);flex-shrink:0;}
+.lock-note{text-align:start;line-height:1.7;margin-top:10px;}
+
 .lock-screen{text-align:center;padding:30px 10px;}
+.lock-screen input{display:block;}
 .lock-screen input{max-width:240px;margin:0 auto 14px;}
 .toast{
   position:fixed;bottom:28px;right:28px;background:var(--ink);color:var(--cream);
