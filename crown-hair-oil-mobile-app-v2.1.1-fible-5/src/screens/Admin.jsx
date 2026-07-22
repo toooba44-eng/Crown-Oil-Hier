@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
-  PAY_METHOD_LABELS, DEFAULT_PRODUCT_IMAGE,
-  money, formatDate, uid, compressImage, sha256Hex, pName,
+  PAY_METHOD_LABELS, DEFAULT_PRODUCT_IMAGE, MAX_PRODUCT_IMAGES,
+  money, formatDate, uid, compressImage, sha256Hex, pName, productImages,
 } from '../lib/store.js';
 
 export default function Admin({ products, orders, userResults = [], userReviews = [], settings = {}, lang = 'ar', t, onSaveProducts, onSaveResults, onSaveReviews, onSaveSettings, toast }) {
@@ -11,6 +11,11 @@ export default function Admin({ products, orders, userResults = [], userReviews 
   const [savingResult, setSavingResult] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [editingId, setEditingId] = useState(null);   // null = adding a new product
+  const [imgList, setImgList] = useState([]);          // gallery being edited (data URLs)
+  const [busyImg, setBusyImg] = useState(false);
+
+  const editing = editingId ? products.find((p) => p.id === editingId) : null;
 
   const payLabel = (m) => ({ cod: t('co.codT'), bank: t('co.bankT'), card: t('co.cardT') }[m] || PAY_METHOD_LABELS[m] || m);
 
@@ -46,33 +51,66 @@ export default function Admin({ products, orders, userResults = [], userReviews 
     toast(t('admin.productDeleted'));
   };
 
-  const addProduct = async (e) => {
+  const startEdit = (p) => {
+    setEditingId(p.id);
+    setImgList(productImages(p));
+    setArmedDelete(null);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setImgList([]);
+  };
+
+  const pickImages = async (e) => {
+    const files = [...e.target.files];
+    e.target.value = ''; // allow re-selecting the same file
+    if (!files.length) return;
+    const room = MAX_PRODUCT_IMAGES - imgList.length;
+    if (room <= 0) { toast(t('admin.maxImages')); return; }
+    setBusyImg(true);
+    try {
+      const compressed = [];
+      for (const f of files.slice(0, room)) {
+        try { compressed.push(await compressImage(f)); }
+        catch { toast(t('admin.imgReadErr')); }
+      }
+      setImgList((cur) => [...cur, ...compressed].slice(0, MAX_PRODUCT_IMAGES));
+      if (files.length > room) toast(t('admin.maxImages'));
+    } finally {
+      setBusyImg(false);
+    }
+  };
+
+  const removeImage = (idx) => setImgList((cur) => cur.filter((_, i) => i !== idx));
+
+  const submitProduct = (e) => {
     e.preventDefault();
     const form = e.target;
     const data = new FormData(form);
-    const file = form.querySelector('[name="image"]').files[0];
+    const images = imgList.length ? imgList : [DEFAULT_PRODUCT_IMAGE];
+    const fields = {
+      name: data.get('name'),
+      desc: data.get('desc'),
+      price: Number(data.get('price')) || 0,
+      oldPrice: data.get('oldPrice') ? Number(data.get('oldPrice')) : null,
+      stock: Number(data.get('stock')) || 0,
+      category: data.get('category') || 'عام',
+      images,
+      image: images[0],
+    };
 
-    let image = null;
-    if (file) {
-      try { image = await compressImage(file); }
-      catch { toast(t('admin.imgReadErr')); }
+    if (editingId) {
+      onSaveProducts(products.map((p) => (p.id === editingId ? { ...p, ...fields } : p)));
+      toast(t('admin.productUpdated'));
+    } else {
+      onSaveProducts([...products, { id: uid('p'), ...fields }]);
+      toast(t('admin.productAdded'));
     }
-
-    onSaveProducts([
-      ...products,
-      {
-        id: uid('p'),
-        name: data.get('name'),
-        desc: data.get('desc'),
-        price: Number(data.get('price')) || 0,
-        oldPrice: data.get('oldPrice') ? Number(data.get('oldPrice')) : null,
-        stock: Number(data.get('stock')) || 0,
-        category: data.get('category') || 'عام',
-        image: image || DEFAULT_PRODUCT_IMAGE,
-      },
-    ]);
     form.reset();
-    toast(t('admin.productAdded'));
+    setEditingId(null);
+    setImgList([]);
   };
 
   const deleteResult = (id) => {
@@ -230,41 +268,64 @@ export default function Admin({ products, orders, userResults = [], userReviews 
       {pane === 'products' && (
         <>
           <div className="admin-list">
-            {products.map((p) => (
-              <div className="admin-item" key={p.id}>
-                <img src={p.image} alt={pName(p, lang)} />
-                <div className="grow">
-                  <b>{pName(p, lang)}</b>
-                  <span>{money(p.price)} · {p.category || t('admin.noCategory')} · {t('admin.stock')}: {p.stock}</span>
+            {products.map((p) => {
+              const imgs = productImages(p);
+              return (
+                <div className={'admin-item' + (editingId === p.id ? ' editing' : '')} key={p.id}>
+                  <img src={p.image} alt={pName(p, lang)} />
+                  <div className="grow">
+                    <b>{pName(p, lang)}</b>
+                    <span>{money(p.price)} · {t('admin.stock')}: {p.stock}{imgs.length > 1 ? ` · 📷 ${imgs.length}` : ''}</span>
+                  </div>
+                  <div className="admin-item-actions">
+                    <button className="icon-btn" aria-label={t('admin.edit')} title={t('admin.edit')} onClick={() => startEdit(p)}>✏️</button>
+                    <button
+                      className={'icon-btn' + (armedDelete === p.id ? ' danger' : '')}
+                      onClick={() => deleteProduct(p.id)}
+                    >
+                      {armedDelete === p.id ? t('admin.confirm') : '🗑'}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  className={'icon-btn' + (armedDelete === p.id ? ' danger' : '')}
-                  onClick={() => deleteProduct(p.id)}
-                >
-                  {armedDelete === p.id ? t('admin.confirm') : '🗑'}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <h2 className="sub-head">{t('admin.addProduct')}</h2>
-          <form onSubmit={addProduct} className="admin-form">
-            <label className="field"><span>{t('admin.pName')}</span><input name="name" type="text" required /></label>
-            <label className="field"><span>{t('admin.pDesc')}</span><textarea name="desc" rows="2" /></label>
+          <h2 className="sub-head">{editingId ? t('admin.editProduct') : t('admin.addProduct')}</h2>
+          <form onSubmit={submitProduct} className="admin-form" key={editingId || 'new'}>
+            <label className="field"><span>{t('admin.pName')}</span><input name="name" type="text" required defaultValue={editing?.name || ''} /></label>
+            <label className="field"><span>{t('admin.pDesc')}</span><textarea name="desc" rows="2" defaultValue={editing?.desc || ''} /></label>
             <div className="field-row">
-              <label className="field"><span>{t('admin.pPrice')}</span><input name="price" type="number" min="0" step="0.5" required /></label>
-              <label className="field"><span>{t('admin.pOld')}</span><input name="oldPrice" type="number" min="0" step="0.5" /></label>
+              <label className="field"><span>{t('admin.pPrice')}</span><input name="price" type="number" min="0" step="0.5" required defaultValue={editing?.price ?? ''} /></label>
+              <label className="field"><span>{t('admin.pOld')}</span><input name="oldPrice" type="number" min="0" step="0.5" defaultValue={editing?.oldPrice ?? ''} /></label>
             </div>
             <div className="field-row">
-              <label className="field"><span>{t('admin.pStock')}</span><input name="stock" type="number" min="0" required /></label>
-              <label className="field"><span>{t('admin.pCat')}</span><input name="category" type="text" /></label>
+              <label className="field"><span>{t('admin.pStock')}</span><input name="stock" type="number" min="0" required defaultValue={editing?.stock ?? ''} /></label>
+              <label className="field"><span>{t('admin.pCat')}</span><input name="category" type="text" defaultValue={editing?.category || ''} /></label>
             </div>
-            <label className="field">
-              <span>{t('admin.pImage')}</span>
-              <input name="image" type="file" accept="image/*" />
-              <small className="muted small">{t('admin.imgHint')}</small>
-            </label>
-            <button type="submit" className="btn btn-primary btn-block">{t('admin.saveProduct')}</button>
+
+            <div className="field">
+              <span>{t('admin.pImages')}</span>
+              <div className="img-manager">
+                {imgList.map((src, i) => (
+                  <div className="img-thumb" key={i}>
+                    <img src={src} alt="" />
+                    {i === 0 && <span className="img-main-badge" title="★">★</span>}
+                    <button type="button" className="img-remove" aria-label={t('admin.removeImage')} onClick={() => removeImage(i)}>×</button>
+                  </div>
+                ))}
+                {imgList.length < MAX_PRODUCT_IMAGES && (
+                  <label className={'img-add' + (busyImg ? ' busy' : '')}>
+                    <input type="file" accept="image/*" multiple hidden onChange={pickImages} disabled={busyImg} />
+                    <span>{busyImg ? '…' : '＋'}</span>
+                  </label>
+                )}
+              </div>
+              <small className="muted small">{t('admin.imagesHint')} · {t('admin.imgCount', { n: imgList.length })}</small>
+            </div>
+
+            <button type="submit" className="btn btn-primary btn-block">{editingId ? t('admin.saveChanges') : t('admin.saveProduct')}</button>
+            {editingId && <button type="button" className="btn btn-ghost btn-block" onClick={cancelEdit}>{t('admin.cancelEdit')}</button>}
           </form>
         </>
       )}
