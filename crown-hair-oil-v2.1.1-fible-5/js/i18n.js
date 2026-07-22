@@ -1,0 +1,570 @@
+/* ============================================================
+   CROWN HAIR OIL — Web store i18n (AR / EN)
+   Loaded before store.js. Provides:
+     window.crownLang()          -> "ar" | "en"
+     window.crownT(key, vars)    -> localized string
+     window.applyCrownLang(lang) -> switch language + direction
+   Static HTML is translated via [data-i18n] / [data-i18n-attr:...]
+   attributes; store.js pulls dynamic strings through crownT().
+   The choice persists in the origin-shared `crown_lang` key.
+   ============================================================ */
+"use strict";
+
+(function () {
+  var AR = {
+    "lang.switch": "English",
+    "meta.storeTitle": "المتجر | Crown Hair Oil",
+    "meta.homeTitle": "Crown Hair Oil | زيت طبيعي لإطالة الشعر وتكثيفه",
+    "a11y.theme": "الوضع الداكن / العادي",
+    "a11y.lang": "تغيير اللغة",
+    "a11y.cart": "فتح سلة الشراء",
+    "a11y.menu": "فتح القائمة",
+
+    /* ---- shared header / nav ---- */
+    "nav.home": "الرئيسية",
+    "nav.store": "المتجر",
+    "nav.checkout": "الدفع والشحن",
+    "nav.about": "القصة",
+    "nav.benefits": "الفوائد",
+    "nav.ingredients": "المكونات",
+    "nav.product": "المنتج",
+    "nav.how": "طريقة الاستخدام",
+    "header.shop": "تسوّق الآن",
+    "header.cart": "🛍 السلة",
+
+    /* ---- home: hero ---- */
+    "hero.eyebrow": "مزيج زيوت طبيعية 100٪",
+    "hero.h1": "سرّ الشعر الطويل والكثيف",
+    "hero.p": "زيت Crown مستخلص من الأرغان والروزماري وزيت الزيتون، يغذّي بصيلات الشعر من الجذور ويعيد له الكثافة واللمعان الطبيعي.",
+    "hero.cta1": "اطلب زجاجتك الآن",
+    "hero.cta2": "تعرّف على المكونات",
+    "hero.badge1": "مكونات طبيعية 100٪",
+    "hero.badge2": "نتائج من أول 4 أسابيع",
+    "hero.badge3": "بدون سيليكون أو كبريتات",
+
+    /* ---- home: about ---- */
+    "about.eyebrow": "قصة العلامة",
+    "about.h2": "وُلِد Crown من وصفة بيتية، قبل أن يصبح روتين عناية",
+    "about.p1": "بدأت فكرة Crown Hair Oil من بحث طويل عن وصفة تجمع بين زيوت تُستخدم منذ قرون للعناية بالشعر، وبين تركيبة عصرية سهلة الاستخدام لا تترك أثراً دهنياً ثقيلاً.",
+    "about.p2": "النتيجة زيت واحد مركّز، يجمع بين أرغان المغرب وروزماري البحر المتوسط وزيت الزيتون البكر، في زجاجة واحدة بسيطة تُستخدم مرتين أسبوعياً فقط.",
+    "about.stat1": "مكونات طبيعية",
+    "about.stat2": "سيليكون وكبريتات",
+    "about.stat3": "زيوت نشطة مركّزة",
+
+    /* ---- home: benefits ---- */
+    "benefits.eyebrow": "ماذا يقدّم لك الزيت",
+    "benefits.h2": "خمس فوائد في زجاجة واحدة",
+    "benefit1.h": "تطويل الشعر",
+    "benefit1.p": "يحفّز فروة الرأس وينشّط دورتها الدموية لدعم نمو أسرع وأكثر اتساقاً.",
+    "benefit2.h": "كثافة وحجم",
+    "benefit2.p": "يقلّل التقصف والتساقط تدريجياً ليبدو الشعر أكثر كثافة من الجذور.",
+    "benefit3.h": "تحفيز النمو",
+    "benefit3.p": "تركيبة الروزماري معروفة بدعم نشاط البصيلات الخامدة.",
+    "benefit4.h": "تغذية عميقة",
+    "benefit4.p": "زيت الأرغان يغلّف الخصلة ويغذّيها من الداخل دون أن يثقلها.",
+    "benefit5.h": "لمعان وحيوية",
+    "benefit5.p": "يمنح الشعر بريقاً طبيعياً ولمسة حريرية من أول استخدام.",
+
+    /* ---- home: ingredients ring ---- */
+    "ing.eyebrow": "تركيبة الزيت",
+    "ing.h2": "مزيج من ثلاث زيوت، لكل واحدة دور محدد",
+    "ing.node1.h": "أرغان",
+    "ing.node1.p": "يغذّي ويرمم الخصلة من الأطراف.",
+    "ing.node2.h": "روزماري",
+    "ing.node2.p": "ينشّط فروة الرأس ويحفّز النمو.",
+    "ing.node3.h": "زيت الزيتون",
+    "ing.node3.p": "يرطّب بعمق ويمنح لمعاناً طبيعياً.",
+    "ing.list1.h": "تدليك فروة الرأس",
+    "ing.list1.p": "توضع قطرات الزيت مباشرة على فروة الرأس مع تدليك خفيف لتحفيز الدورة الدموية وتنشيط البصيلات.",
+    "ing.list2.h": "تغطية الخصلة كاملة",
+    "ing.list2.p": "يُمشّط الزيت على طول الشعر حتى الأطراف لحماية الخصلة من التقصف والجفاف.",
+    "ing.list3.h": "الترك والتكرار",
+    "ing.list3.p": "يُترك حسب الحاجة ثم يُغسل بشامبو لطيف، ويُكرر مرتين إلى ثلاث مرات أسبوعياً.",
+
+    /* ---- home: product frames ---- */
+    "prod.eyebrow": "الزجاجة الواحدة، بثلاث إطارات",
+    "prod.h2": "المنتج كما يراه عميلك في كل مكان",
+    "prod.p": "ثلاثة قوالب عرض جاهزة لاستخدامها في الموقع والمتجر ومنشورات التسويق، من نفس الصور المعتمدة للمنتج.",
+    "prod.frameA.b": "الإطار الطبيعي",
+    "prod.frameA.s": "للصفحة الرئيسية والمحتوى التعريفي",
+    "prod.frameB.b": "الإطار الفاخر",
+    "prod.frameB.s": "لمنشورات السوشال ميديا والعروض",
+    "prod.frameC.b": "لقطة تفصيلية",
+    "prod.frameC.s": "لإبراز الملصق والمكوّنات على المنتج",
+
+    /* ---- home: how ---- */
+    "how.eyebrow": "روتين بسيط",
+    "how.h2": "طريقة الاستخدام في ثلاث خطوات",
+    "how.step1.h": "قسّمي الشعر لأقسام",
+    "how.step1.p": "اقسمي الشعر إلى أقسام صغيرة لتسهيل وصول الزيت إلى فروة الرأس بالكامل.",
+    "how.step2.h": "دلّكي بالزيت",
+    "how.step2.p": "ضعي كمية مناسبة على راحة يدك ودلّكي فروة الرأس بحركات دائرية لمدة دقيقتين.",
+    "how.step3.h": "مرّري على الأطراف",
+    "how.step3.p": "أكملي توزيع الزيت على باقي الشعر حتى الأطراف، واتركيه حسب الحاجة قبل الغسل.",
+
+    /* ---- home: cta + footer ---- */
+    "cta.h2": "جرّبي Crown Hair Oil الآن",
+    "cta.p": "زجاجة واحدة، روتين واحد، نتيجة تلاحظينها بنفسك. متوفر الآن للطلب مع توصيل لجميع مناطق المملكة.",
+    "cta.btn": "انتقل إلى المتجر",
+    "footer.brandP": "زيت طبيعي 100٪ للعناية بالشعر، من مزيج الأرغان والروزماري وزيت الزيتون. صُمم لروتين عناية بسيط وفعّال.",
+    "footer.site": "الموقع",
+    "footer.storeCol": "المتجر",
+    "footer.allProducts": "جميع المنتجات",
+    "footer.payShip": "طرق الدفع والشحن",
+    "footer.follow": "تابعونا",
+    "footer.siteLink": "[رابط الموقع]",
+    "footer.rights": "© Crown Hair Oil — جميع الحقوق محفوظة",
+    "footer.tagline": "صُنع بعناية لكل أنواع الشعر",
+
+    /* ---- store page ---- */
+    "store.h1": "متجر Crown Hair Oil",
+    "results.eyebrow": "قبل / بعد",
+    "results.h2": "نتائج حقيقية",
+    "results.p": "صور فعلية من عميلاتنا قبل وبعد استخدام الزيت.",
+    "reviews.eyebrow": "آراء العميلات",
+    "reviews.h2": "تقييمات العملاء",
+    "reviews.p": "آراء حقيقية من عميلاتنا بعد التجربة.",
+    "checkout.eyebrow": "إنهاء الطلب",
+    "checkout.h2": "بيانات التوصيل والدفع",
+    "f.name": "الاسم الكامل",
+    "f.namePh": "مثال: سارة العتيبي",
+    "f.phone": "رقم الجوال",
+    "f.city": "المدينة",
+    "f.cityPh": "الرياض",
+    "f.address": "الحي / الرمز البريدي",
+    "f.addressPh": "حي الياسمين",
+    "f.notes": "ملاحظات على الطلب (اختياري)",
+    "f.notesPh": "مثال: التوصيل بعد الساعة 5 مساءً",
+    "f.pay": "طريقة الدفع",
+    "pay.codT": "الدفع عند الاستلام",
+    "pay.codD": "تدفعين نقداً أو بالشبكة عند وصول الطلب لبابك.",
+    "pay.bankT": "تحويل بنكي",
+    "pay.bankD": "سيتم إرسال رقم الحساب لتأكيد الطلب بعد إرساله.",
+    "pay.cardT": "بطاقة مدى / فيزا — قريباً",
+    "pay.cardD": "الدفع الإلكتروني المباشر قيد التفعيل حالياً.",
+    "checkout.submit": "تأكيد الطلب",
+    "confirm.h3": "تم استلام طلبك بنجاح ✓",
+    "confirm.pre": "رقم الطلب: ",
+    "confirm.post": ". سيتم التواصل معك لتأكيد التفاصيل والتوصيل.",
+    "confirm.continue": "متابعة التسوق",
+    "summary.h3": "ملخص الطلب",
+    "summary.note": "شحن مجاني للطلبات أكثر من 200 ر.س. الأسعار تشمل ضريبة القيمة المضافة.",
+    "cart.h3": "سلة الشراء",
+    "cart.total": "الإجمالي",
+    "cart.checkout": "إتمام الشراء",
+    "a11y.cartClose": "إغلاق السلة",
+
+    /* ---- admin (static) ---- */
+    "admin.toggle": "لوحة التحكم",
+    "admin.h2": "لوحة تحكم المتجر",
+    "a11y.adminClose": "إغلاق اللوحة",
+    "admin.lockIntro": "هذه المنطقة لإدارة المتجر فقط. أدخلي كلمة المرور للاستمرار.",
+    "admin.passPh": "كلمة المرور",
+    "admin.login": "دخول",
+    "admin.tabProducts": "المنتجات",
+    "admin.tabOrders": "الطلبات",
+    "admin.tabResults": "النتائج",
+    "admin.tabReviews": "التقييمات",
+    "admin.curProducts": "المنتجات الحالية",
+    "admin.addProduct": "إضافة منتج جديد",
+    "admin.pName": "اسم المنتج",
+    "admin.pNamePh": "مثال: سيروم تساقط الشعر",
+    "admin.pDesc": "الوصف",
+    "admin.pDescPh": "وصف قصير يظهر في بطاقة المنتج",
+    "admin.pPrice": "السعر الحالي (ر.س)",
+    "admin.pOld": "السعر قبل الخصم (اختياري)",
+    "admin.pStock": "الكمية المتوفرة",
+    "admin.pCat": "التصنيف",
+    "admin.pCatPh": "مثال: زيوت الشعر",
+    "admin.pImage": "صورة المنتج",
+    "admin.imgHint": "يتم ضغط الصورة تلقائياً لتناسب التخزين المحلي.",
+    "admin.saveProduct": "حفظ المنتج",
+    "admin.curOrders": "الطلبات الواردة",
+    "admin.resultsNote": "أضيفي صوراً حقيقية من نتائج عميلاتك (قبل/بعد) وبإذنهنّ. تجنّبي الصور غير الحقيقية حتى لا يكون العرض مضلِّلاً.",
+    "admin.curResults": "النتائج الحالية",
+    "admin.addResult": "إضافة نتيجة جديدة",
+    "admin.rBefore": "صورة \"قبل\"",
+    "admin.rAfter": "صورة \"بعد\"",
+    "admin.rName": "اسم العميلة (اختياري)",
+    "admin.rNamePh": "مثال: سارة — الرياض",
+    "admin.rWeeks": "عدد الأسابيع",
+    "admin.rComment": "تعليق تحت الصورة (اختياري)",
+    "admin.rCommentPh": "مثال: لاحظت فرقاً واضحاً في الكثافة",
+    "admin.imgsHint": "تُضغط الصور تلقائياً لتناسب التخزين المحلي.",
+    "admin.saveResult": "حفظ النتيجة",
+    "admin.reviewsNote": "أضيفي تقييمات حقيقية من عميلاتك وبإذنهنّ. تجنّبي التقييمات غير الحقيقية حتى لا يكون العرض مضلِّلاً.",
+    "admin.curReviews": "التقييمات الحالية",
+    "admin.addReview": "إضافة تقييم جديد",
+    "admin.rvName": "اسم العميلة",
+    "admin.rvNamePh": "مثال: نورة",
+    "admin.rvRating": "التقييم",
+    "admin.rvComment": "نص التقييم",
+    "admin.rvCommentPh": "مثال: منتج ممتاز، لاحظت فرقاً خلال شهر.",
+    "admin.saveReview": "حفظ التقييم",
+
+    /* ---- dynamic (store.js) ---- */
+    "cur.suffix": " ر.س",
+    "js.quotaFull": "مساحة التخزين ممتلئة — احذفي بعض المنتجات أو الصور الكبيرة",
+    "js.all": "الكل",
+    "js.noCategory": "بدون تصنيف",
+    "js.stockOut": "غير متوفر حالياً",
+    "js.stockLow": "باقي {n} قطع فقط",
+    "js.stockIn": "متوفر",
+    "js.sale": "خصم {pct}٪",
+    "js.add": "أضف للسلة",
+    "js.addDisabled": "غير متوفر",
+    "js.emptyCategory": "لا توجد منتجات في هذا التصنيف حالياً.",
+    "js.resultAlt": "نتيجة قبل وبعد استخدام الزيت",
+    "js.before": "قبل",
+    "js.after": "بعد",
+    "js.beforeAlt": "قبل الاستخدام",
+    "js.afterAlt": "بعد الاستخدام",
+    "js.resultWeeks": "النتيجة بعد {n} أسابيع",
+    "js.customer": "عميلة",
+    "js.cartEmpty": "سلتك فارغة، تصفحي المنتجات وأضيفي ما يناسبك.",
+    "js.dec": "إنقاص الكمية",
+    "js.inc": "زيادة الكمية",
+    "js.remove": "إزالة",
+    "js.shipping": "الشحن",
+    "js.free": "مجاني",
+    "js.total": "الإجمالي",
+    "js.summaryEmpty": "السلة فارغة. أضيفي منتجات قبل إتمام الطلب.",
+    "js.noMore": "لا تتوفر كمية أكبر من هذا المنتج",
+    "js.added": "تمت إضافة المنتج إلى السلة",
+    "js.maxQty": "وصلتِ للكمية المتوفرة كاملة",
+    "js.cartEmptyToast": "السلة فارغة",
+    "js.cardOff": "الدفع بالبطاقة غير مفعّل بعد",
+    "js.orderNew": "جديد",
+    "js.stock": "المخزون",
+    "js.delete": "حذف",
+    "js.confirm": "تأكيد؟",
+    "js.productDeleted": "تم حذف المنتج",
+    "js.imgReadErr": "تعذّر قراءة الصورة — سيُستخدم شكل افتراضي",
+    "js.productAdded": "تمت إضافة المنتج بنجاح",
+    "js.noProducts": "لا توجد منتجات بعد. أضيفي أول منتج من الأسفل.",
+    "js.noOrders": "لا توجد طلبات بعد.",
+    "js.noResults": "لا توجد نتائج بعد. أضيفي أول نتيجة من الأسفل.",
+    "js.result": "نتيجة",
+    "js.afterWeeksShort": "بعد {n} أسابيع",
+    "js.resultDeleted": "تم حذف النتيجة",
+    "js.needBothImages": "أضيفي صورتي \"قبل\" و\"بعد\"",
+    "js.imgsReadErr": "تعذّر قراءة الصور",
+    "js.resultAdded": "تمت إضافة النتيجة",
+    "js.noReviews": "لا توجد تقييمات بعد. أضيفي أول تقييم من الأسفل.",
+    "js.reviewDeleted": "تم حذف التقييم",
+    "js.reviewNeed": "اكتبي نص التقييم",
+    "js.reviewAdded": "تمت إضافة التقييم",
+    "js.badPassword": "كلمة المرور غير صحيحة",
+    "pay.cod": "دفع عند الاستلام",
+    "pay.bank": "تحويل بنكي",
+    "pay.card": "بطاقة مدى / فيزا",
+    "prod.defName": "Crown Hair Oil — زيت الشعر الأساسي",
+    "prod.defDesc": "مزيج 100٪ طبيعي من زيت الأرغان والروزماري وزيت الزيتون، لتطويل الشعر وتكثيفه وتغذيته من الجذور حتى الأطراف.",
+    "prod.defCat": "زيوت الشعر"
+  };
+
+  var EN = {
+    "lang.switch": "العربية",
+    "meta.storeTitle": "Store | Crown Hair Oil",
+    "meta.homeTitle": "Crown Hair Oil | natural oil for longer, thicker hair",
+    "a11y.theme": "Dark / light mode",
+    "a11y.lang": "Change language",
+    "a11y.cart": "Open shopping cart",
+    "a11y.menu": "Open menu",
+
+    "nav.home": "Home",
+    "nav.store": "Store",
+    "nav.checkout": "Payment & shipping",
+    "nav.about": "Story",
+    "nav.benefits": "Benefits",
+    "nav.ingredients": "Ingredients",
+    "nav.product": "Product",
+    "nav.how": "How to use",
+    "header.shop": "Shop now",
+    "header.cart": "🛍 Cart",
+
+    "hero.eyebrow": "100% natural oil blend",
+    "hero.h1": "The secret to long, thick hair",
+    "hero.p": "Crown oil is extracted from argan, rosemary and olive oil; it nourishes hair follicles from the roots and restores natural density and shine.",
+    "hero.cta1": "Order your bottle now",
+    "hero.cta2": "Explore the ingredients",
+    "hero.badge1": "100% natural ingredients",
+    "hero.badge2": "Results from the first 4 weeks",
+    "hero.badge3": "No silicones or sulfates",
+
+    "about.eyebrow": "Brand story",
+    "about.h2": "Crown was born from a home recipe before it became a care ritual",
+    "about.p1": "The idea of Crown Hair Oil began with a long search for a recipe that blends oils used for centuries in hair care with a modern, easy formula that leaves no heavy greasy residue.",
+    "about.p2": "The result is one concentrated oil combining Moroccan argan, Mediterranean rosemary and virgin olive oil, in one simple bottle used just twice a week.",
+    "about.stat1": "natural ingredients",
+    "about.stat2": "silicones & sulfates",
+    "about.stat3": "concentrated active oils",
+
+    "benefits.eyebrow": "What the oil offers you",
+    "benefits.h2": "Five benefits in one bottle",
+    "benefit1.h": "Hair growth",
+    "benefit1.p": "Stimulates the scalp and boosts its circulation to support faster, more even growth.",
+    "benefit2.h": "Density & volume",
+    "benefit2.p": "Gradually reduces breakage and shedding so hair looks thicker from the roots.",
+    "benefit3.h": "Growth stimulation",
+    "benefit3.p": "The rosemary blend is known for supporting dormant follicle activity.",
+    "benefit4.h": "Deep nourishment",
+    "benefit4.p": "Argan oil coats and nourishes each strand from within without weighing it down.",
+    "benefit5.h": "Shine & vitality",
+    "benefit5.p": "Gives hair a natural glow and a silky touch from the first use.",
+
+    "ing.eyebrow": "The formula",
+    "ing.h2": "A blend of three oils, each with a defined role",
+    "ing.node1.h": "Argan",
+    "ing.node1.p": "Nourishes and repairs the strand from the ends.",
+    "ing.node2.h": "Rosemary",
+    "ing.node2.p": "Energizes the scalp and stimulates growth.",
+    "ing.node3.h": "Olive oil",
+    "ing.node3.p": "Hydrates deeply and adds a natural shine.",
+    "ing.list1.h": "Massage the scalp",
+    "ing.list1.p": "Apply the oil drops directly to the scalp with a gentle massage to boost circulation and activate the follicles.",
+    "ing.list2.h": "Coat the whole strand",
+    "ing.list2.p": "Comb the oil along the hair to the ends to protect strands from breakage and dryness.",
+    "ing.list3.h": "Leave and repeat",
+    "ing.list3.p": "Leave as needed, then wash with a gentle shampoo, and repeat two to three times a week.",
+
+    "prod.eyebrow": "One bottle, three frames",
+    "prod.h2": "The product as your customer sees it everywhere",
+    "prod.p": "Three ready display templates for the website, store and marketing posts, from the same approved product photos.",
+    "prod.frameA.b": "Natural frame",
+    "prod.frameA.s": "for the home page and editorial content",
+    "prod.frameB.b": "Premium frame",
+    "prod.frameB.s": "for social media posts and offers",
+    "prod.frameC.b": "Detail shot",
+    "prod.frameC.s": "to highlight the label and ingredients on the product",
+
+    "how.eyebrow": "Simple routine",
+    "how.h2": "How to use it in three steps",
+    "how.step1.h": "Split hair into sections",
+    "how.step1.p": "Divide your hair into small sections so the oil reaches the entire scalp easily.",
+    "how.step2.h": "Massage with the oil",
+    "how.step2.p": "Put a suitable amount on your palm and massage the scalp in circular motions for two minutes.",
+    "how.step3.h": "Work through the ends",
+    "how.step3.p": "Distribute the oil over the rest of the hair down to the ends, and leave it as needed before washing.",
+
+    "cta.h2": "Try Crown Hair Oil now",
+    "cta.p": "One bottle, one routine, a result you'll notice yourself. Available now to order with delivery across the Kingdom.",
+    "cta.btn": "Go to the store",
+    "footer.brandP": "100% natural hair-care oil from a blend of argan, rosemary and olive oil. Designed for a simple, effective care routine.",
+    "footer.site": "Site",
+    "footer.storeCol": "Store",
+    "footer.allProducts": "All products",
+    "footer.payShip": "Payment & shipping",
+    "footer.follow": "Follow us",
+    "footer.siteLink": "[Website URL]",
+    "footer.rights": "© Crown Hair Oil — All rights reserved",
+    "footer.tagline": "Crafted with care for every hair type",
+
+    "store.h1": "Crown Hair Oil Store",
+    "results.eyebrow": "Before / After",
+    "results.h2": "Real results",
+    "results.p": "Actual before/after photos from our customers.",
+    "reviews.eyebrow": "Customer voices",
+    "reviews.h2": "Customer reviews",
+    "reviews.p": "Genuine feedback from our customers after trying it.",
+    "checkout.eyebrow": "Complete order",
+    "checkout.h2": "Delivery & payment details",
+    "f.name": "Full name",
+    "f.namePh": "e.g. Sara Al-Otaibi",
+    "f.phone": "Phone number",
+    "f.city": "City",
+    "f.cityPh": "Riyadh",
+    "f.address": "District / postal code",
+    "f.addressPh": "Al Yasmin",
+    "f.notes": "Order notes (optional)",
+    "f.notesPh": "e.g. deliver after 5 PM",
+    "f.pay": "Payment method",
+    "pay.codT": "Cash on delivery",
+    "pay.codD": "Pay cash or by card when your order arrives at your door.",
+    "pay.bankT": "Bank transfer",
+    "pay.bankD": "The account number will be sent to confirm the order after you place it.",
+    "pay.cardT": "mada / Visa card — soon",
+    "pay.cardD": "Direct online payment is currently being activated.",
+    "checkout.submit": "Place order",
+    "confirm.h3": "Your order was received ✓",
+    "confirm.pre": "Order no.: ",
+    "confirm.post": ". We'll contact you to confirm the details and delivery.",
+    "confirm.continue": "Continue shopping",
+    "summary.h3": "Order summary",
+    "summary.note": "Free shipping on orders over 200 SAR. Prices include VAT.",
+    "cart.h3": "Shopping cart",
+    "cart.total": "Total",
+    "cart.checkout": "Checkout",
+    "a11y.cartClose": "Close cart",
+
+    "admin.toggle": "Dashboard",
+    "admin.h2": "Store dashboard",
+    "a11y.adminClose": "Close panel",
+    "admin.lockIntro": "This area is for store management only. Enter the password to continue.",
+    "admin.passPh": "Password",
+    "admin.login": "Sign in",
+    "admin.tabProducts": "Products",
+    "admin.tabOrders": "Orders",
+    "admin.tabResults": "Results",
+    "admin.tabReviews": "Reviews",
+    "admin.curProducts": "Current products",
+    "admin.addProduct": "Add a new product",
+    "admin.pName": "Product name",
+    "admin.pNamePh": "e.g. Hair-loss serum",
+    "admin.pDesc": "Description",
+    "admin.pDescPh": "A short description shown on the product card",
+    "admin.pPrice": "Current price (SAR)",
+    "admin.pOld": "Price before discount (optional)",
+    "admin.pStock": "Available quantity",
+    "admin.pCat": "Category",
+    "admin.pCatPh": "e.g. Hair oils",
+    "admin.pImage": "Product image",
+    "admin.imgHint": "The image is compressed automatically to fit local storage.",
+    "admin.saveProduct": "Save product",
+    "admin.curOrders": "Incoming orders",
+    "admin.resultsNote": "Add real before/after photos from your customers, with their permission. Avoid non-genuine photos so the display is not misleading.",
+    "admin.curResults": "Current results",
+    "admin.addResult": "Add a new result",
+    "admin.rBefore": "\"Before\" photo",
+    "admin.rAfter": "\"After\" photo",
+    "admin.rName": "Customer name (optional)",
+    "admin.rNamePh": "e.g. Sara — Riyadh",
+    "admin.rWeeks": "Number of weeks",
+    "admin.rComment": "Caption under the photo (optional)",
+    "admin.rCommentPh": "e.g. I noticed a clear difference in density",
+    "admin.imgsHint": "The photos are compressed automatically to fit local storage.",
+    "admin.saveResult": "Save result",
+    "admin.reviewsNote": "Add real reviews from your customers, with their permission. Avoid non-genuine reviews so the display is not misleading.",
+    "admin.curReviews": "Current reviews",
+    "admin.addReview": "Add a new review",
+    "admin.rvName": "Customer name",
+    "admin.rvNamePh": "e.g. Noura",
+    "admin.rvRating": "Rating",
+    "admin.rvComment": "Review text",
+    "admin.rvCommentPh": "e.g. Excellent product, I saw a difference within a month.",
+    "admin.saveReview": "Save review",
+
+    "cur.suffix": " SAR",
+    "js.quotaFull": "Storage is full — delete some products or large images",
+    "js.all": "All",
+    "js.noCategory": "No category",
+    "js.stockOut": "Currently unavailable",
+    "js.stockLow": "Only {n} left",
+    "js.stockIn": "In stock",
+    "js.sale": "{pct}% off",
+    "js.add": "Add to cart",
+    "js.addDisabled": "Unavailable",
+    "js.emptyCategory": "No products in this category yet.",
+    "js.resultAlt": "Before and after using the oil",
+    "js.before": "Before",
+    "js.after": "After",
+    "js.beforeAlt": "Before use",
+    "js.afterAlt": "After use",
+    "js.resultWeeks": "Result after {n} weeks",
+    "js.customer": "Customer",
+    "js.cartEmpty": "Your cart is empty. Browse the products and add what suits you.",
+    "js.dec": "Decrease quantity",
+    "js.inc": "Increase quantity",
+    "js.remove": "Remove",
+    "js.shipping": "Shipping",
+    "js.free": "Free",
+    "js.total": "Total",
+    "js.summaryEmpty": "Your cart is empty. Add products before completing the order.",
+    "js.noMore": "No more of this product is available",
+    "js.added": "Added to your cart",
+    "js.maxQty": "You've reached the available quantity",
+    "js.cartEmptyToast": "Your cart is empty",
+    "js.cardOff": "Card payment is not enabled yet",
+    "js.orderNew": "New",
+    "js.stock": "Stock",
+    "js.delete": "Delete",
+    "js.confirm": "Confirm?",
+    "js.productDeleted": "Product deleted",
+    "js.imgReadErr": "Could not read the image — a default will be used",
+    "js.productAdded": "Product added successfully",
+    "js.noProducts": "No products yet. Add the first one below.",
+    "js.noOrders": "No orders yet.",
+    "js.noResults": "No results yet. Add the first one below.",
+    "js.result": "Result",
+    "js.afterWeeksShort": "after {n} weeks",
+    "js.resultDeleted": "Result deleted",
+    "js.needBothImages": "Add both \"before\" and \"after\" photos",
+    "js.imgsReadErr": "Could not read the images",
+    "js.resultAdded": "Result added",
+    "js.noReviews": "No reviews yet. Add the first one below.",
+    "js.reviewDeleted": "Review deleted",
+    "js.reviewNeed": "Write the review text",
+    "js.reviewAdded": "Review added",
+    "js.badPassword": "Incorrect password",
+    "pay.cod": "Cash on delivery",
+    "pay.bank": "Bank transfer",
+    "pay.card": "mada / Visa card",
+    "prod.defName": "Crown Hair Oil — Essential Hair Oil",
+    "prod.defDesc": "A 100% natural blend of argan, rosemary and olive oil to lengthen, thicken and nourish hair from root to tip.",
+    "prod.defCat": "Hair oils"
+  };
+
+  var DICTS = { ar: AR, en: EN };
+
+  function crownLang() {
+    var l = document.documentElement.lang;
+    if (l === "ar" || l === "en") return l;
+    try { l = localStorage.getItem("crown_lang"); } catch (e) {}
+    return (l === "en") ? "en" : "ar";
+  }
+
+  function crownT(key, vars) {
+    var d = DICTS[crownLang()] || AR;
+    var s = (d[key] != null) ? d[key] : (AR[key] != null ? AR[key] : key);
+    if (vars) {
+      s = s.replace(/\{(\w+)\}/g, function (m, k) { return (k in vars) ? String(vars[k]) : m; });
+    }
+    return s;
+  }
+
+  function applyCrownLang(lang) {
+    lang = (lang === "en") ? "en" : "ar";
+    var d = document.documentElement;
+    d.lang = lang;
+    d.dir = lang === "ar" ? "rtl" : "ltr";
+    var t = DICTS[lang];
+
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var k = el.getAttribute("data-i18n");
+      if (t[k] != null) el.textContent = t[k];
+    });
+    document.querySelectorAll("[data-i18n-ph]").forEach(function (el) {
+      var k = el.getAttribute("data-i18n-ph");
+      if (t[k] != null) el.setAttribute("placeholder", t[k]);
+    });
+    document.querySelectorAll("[data-i18n-attr]").forEach(function (el) {
+      // format: "attr:key;attr2:key2"
+      el.getAttribute("data-i18n-attr").split(";").forEach(function (pair) {
+        var bits = pair.split(":");
+        if (bits.length === 2 && t[bits[1]] != null) el.setAttribute(bits[0].trim(), t[bits[1]].trim());
+      });
+    });
+
+    var langBtn = document.getElementById("langToggle");
+    if (langBtn) langBtn.textContent = lang === "ar" ? "EN" : "ع";
+
+    var titleKey = document.body && document.body.getAttribute("data-title-key");
+    if (titleKey && t[titleKey]) document.title = t[titleKey];
+
+    try { localStorage.setItem("crown_lang", lang); } catch (e) {}
+
+    if (typeof window.__crownRerender === "function") window.__crownRerender();
+  }
+
+  window.crownLang = crownLang;
+  window.crownT = crownT;
+  window.applyCrownLang = applyCrownLang;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    applyCrownLang(crownLang());
+    var btn = document.getElementById("langToggle");
+    if (btn) btn.addEventListener("click", function () {
+      applyCrownLang(crownLang() === "ar" ? "en" : "ar");
+    });
+  });
+})();

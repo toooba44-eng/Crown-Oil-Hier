@@ -13,6 +13,8 @@
 
    All dynamic text is escaped before being placed into HTML,
    and all UI events are bound via delegation (no inline onclick).
+   User-facing strings come from js/i18n.js via crownT() so the
+   store switches between Arabic and English live.
    ============================================================ */
 
 "use strict";
@@ -21,22 +23,33 @@ const ADMIN_PASSWORD = "crown2026"; // غيّري هذه الكلمة من هن�
 const SHIPPING_FLAT = 20;           // ريال — رسوم شحن ثابتة
 const FREE_SHIP_OVER = 200;         // شحن مجاني فوق هذا المبلغ
 const MAX_IMAGE_EDGE = 800;         // أقصى عرض/ارتفاع لصور المنتجات المخزنة
+const ALL_CAT = "__all__";          // language-agnostic "all categories" sentinel
 
-const PAY_METHOD_LABELS = {
-  cod: "دفع عند الاستلام",
-  bank: "تحويل بنكي",
-  card: "بطاقة مدى / فيزا",
-};
+/** Localized text helper with a safe fallback if i18n.js is missing. */
+function T(key, vars) {
+  return (typeof window.crownT === "function") ? window.crownT(key, vars) : key;
+}
+function lang() {
+  return (typeof window.crownLang === "function") ? window.crownLang() : "ar";
+}
+
+function payLabel(method) {
+  const key = { cod: "pay.cod", bank: "pay.bank", card: "pay.card" }[method];
+  return key ? T(key) : method;
+}
 
 const DEFAULT_PRODUCTS = [
   {
     id: "p-001",
     name: "Crown Hair Oil — زيت الشعر الأساسي",
+    nameEn: "Crown Hair Oil — Essential Hair Oil",
     desc: "مزيج 100٪ طبيعي من زيت الأرغان والروزماري وزيت الزيتون، لتطويل الشعر وتكثيفه وتغذيته من الجذور حتى الأطراف.",
+    descEn: "A 100% natural blend of argan, rosemary and olive oil to lengthen, thicken and nourish hair from root to tip.",
     price: 119,
     oldPrice: 149,
     stock: 24,
     category: "زيوت الشعر",
+    categoryEn: "Hair oils",
     image: "assets/product-white.png",
   },
 ];
@@ -44,6 +57,10 @@ const DEFAULT_PRODUCTS = [
 // V2.1.1: the retired default product photo, migrated to the new white shot.
 const LEGACY_PRODUCT_IMAGE = "assets/hero-light.jpg";
 const DEFAULT_PRODUCT_IMAGE = "assets/product-white.png";
+
+/** Localized product name/description; falls back to the canonical value. */
+function pName(p) { return lang() === "en" && p && p.nameEn ? p.nameEn : (p ? p.name : ""); }
+function pDesc(p) { return lang() === "en" && p && p.descEn ? p.descEn : (p ? (p.desc || "") : ""); }
 
 /* ---------------- generic helpers ---------------- */
 
@@ -72,18 +89,20 @@ function writeJSON(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch {
-    toast("مساحة التخزين ممتلئة — احذفي بعض المنتجات أو الصور الكبيرة");
+    toast(T("js.quotaFull"));
     return false;
   }
 }
 
 function money(n) {
-  return Number(n).toLocaleString("ar-SA", { minimumFractionDigits: 0 }) + " ر.س";
+  const v = Number(n);
+  const locale = lang() === "en" ? "en-US" : "ar-SA";
+  return v.toLocaleString(locale, { minimumFractionDigits: 0 }) + T("cur.suffix");
 }
 
 function formatDate(iso) {
   try {
-    return new Date(iso).toLocaleDateString("ar-SA", {
+    return new Date(iso).toLocaleDateString(lang() === "en" ? "en-GB" : "ar-SA", {
       year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
     });
   } catch {
@@ -112,11 +131,16 @@ function getProducts() {
     products = DEFAULT_PRODUCTS;
     writeJSON("crown_products", products);
   }
-  // Migrate catalogs saved before the product photo swap.
+  // Migrate catalogs saved before the product photo swap / bilingual seed.
   let migrated = false;
   products.forEach((p) => {
     if (p.image === LEGACY_PRODUCT_IMAGE) {
       p.image = DEFAULT_PRODUCT_IMAGE;
+      migrated = true;
+    }
+    if (p.id === "p-001" && !p.nameEn) {
+      const seed = DEFAULT_PRODUCTS[0];
+      p.nameEn = seed.nameEn; p.descEn = seed.descEn; p.categoryEn = seed.categoryEn;
       migrated = true;
     }
   });
@@ -195,20 +219,34 @@ function refreshAll() {
   renderResults();
 }
 
+/* Re-render everything on a language switch (called by js/i18n.js). */
+window.__crownRerender = function () {
+  renderCategoryFilter();
+  refreshAll();
+  renderReviews();
+  // Refresh admin views if the panel is currently unlocked.
+  if (document.getElementById("adminContent") && !document.getElementById("adminContent").hidden) {
+    renderAdminProductList();
+    renderAdminOrders();
+    renderAdminResults();
+    renderAdminReviews();
+  }
+};
+
 /* ---------------- real results gallery ---------------- */
 function resultSlideHTML(r, ariaHidden) {
   const hidden = ariaHidden ? ' aria-hidden="true"' : "";
   const isDark = document.documentElement.dataset.theme === "dark";
   const composite = r.imageLight ? (isDark ? r.imageDark : r.imageLight) : r.image;
   const frame = composite
-    ? `<div class="result-frame"><img src="${esc(composite)}" alt="نتيجة قبل وبعد استخدام الزيت"></div>`
+    ? `<div class="result-frame"><img src="${esc(composite)}" alt="${esc(T("js.resultAlt"))}"></div>`
     : `<div class="result-frame"><div class="result-pair">
-         <div class="result-img"><span class="result-tag after">بعد</span><img src="${esc(r.after)}" alt="بعد الاستخدام"></div>
-         <div class="result-img"><span class="result-tag">قبل</span><img src="${esc(r.before)}" alt="قبل الاستخدام"></div>
+         <div class="result-img"><span class="result-tag after">${esc(T("js.after"))}</span><img src="${esc(r.after)}" alt="${esc(T("js.afterAlt"))}"></div>
+         <div class="result-img"><span class="result-tag">${esc(T("js.before"))}</span><img src="${esc(r.before)}" alt="${esc(T("js.beforeAlt"))}"></div>
        </div></div>`;
   const name = r.name || r.caption;
   const cap = (r.weeks || name || r.comment) ? `<figcaption class="result-cap">
-      ${r.weeks ? `<span class="result-weeks">النتيجة بعد ${esc(r.weeks)} أسابيع</span>` : ""}
+      ${r.weeks ? `<span class="result-weeks">${esc(T("js.resultWeeks", { n: r.weeks }))}</span>` : ""}
       ${name ? `<span class="result-name">${esc(name)}</span>` : ""}
       ${r.comment ? `<span class="result-comment">”${esc(r.comment)}“</span>` : ""}
     </figcaption>` : "";
@@ -228,9 +266,9 @@ function renderReviews() {
   grid.innerHTML = reviews.map((rv) => `
     <article class="review-card">
       <div class="review-top">
-        <span class="review-avatar">${esc((rv.name || "؟").trim().charAt(0))}</span>
+        <span class="review-avatar">${esc((rv.name || "?").trim().charAt(0))}</span>
         <div class="review-id">
-          <b>${esc(rv.name || "عميلة")}</b>
+          <b>${esc(rv.name || T("js.customer"))}</b>
           <span class="stars">${starString(rv.rating)}</span>
         </div>
       </div>
@@ -267,30 +305,30 @@ function refreshCartBadge() {
 
 /* ---------------- product grid ---------------- */
 
-let activeCategory = "الكل";
+let activeCategory = ALL_CAT;
 
 function stockLabel(stock) {
-  if (stock <= 0) return `<span class="stock-note out">غير متوفر حالياً</span>`;
-  if (stock <= 5) return `<span class="stock-note low">باقي ${esc(stock)} قطع فقط</span>`;
-  return `<span class="stock-note">متوفر</span>`;
+  if (stock <= 0) return `<span class="stock-note out">${esc(T("js.stockOut"))}</span>`;
+  if (stock <= 5) return `<span class="stock-note low">${esc(T("js.stockLow", { n: stock }))}</span>`;
+  return `<span class="stock-note">${esc(T("js.stockIn"))}</span>`;
 }
 
 function saleRibbon(p) {
   if (!p.oldPrice || p.oldPrice <= p.price) return "";
   const pct = Math.round((1 - p.price / p.oldPrice) * 100);
-  return `<span class="sale-ribbon">خصم ${esc(pct)}٪</span>`;
+  return `<span class="sale-ribbon">${esc(T("js.sale", { pct }))}</span>`;
 }
 
 function renderProductGrid(filterCategory) {
   const grid = document.getElementById("productGrid");
   if (!grid) return;
   const products = getProducts();
-  const filtered = filterCategory && filterCategory !== "الكل"
+  const filtered = filterCategory && filterCategory !== ALL_CAT
     ? products.filter((p) => p.category === filterCategory)
     : products;
 
   if (!filtered.length) {
-    grid.innerHTML = `<div class="empty-state">لا توجد منتجات في هذا التصنيف حالياً.</div>`;
+    grid.innerHTML = `<div class="empty-state">${esc(T("js.emptyCategory"))}</div>`;
     return;
   }
 
@@ -298,11 +336,11 @@ function renderProductGrid(filterCategory) {
     <div class="product-card">
       <div class="product-thumb">
         ${saleRibbon(p)}
-        <img src="${esc(p.image)}" alt="${esc(p.name)}">
+        <img src="${esc(p.image)}" alt="${esc(pName(p))}">
       </div>
       <div class="product-body">
-        <h3>${esc(p.name)}</h3>
-        <p class="desc">${esc(p.desc || "")}</p>
+        <h3>${esc(pName(p))}</h3>
+        <p class="desc">${esc(pDesc(p))}</p>
         <div class="product-price-row">
           <div>
             <span class="price">${money(p.price)}</span>
@@ -311,7 +349,7 @@ function renderProductGrid(filterCategory) {
           ${stockLabel(p.stock)}
         </div>
         <button class="btn btn-primary btn-block btn-sm" data-action="add" data-id="${esc(p.id)}"
-          ${p.stock <= 0 ? "disabled" : ""}>${p.stock <= 0 ? "غير متوفر" : "أضف للسلة"}</button>
+          ${p.stock <= 0 ? "disabled" : ""}>${p.stock <= 0 ? esc(T("js.addDisabled")) : esc(T("js.add"))}</button>
       </div>
     </div>
   `).join("");
@@ -320,10 +358,15 @@ function renderProductGrid(filterCategory) {
 function renderCategoryFilter() {
   const wrap = document.getElementById("tagFilter");
   if (!wrap) return;
-  const cats = ["الكل", ...new Set(getProducts().map((p) => p.category).filter(Boolean))];
-  wrap.innerHTML = cats.map((c) =>
-    `<button class="${c === activeCategory ? "active" : ""}" data-cat="${esc(c)}">${esc(c)}</button>`
-  ).join("");
+  const products = getProducts();
+  const catEn = {};
+  products.forEach((p) => { if (p.category) catEn[p.category] = p.categoryEn || p.category; });
+  const cats = [ALL_CAT, ...new Set(products.map((p) => p.category).filter(Boolean))];
+  const en = lang() === "en";
+  wrap.innerHTML = cats.map((c) => {
+    const label = c === ALL_CAT ? T("js.all") : (en ? (catEn[c] || c) : c);
+    return `<button class="${c === activeCategory ? "active" : ""}" data-cat="${esc(c)}">${esc(label)}</button>`;
+  }).join("");
 }
 
 /* ---------------- cart actions ---------------- */
@@ -336,7 +379,7 @@ function addToCart(productId) {
   const existing = cart.find((i) => i.id === productId);
   const currentQty = existing ? existing.qty : 0;
   if (currentQty + 1 > product.stock) {
-    toast("لا تتوفر كمية أكبر من هذا المنتج");
+    toast(T("js.noMore"));
     return;
   }
   if (existing) existing.qty += 1;
@@ -344,7 +387,7 @@ function addToCart(productId) {
 
   saveCart(cart);
   refreshAll();
-  toast("تمت إضافة المنتج إلى السلة");
+  toast(T("js.added"));
   openCart();
 }
 
@@ -356,7 +399,7 @@ function changeQty(productId, delta) {
   if (delta > 0) {
     const product = getProducts().find((p) => p.id === productId);
     if (product && item.qty + delta > product.stock) {
-      toast("وصلتِ للكمية المتوفرة كاملة");
+      toast(T("js.maxQty"));
       return;
     }
   }
@@ -379,20 +422,20 @@ function renderCartDrawer() {
   const lines = resolvedCart();
 
   if (!lines.length) {
-    itemsEl.innerHTML = `<div class="empty-state">سلتك فارغة، تصفحي المنتجات وأضيفي ما يناسبك.</div>`;
+    itemsEl.innerHTML = `<div class="empty-state">${esc(T("js.cartEmpty"))}</div>`;
   } else {
     itemsEl.innerHTML = lines.map(({ product: p, qty }) => `
       <div class="cart-item">
-        <img src="${esc(p.image)}" alt="${esc(p.name)}">
+        <img src="${esc(p.image)}" alt="${esc(pName(p))}">
         <div class="cart-item-info">
-          <h4>${esc(p.name)}</h4>
+          <h4>${esc(pName(p))}</h4>
           <span>${money(p.price)}</span>
           <div class="qty-row">
-            <button data-action="dec" data-id="${esc(p.id)}" aria-label="إنقاص الكمية">−</button>
+            <button data-action="dec" data-id="${esc(p.id)}" aria-label="${esc(T("js.dec"))}">−</button>
             <span>${esc(qty)}</span>
-            <button data-action="inc" data-id="${esc(p.id)}" aria-label="زيادة الكمية">+</button>
+            <button data-action="inc" data-id="${esc(p.id)}" aria-label="${esc(T("js.inc"))}">+</button>
           </div>
-          <button class="cart-remove" data-action="remove" data-id="${esc(p.id)}">إزالة</button>
+          <button class="cart-remove" data-action="remove" data-id="${esc(p.id)}">${esc(T("js.remove"))}</button>
         </div>
       </div>
     `).join("");
@@ -417,7 +460,7 @@ function renderCheckoutSummary() {
   const lines = resolvedCart();
 
   if (!lines.length) {
-    el.innerHTML = `<div class="empty-state">السلة فارغة. أضيفي منتجات قبل إتمام الطلب.</div>`;
+    el.innerHTML = `<div class="empty-state">${esc(T("js.summaryEmpty"))}</div>`;
     return;
   }
 
@@ -425,10 +468,10 @@ function renderCheckoutSummary() {
   const shipping = shippingFor(subtotal);
   el.innerHTML = `
     ${lines.map(({ product: p, qty }) =>
-      `<div class="order-line"><span>${esc(p.name)} × ${esc(qty)}</span><span>${money(p.price * qty)}</span></div>`
+      `<div class="order-line"><span>${esc(pName(p))} × ${esc(qty)}</span><span>${money(p.price * qty)}</span></div>`
     ).join("")}
-    <div class="order-line"><span>الشحن</span><span>${shipping === 0 ? "مجاني" : money(shipping)}</span></div>
-    <div class="order-line total"><span>الإجمالي</span><span>${money(subtotal + shipping)}</span></div>
+    <div class="order-line"><span>${esc(T("js.shipping"))}</span><span>${shipping === 0 ? esc(T("js.free")) : money(shipping)}</span></div>
+    <div class="order-line total"><span>${esc(T("js.total"))}</span><span>${money(subtotal + shipping)}</span></div>
   `;
 }
 
@@ -436,13 +479,13 @@ function submitOrder(e) {
   e.preventDefault();
   const lines = resolvedCart();
   if (!lines.length) {
-    toast("السلة فارغة");
+    toast(T("js.cartEmptyToast"));
     return;
   }
   const data = new FormData(e.target);
   const payMethod = data.get("payMethod");
   if (payMethod === "card") {
-    toast("الدفع بالبطاقة غير مفعّل بعد");
+    toast(T("js.cardOff"));
     return;
   }
 
@@ -492,17 +535,17 @@ function renderAdminProductList() {
   if (!list) return;
   const products = getProducts();
   if (!products.length) {
-    list.innerHTML = `<div class="empty-state">لا توجد منتجات بعد. أضيفي أول منتج من الأسفل.</div>`;
+    list.innerHTML = `<div class="empty-state">${esc(T("js.noProducts"))}</div>`;
     return;
   }
   list.innerHTML = products.map((p) => `
     <div class="admin-list-item">
-      <img src="${esc(p.image)}" alt="${esc(p.name)}">
+      <img src="${esc(p.image)}" alt="${esc(pName(p))}">
       <div class="grow">
-        <b>${esc(p.name)}</b>
-        <span>${money(p.price)} · ${esc(p.category || "بدون تصنيف")} · المخزون: ${esc(p.stock)}</span>
+        <b>${esc(pName(p))}</b>
+        <span>${money(p.price)} · ${esc(p.category || T("js.noCategory"))} · ${esc(T("js.stock"))}: ${esc(p.stock)}</span>
       </div>
-      <button class="icon-btn" title="حذف" data-action="delete-product" data-id="${esc(p.id)}">🗑</button>
+      <button class="icon-btn" title="${esc(T("js.delete"))}" data-action="delete-product" data-id="${esc(p.id)}">🗑</button>
     </div>
   `).join("");
 }
@@ -511,7 +554,7 @@ function renderAdminProductList() {
 function handleDeleteProduct(btn, id) {
   if (btn.dataset.armed !== "1") {
     btn.dataset.armed = "1";
-    btn.textContent = "تأكيد؟";
+    btn.textContent = T("js.confirm");
     btn.classList.add("danger");
     setTimeout(() => {
       btn.dataset.armed = "0";
@@ -525,7 +568,7 @@ function handleDeleteProduct(btn, id) {
   renderAdminProductList();
   renderCategoryFilter();
   refreshAll();
-  toast("تم حذف المنتج");
+  toast(T("js.productDeleted"));
 }
 
 /**
@@ -564,7 +607,7 @@ async function submitNewProduct(e) {
     try {
       imageData = await compressImage(imageFile);
     } catch {
-      toast("تعذّر قراءة الصورة — سيُستخدم شكل افتراضي");
+      toast(T("js.imgReadErr"));
     }
   }
 
@@ -585,7 +628,7 @@ async function submitNewProduct(e) {
   renderCategoryFilter();
   refreshAll();
   form.reset();
-  toast("تمت إضافة المنتج بنجاح");
+  toast(T("js.productAdded"));
 }
 
 /* ---------------- admin: orders ---------------- */
@@ -595,14 +638,14 @@ function renderAdminOrders() {
   if (!list) return;
   const orders = getOrders();
   if (!orders.length) {
-    list.innerHTML = `<div class="empty-state">لا توجد طلبات بعد.</div>`;
+    list.innerHTML = `<div class="empty-state">${esc(T("js.noOrders"))}</div>`;
     return;
   }
   list.innerHTML = orders.map((o) => `
     <div class="admin-list-item" style="align-items:flex-start;">
       <div class="grow">
-        <b>${esc(o.id)} — ${esc(o.name)} <span class="order-status">${esc(o.status || "جديد")}</span></b>
-        <span>${esc(o.phone)} · ${esc(o.city)} · ${money(o.total)} · ${esc(PAY_METHOD_LABELS[o.payMethod] || o.payMethod)}</span>
+        <b>${esc(o.id)} — ${esc(o.name)} <span class="order-status">${esc(o.status && o.status !== "جديد" ? o.status : T("js.orderNew"))}</span></b>
+        <span>${esc(o.phone)} · ${esc(o.city)} · ${money(o.total)} · ${esc(payLabel(o.payMethod))}</span>
         <span class="order-date">${esc(formatDate(o.date))}</span>
       </div>
     </div>
@@ -616,18 +659,18 @@ function renderAdminResults() {
   if (!list) return;
   const results = getUserResults();
   if (!results.length) {
-    list.innerHTML = `<div class="empty-state">لا توجد نتائج بعد. أضيفي أول نتيجة من الأسفل.</div>`;
+    list.innerHTML = `<div class="empty-state">${esc(T("js.noResults"))}</div>`;
     return;
   }
   list.innerHTML = results.map((r) => `
     <div class="admin-list-item">
-      <img src="${esc(r.before)}" alt="قبل">
-      <img src="${esc(r.after)}" alt="بعد">
+      <img src="${esc(r.before)}" alt="${esc(T("js.before"))}">
+      <img src="${esc(r.after)}" alt="${esc(T("js.after"))}">
       <div class="grow">
-        <b>${esc(r.name || r.caption || "نتيجة")}</b>
-        <span>${r.weeks ? `بعد ${esc(r.weeks)} أسابيع` : "—"}</span>
+        <b>${esc(r.name || r.caption || T("js.result"))}</b>
+        <span>${r.weeks ? esc(T("js.afterWeeksShort", { n: r.weeks })) : "—"}</span>
       </div>
-      <button class="icon-btn" title="حذف" data-action="delete-result" data-id="${esc(r.id)}">🗑</button>
+      <button class="icon-btn" title="${esc(T("js.delete"))}" data-action="delete-result" data-id="${esc(r.id)}">🗑</button>
     </div>
   `).join("");
 }
@@ -635,7 +678,7 @@ function renderAdminResults() {
 function handleDeleteResult(btn, id) {
   if (btn.dataset.armed !== "1") {
     btn.dataset.armed = "1";
-    btn.textContent = "تأكيد؟";
+    btn.textContent = T("js.confirm");
     btn.classList.add("danger");
     setTimeout(() => {
       btn.dataset.armed = "0";
@@ -647,7 +690,7 @@ function handleDeleteResult(btn, id) {
   saveUserResults(getUserResults().filter((r) => r.id !== id));
   renderAdminResults();
   renderResults();
-  toast("تم حذف النتيجة");
+  toast(T("js.resultDeleted"));
 }
 
 async function submitNewResult(e) {
@@ -657,14 +700,14 @@ async function submitNewResult(e) {
   const beforeFile = form.querySelector('[name="before"]').files[0];
   const afterFile = form.querySelector('[name="after"]').files[0];
   if (!beforeFile || !afterFile) {
-    toast('أضيفي صورتي "قبل" و"بعد"');
+    toast(T("js.needBothImages"));
     return;
   }
   let before, after;
   try {
     [before, after] = await Promise.all([compressImage(beforeFile), compressImage(afterFile)]);
   } catch {
-    toast("تعذّر قراءة الصور");
+    toast(T("js.imgsReadErr"));
     return;
   }
   const list = getUserResults();
@@ -680,7 +723,7 @@ async function submitNewResult(e) {
   renderAdminResults();
   renderResults();
   form.reset();
-  toast("تمت إضافة النتيجة");
+  toast(T("js.resultAdded"));
 }
 
 /* ---------------- admin: reviews ---------------- */
@@ -690,16 +733,16 @@ function renderAdminReviews() {
   if (!list) return;
   const reviews = getUserReviews();
   if (!reviews.length) {
-    list.innerHTML = `<div class="empty-state">لا توجد تقييمات بعد. أضيفي أول تقييم من الأسفل.</div>`;
+    list.innerHTML = `<div class="empty-state">${esc(T("js.noReviews"))}</div>`;
     return;
   }
   list.innerHTML = reviews.map((rv) => `
     <div class="admin-list-item">
       <div class="grow">
-        <b>${esc(rv.name || "عميلة")} · <span class="stars">${starString(rv.rating)}</span></b>
+        <b>${esc(rv.name || T("js.customer"))} · <span class="stars">${starString(rv.rating)}</span></b>
         <span>${esc(rv.comment || "")}</span>
       </div>
-      <button class="icon-btn" title="حذف" data-action="delete-review" data-id="${esc(rv.id)}">🗑</button>
+      <button class="icon-btn" title="${esc(T("js.delete"))}" data-action="delete-review" data-id="${esc(rv.id)}">🗑</button>
     </div>
   `).join("");
 }
@@ -707,7 +750,7 @@ function renderAdminReviews() {
 function handleDeleteReview(btn, id) {
   if (btn.dataset.armed !== "1") {
     btn.dataset.armed = "1";
-    btn.textContent = "تأكيد؟";
+    btn.textContent = T("js.confirm");
     btn.classList.add("danger");
     setTimeout(() => {
       btn.dataset.armed = "0";
@@ -719,7 +762,7 @@ function handleDeleteReview(btn, id) {
   saveUserReviews(getUserReviews().filter((r) => r.id !== id));
   renderAdminReviews();
   renderReviews();
-  toast("تم حذف التقييم");
+  toast(T("js.reviewDeleted"));
 }
 
 function submitNewReview(e) {
@@ -728,13 +771,13 @@ function submitNewReview(e) {
   const data = new FormData(form);
   const comment = (data.get("comment") || "").trim();
   if (!comment) {
-    toast("اكتبي نص التقييم");
+    toast(T("js.reviewNeed"));
     return;
   }
   const list = getUserReviews();
   list.push({
     id: uid("rv"),
-    name: (data.get("name") || "").trim() || "عميلة",
+    name: (data.get("name") || "").trim() || T("js.customer"),
     rating: Number(data.get("rating")) || 5,
     comment,
   });
@@ -742,7 +785,7 @@ function submitNewReview(e) {
   renderAdminReviews();
   renderReviews();
   form.reset();
-  toast("تمت إضافة التقييم");
+  toast(T("js.reviewAdded"));
 }
 
 /* ---------------- admin: gate & tabs ---------------- */
@@ -758,7 +801,7 @@ function checkAdminPassword(e) {
     renderAdminResults();
     renderAdminReviews();
   } else {
-    toast("كلمة المرور غير صحيحة");
+    toast(T("js.badPassword"));
   }
 }
 
@@ -774,7 +817,6 @@ function applyTheme(theme) {
   const btn = document.getElementById("themeToggle");
   if (btn) {
     btn.textContent = theme === "dark" ? "☀️" : "🌙";
-    btn.setAttribute("aria-label", theme === "dark" ? "التبديل إلى الوضع العادي" : "التبديل إلى الوضع الداكن");
   }
   try { localStorage.setItem("crown_theme", theme); } catch { /* private mode */ }
   renderResults(); // re-pick the theme-matched result images
@@ -885,7 +927,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("adminLockForm")?.addEventListener("submit", checkAdminPassword);
   document.getElementById("newProductForm")?.addEventListener("submit", submitNewProduct);
   document.getElementById("newResultForm")?.addEventListener("submit", submitNewResult);
-  document.getElementById("newReviewForm")?.addEventListener("submit", submitNewReview);
   document.getElementById("adminToggleBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.add("open"));
   document.getElementById("adminCloseBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.remove("open"));
 });
