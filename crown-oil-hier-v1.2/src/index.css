@@ -96,3 +96,58 @@ html[data-theme="dark"] body {
 }
 html[data-theme="dark"] ::-webkit-scrollbar-track { background: #0A0A14; }
 html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #7B61FF; }
+
+/* ---------- Real results — infinite right-to-left marquee ----------
+   Track holds the slides twice; translateX(0 -> -50%) loops seamlessly,
+   so images scroll continuously from right to left with no end. */
+.v12-results-viewport {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.v12-results-track {
+  display: flex;
+  width: max-content;
+  direction: ltr;
+  padding: 6px 24px;
+  animation: v12ResultsScroll 55s linear infinite;
+}
+.v12-results-viewport:hover .v12-results-track,
+.v12-results-viewport:active .v12-results-track { animation-play-state: paused; }
+@keyframes v12ResultsScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.v12-result-slide { flex: 0 0 auto; width: min(78vw, 320px); margin-right: 16px; }
+.v12-result-frame {
+  background: #ffffff;
+  border: 1px solid rgba(26,26,26,0.10);
+  border-radius: 20px;
+  padding: 8px;
+  overflow: hidden;
+  box-shadow: 0 20px 45px -28px rgba(26,26,26,0.55);
+}
+html[data-theme="dark"] .v12-result-frame {
+  background: #14141F;
+  border-color: rgba(240,239,244,0.10);
+  box-shadow: 0 20px 45px -24px rgba(0,0,0,0.6);
+}
+.v12-result-frame > img { width: 100%; height: auto; display: block; border-radius: 13px; }
+/* Theme-matched composite: white frame in light, black frame in dark.
+   Selectors match the `.v12-result-frame > img` specificity so they win. */
+.v12-result-frame > img.v12-res-dark { display: none; }
+html[data-theme="dark"] .v12-result-frame > img.v12-res-light { display: none; }
+html[data-theme="dark"] .v12-result-frame > img.v12-res-dark { display: block; }
+.v12-result-cap { display: flex; flex-direction: column; gap: 3px; padding: 12px 6px 0; text-align: center; }
+.v12-result-name {
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+  font-weight: 700; font-size: 14px; color: #CC5833;
+}
+.v12-result-comment { font-size: 13px; color: rgba(26,26,26,0.6); font-style: italic; }
+html[data-theme="dark"] .v12-result-comment { color: rgba(240,239,244,0.6); }
+html[dir="rtl"] .v12-result-name,
+html[dir="rtl"] .v12-result-comment { font-family: 'Cairo', 'IBM Plex Sans Arabic', sans-serif; }
+@media (prefers-reduced-motion: reduce) {
+  .v12-results-track { animation: none; }
+  .v12-results-viewport { overflow-x: auto; }
+}

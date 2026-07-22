@@ -5,6 +5,7 @@ import Hero from './components/Hero.jsx';
 import Features from './components/Features.jsx';
 import Philosophy from './components/Philosophy.jsx';
 import Protocol from './components/Protocol.jsx';
+import Results from './components/Results.jsx';
 import GetStarted from './components/GetStarted.jsx';
 import Footer from './components/Footer.jsx';
 
@@ -19,6 +20,7 @@ export default function App() {
         <Hero />
         <Features />
         <Philosophy />
+        <Results />
         <Protocol />
         <GetStarted />
       </main>
