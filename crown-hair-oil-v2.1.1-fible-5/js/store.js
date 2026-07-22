@@ -51,12 +51,21 @@ const DEFAULT_PRODUCTS = [
     category: "زيوت الشعر",
     categoryEn: "Hair oils",
     image: "assets/product-white.png",
+    images: ["assets/product-white.png"],
   },
 ];
 
 // V2.1.1: the retired default product photo, migrated to the new white shot.
 const LEGACY_PRODUCT_IMAGE = "assets/hero-light.jpg";
 const DEFAULT_PRODUCT_IMAGE = "assets/product-white.png";
+const MAX_PRODUCT_IMAGES = 5;
+
+/** All images for a product (up to MAX_PRODUCT_IMAGES); always ≥ 1. */
+function productImages(p) {
+  if (p && Array.isArray(p.images) && p.images.length) return p.images.slice(0, MAX_PRODUCT_IMAGES);
+  if (p && p.image) return [p.image];
+  return [DEFAULT_PRODUCT_IMAGE];
+}
 
 /** Localized product name/description; falls back to the canonical value. */
 function pName(p) { return lang() === "en" && p && p.nameEn ? p.nameEn : (p ? p.name : ""); }
@@ -141,6 +150,15 @@ function getProducts() {
     if (p.id === "p-001" && !p.nameEn) {
       const seed = DEFAULT_PRODUCTS[0];
       p.nameEn = seed.nameEn; p.descEn = seed.descEn; p.categoryEn = seed.categoryEn;
+      migrated = true;
+    }
+    // Backfill the images[] gallery for catalogs saved before multi-image support.
+    if (!Array.isArray(p.images) || !p.images.length) {
+      p.images = [p.image || DEFAULT_PRODUCT_IMAGE];
+      migrated = true;
+    }
+    if (p.images[0] && p.image !== p.images[0]) {
+      p.image = p.images[0];
       migrated = true;
     }
   });
@@ -230,6 +248,8 @@ window.__crownRerender = function () {
     renderAdminOrders();
     renderAdminResults();
     renderAdminReviews();
+    renderProductImgDraft();
+    setProductFormMode();
   }
 };
 
@@ -332,12 +352,20 @@ function renderProductGrid(filterCategory) {
     return;
   }
 
-  grid.innerHTML = filtered.map((p) => `
+  grid.innerHTML = filtered.map((p) => {
+    const imgs = productImages(p);
+    const strip = imgs.length > 1
+      ? `<div class="thumb-strip">${imgs.map((src, i) =>
+          `<button type="button" class="thumb-dot${i === 0 ? " active" : ""}" data-img="${esc(src)}" aria-label="${esc(T("js.viewImage", { n: i + 1 }))}"><img src="${esc(src)}" alt=""></button>`
+        ).join("")}</div>`
+      : "";
+    return `
     <div class="product-card">
       <div class="product-thumb">
         ${saleRibbon(p)}
-        <img src="${esc(p.image)}" alt="${esc(pName(p))}">
+        <img class="pc-main" src="${esc(imgs[0])}" alt="${esc(pName(p))}">
       </div>
+      ${strip}
       <div class="product-body">
         <h3>${esc(pName(p))}</h3>
         <p class="desc">${esc(pDesc(p))}</p>
@@ -352,7 +380,8 @@ function renderProductGrid(filterCategory) {
           ${p.stock <= 0 ? "disabled" : ""}>${p.stock <= 0 ? esc(T("js.addDisabled")) : esc(T("js.add"))}</button>
       </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 }
 
 function renderCategoryFilter() {
@@ -538,16 +567,22 @@ function renderAdminProductList() {
     list.innerHTML = `<div class="empty-state">${esc(T("js.noProducts"))}</div>`;
     return;
   }
-  list.innerHTML = products.map((p) => `
-    <div class="admin-list-item">
+  list.innerHTML = products.map((p) => {
+    const n = productImages(p).length;
+    return `
+    <div class="admin-list-item${editingProductId === p.id ? " editing" : ""}">
       <img src="${esc(p.image)}" alt="${esc(pName(p))}">
       <div class="grow">
         <b>${esc(pName(p))}</b>
-        <span>${money(p.price)} · ${esc(p.category || T("js.noCategory"))} · ${esc(T("js.stock"))}: ${esc(p.stock)}</span>
+        <span>${money(p.price)} · ${esc(T("js.stock"))}: ${esc(p.stock)}${n > 1 ? ` · 📷 ${n}` : ""}</span>
       </div>
-      <button class="icon-btn" title="${esc(T("js.delete"))}" data-action="delete-product" data-id="${esc(p.id)}">🗑</button>
+      <div class="admin-item-actions">
+        <button class="icon-btn" title="${esc(T("admin.edit"))}" aria-label="${esc(T("admin.edit"))}" data-action="edit-product" data-id="${esc(p.id)}">✏️</button>
+        <button class="icon-btn" title="${esc(T("js.delete"))}" data-action="delete-product" data-id="${esc(p.id)}">🗑</button>
+      </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 }
 
 /** Two-step delete: first tap arms the button, second tap confirms. */
@@ -596,39 +631,126 @@ function compressImage(file) {
   });
 }
 
-async function submitNewProduct(e) {
+/* ---- product add/edit form with up to 5 images ---- */
+let editingProductId = null;   // null = adding a new product
+let productImgDraft = [];      // gallery being edited (image sources / data URLs)
+let busyImg = false;
+
+/** Render the draft image thumbnails + the "add" slot into #productImgList. */
+function renderProductImgDraft() {
+  const wrap = document.getElementById("productImgList");
+  if (!wrap) return;
+  const thumbs = productImgDraft.map((src, i) => `
+    <div class="img-thumb">
+      <img src="${esc(src)}" alt="">
+      ${i === 0 ? `<span class="img-main-badge">★</span>` : ""}
+      <button type="button" class="img-remove" aria-label="${esc(T("admin.removeImage"))}" data-action="remove-img" data-i="${i}">×</button>
+    </div>
+  `).join("");
+  const addSlot = productImgDraft.length < MAX_PRODUCT_IMAGES
+    ? `<label class="img-add${busyImg ? " busy" : ""}">
+         <input type="file" accept="image/*" multiple hidden id="productImgInput" ${busyImg ? "disabled" : ""}>
+         <span>${busyImg ? "…" : "＋"}</span>
+       </label>`
+    : "";
+  wrap.innerHTML = thumbs + addSlot;
+  const count = document.getElementById("productImgCount");
+  if (count) count.textContent = T("admin.imgCount", { n: productImgDraft.length });
+}
+
+async function addDraftImages(files) {
+  const list = [...files];
+  if (!list.length) return;
+  const room = MAX_PRODUCT_IMAGES - productImgDraft.length;
+  if (room <= 0) { toast(T("js.maxImages")); return; }
+  busyImg = true;
+  renderProductImgDraft();
+  try {
+    for (const f of list.slice(0, room)) {
+      try { productImgDraft.push(await compressImage(f)); }
+      catch { toast(T("js.imgReadErr")); }
+    }
+    if (list.length > room) toast(T("js.maxImages"));
+  } finally {
+    busyImg = false;
+    renderProductImgDraft();
+  }
+}
+
+function setProductFormMode() {
+  const title = document.getElementById("productFormTitle");
+  const submit = document.getElementById("productSubmitBtn");
+  const cancel = document.getElementById("productCancelBtn");
+  const editing = !!editingProductId;
+  if (title) { title.setAttribute("data-i18n", editing ? "admin.editProduct" : "admin.addProduct"); title.textContent = T(editing ? "admin.editProduct" : "admin.addProduct"); }
+  if (submit) { submit.setAttribute("data-i18n", editing ? "admin.saveChanges" : "admin.saveProduct"); submit.textContent = T(editing ? "admin.saveChanges" : "admin.saveProduct"); }
+  if (cancel) cancel.hidden = !editing;
+}
+
+function fillProductForm(p) {
+  const form = document.getElementById("newProductForm");
+  if (!form) return;
+  form.querySelector('[name="name"]').value = p ? (p.name || "") : "";
+  form.querySelector('[name="desc"]').value = p ? (p.desc || "") : "";
+  form.querySelector('[name="price"]').value = p ? (p.price ?? "") : "";
+  form.querySelector('[name="oldPrice"]').value = p && p.oldPrice ? p.oldPrice : "";
+  form.querySelector('[name="stock"]').value = p ? (p.stock ?? "") : "";
+  form.querySelector('[name="category"]').value = p ? (p.category || "") : "";
+}
+
+function startEditProduct(id) {
+  const p = getProducts().find((x) => x.id === id);
+  if (!p) return;
+  editingProductId = id;
+  productImgDraft = productImages(p).slice();
+  fillProductForm(p);
+  renderProductImgDraft();
+  setProductFormMode();
+  renderAdminProductList();
+  document.getElementById("productFormTitle")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function resetProductForm() {
+  editingProductId = null;
+  productImgDraft = [];
+  const form = document.getElementById("newProductForm");
+  if (form) form.reset();
+  fillProductForm(null);
+  renderProductImgDraft();
+  setProductFormMode();
+  renderAdminProductList();
+}
+
+function submitProductForm(e) {
   e.preventDefault();
   const form = e.target;
   const data = new FormData(form);
-  const imageFile = form.querySelector('[name="image"]').files[0];
-
-  let imageData = null;
-  if (imageFile) {
-    try {
-      imageData = await compressImage(imageFile);
-    } catch {
-      toast(T("js.imgReadErr"));
-    }
-  }
-
-  const products = getProducts();
-  products.push({
-    id: uid("p"),
+  const images = productImgDraft.length ? productImgDraft.slice() : [DEFAULT_PRODUCT_IMAGE];
+  const fields = {
     name: data.get("name"),
     desc: data.get("desc"),
     price: Number(data.get("price")) || 0,
     oldPrice: data.get("oldPrice") ? Number(data.get("oldPrice")) : null,
     stock: Number(data.get("stock")) || 0,
     category: data.get("category") || "عام",
-    image: imageData || DEFAULT_PRODUCT_IMAGE,
-  });
-  if (!saveProducts(products)) return; // quota hit — keep form intact
+    images,
+    image: images[0],
+  };
 
-  renderAdminProductList();
+  const products = getProducts();
+  if (editingProductId) {
+    const next = products.map((p) => (p.id === editingProductId ? { ...p, ...fields } : p));
+    if (!saveProducts(next)) return; // quota hit — keep form intact
+    toast(T("js.productUpdated"));
+  } else {
+    products.push({ id: uid("p"), ...fields });
+    if (!saveProducts(products)) return;
+    toast(T("js.productAdded"));
+  }
+
+  resetProductForm();
   renderCategoryFilter();
   refreshAll();
-  form.reset();
-  toast(T("js.productAdded"));
 }
 
 /* ---------------- admin: orders ---------------- */
@@ -889,10 +1011,21 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProductGrid(activeCategory);
   });
 
-  // product grid + cart drawer + admin list (delegated actions)
+  // product image manager (add/edit form)
+  renderProductImgDraft();
+  setProductFormMode();
+
+  // product grid: add to cart + switch main image via thumbnails (delegated)
   document.getElementById("productGrid")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-action='add']");
-    if (btn) addToCart(btn.dataset.id);
+    const addBtn = e.target.closest("button[data-action='add']");
+    if (addBtn) { addToCart(addBtn.dataset.id); return; }
+    const dot = e.target.closest(".thumb-dot");
+    if (dot) {
+      const card = dot.closest(".product-card");
+      const main = card?.querySelector(".pc-main");
+      if (main) main.src = dot.dataset.img;
+      card?.querySelectorAll(".thumb-dot").forEach((d) => d.classList.toggle("active", d === dot));
+    }
   });
   document.getElementById("cartItems")?.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action]");
@@ -903,8 +1036,10 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (action === "remove") removeFromCart(id);
   });
   document.getElementById("adminProductList")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-action='delete-product']");
-    if (btn) handleDeleteProduct(btn, btn.dataset.id);
+    const del = e.target.closest("button[data-action='delete-product']");
+    if (del) { handleDeleteProduct(del, del.dataset.id); return; }
+    const edit = e.target.closest("button[data-action='edit-product']");
+    if (edit) startEditProduct(edit.dataset.id);
   });
   document.getElementById("adminResultList")?.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action='delete-result']");
@@ -919,14 +1054,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btn) switchAdminTab(btn.dataset.tab);
   });
 
+  // product image manager: pick files + remove (delegated)
+  const imgList = document.getElementById("productImgList");
+  imgList?.addEventListener("change", (e) => {
+    const input = e.target.closest('input[type="file"]');
+    if (input && input.files.length) addDraftImages(input.files);
+  });
+  imgList?.addEventListener("click", (e) => {
+    const btn = e.target.closest('button[data-action="remove-img"]');
+    if (btn) { productImgDraft.splice(Number(btn.dataset.i), 1); renderProductImgDraft(); }
+  });
+  document.getElementById("productCancelBtn")?.addEventListener("click", resetProductForm);
+
   document.getElementById("cartToggle")?.addEventListener("click", openCart);
   document.getElementById("cartClose")?.addEventListener("click", closeCart);
   document.getElementById("cartOverlay")?.addEventListener("click", closeCart);
   document.getElementById("goCheckout")?.addEventListener("click", closeCart);
   document.getElementById("checkoutForm")?.addEventListener("submit", submitOrder);
   document.getElementById("adminLockForm")?.addEventListener("submit", checkAdminPassword);
-  document.getElementById("newProductForm")?.addEventListener("submit", submitNewProduct);
+  document.getElementById("newProductForm")?.addEventListener("submit", submitProductForm);
   document.getElementById("newResultForm")?.addEventListener("submit", submitNewResult);
+  document.getElementById("newReviewForm")?.addEventListener("submit", submitNewReview);
   document.getElementById("adminToggleBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.add("open"));
   document.getElementById("adminCloseBtn")?.addEventListener("click", () => document.getElementById("adminPanel").classList.remove("open"));
 });

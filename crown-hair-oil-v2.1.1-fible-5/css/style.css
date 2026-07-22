@@ -428,6 +428,24 @@ footer{background:var(--night-2);color:rgba(246,241,230,.7);padding:64px 0 28px;
 .admin-list-item .grow b{display:block;font-size:14px;}
 .admin-list-item .grow span{font-size:12.5px;color:var(--ink-soft);}
 .icon-btn{background:none;border:1px solid var(--line);border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:13px;}
+.admin-item-actions{display:flex;gap:6px;flex-shrink:0;}
+.admin-list-item.editing{border-color:var(--terracotta);box-shadow:0 0 0 1px var(--terracotta);}
+
+/* product image manager (admin add/edit form) */
+.img-manager{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 6px;}
+.img-thumb{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--cream-2);}
+.img-thumb img{width:100%;height:100%;object-fit:cover;}
+.img-main-badge{position:absolute;top:3px;inset-inline-start:3px;background:var(--terracotta);color:#fff;font-size:10px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.img-remove{position:absolute;top:2px;inset-inline-end:2px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.img-add{width:64px;height:64px;border-radius:10px;border:1px dashed var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-soft);font-size:24px;}
+.img-add.busy{opacity:.6;cursor:default;}
+
+/* store: image switcher — thumbnails under the product image */
+.thumb-strip{display:flex;gap:6px;padding:8px 12px 0;flex-wrap:wrap;}
+.thumb-dot{width:38px;height:38px;border-radius:8px;overflow:hidden;padding:0;border:1px solid var(--line);background:#fff;cursor:pointer;flex:0 0 auto;transition:border-color .2s ease,box-shadow .2s ease;}
+.thumb-dot img{width:100%;height:100%;object-fit:cover;display:block;}
+.thumb-dot.active{border-color:var(--terracotta);box-shadow:0 0 0 1px var(--terracotta);}
+
 .lock-screen{text-align:center;padding:30px 10px;}
 .lock-screen input{max-width:240px;margin:0 auto 14px;}
 .toast{
