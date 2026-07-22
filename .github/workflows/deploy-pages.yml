@@ -6,6 +6,7 @@ on:
     paths:
       - "crown-hair-oil-mobile-app-v2.1.1-fible-5/**"
       - "crown-oil-hier-v1.2/**"
+      - "crown-hair-oil-v2.1.1-fible-5/**"
       - "landing/**"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
@@ -45,10 +46,16 @@ jobs:
       - name: Assemble site
         run: |
           rm -rf _site
-          mkdir -p _site/app _site/v1.2
+          mkdir -p _site/app _site/v1.2 _site/store
           cp -r landing/. _site/
           cp -r crown-hair-oil-mobile-app-v2.1.1-fible-5/dist/. _site/app/
           cp -r crown-oil-hier-v1.2/dist/. _site/v1.2/
+          # Web store (static HTML + JS, no build) — served under /store
+          cp -r crown-hair-oil-v2.1.1-fible-5/assets _site/store/
+          cp -r crown-hair-oil-v2.1.1-fible-5/css _site/store/
+          cp -r crown-hair-oil-v2.1.1-fible-5/js _site/store/
+          cp crown-hair-oil-v2.1.1-fible-5/index.html _site/store/
+          cp crown-hair-oil-v2.1.1-fible-5/store.html _site/store/
 
       - uses: actions/configure-pages@v5
         with:

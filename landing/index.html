@@ -63,10 +63,10 @@
   }
   .hero p{max-width:560px; margin:0 auto; color:var(--ink-soft); font-size:clamp(15px,2.4vw,18px); line-height:1.9;}
   .cards{
-    display:grid; grid-template-columns:repeat(2,1fr); gap:22px;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:22px;
     padding:22px 0 40px;
   }
-  @media (max-width:720px){ .cards{grid-template-columns:1fr;} }
+  @media (max-width:560px){ .cards{grid-template-columns:1fr;} }
   .card{
     position:relative; border-radius:26px; overflow:hidden;
     border:1px solid var(--line); background:var(--surface);
@@ -169,6 +169,21 @@
           </span>
         </div>
       </a>
+
+      <a class="card" href="./store/">
+        <div class="card-media contain">
+          <span class="badge" data-i18n="card3.badge">متجر ويب</span>
+          <img src="./assets/product-white.png" alt="Crown Hair Oil">
+        </div>
+        <div class="card-body">
+          <h2 data-i18n="card3.h2">المتجر الإلكتروني (ويب)</h2>
+          <p data-i18n="card3.p">نسخة ويب كاملة تعمل في المتصفح مباشرة: تصفّح المنتجات، سلة، دفع، ولوحة تحكم — بدون تثبيت.</p>
+          <span class="card-cta">
+            <span data-i18n="card3.cta">افتح متجر الويب</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </span>
+        </div>
+      </a>
     </section>
 
     <section class="share">
@@ -221,6 +236,10 @@
         "card2.h2": "النسخة السينمائية",
         "card2.p": "صفحة تعريفية غامرة بحركات وانتقالات ناعمة تحكي قصة المنتج ومكوّناته وطريقة عمله — تجربة بصرية فاخرة.",
         "card2.cta": "شاهدي التجربة",
+        "card3.badge": "متجر ويب",
+        "card3.h2": "المتجر الإلكتروني (ويب)",
+        "card3.p": "نسخة ويب كاملة تعمل في المتصفح مباشرة: تصفّح المنتجات، سلة، دفع، ولوحة تحكم — بدون تثبيت.",
+        "card3.cta": "افتح متجر الويب",
         "share.h3": "شاركي الموقع",
         "share.wa": "واتساب", "share.x": "X", "share.fb": "فيسبوك", "share.tg": "تيليجرام", "share.copy": "نسخ الرابط", "share.native": "مشاركة",
         "footer.rights": "جميع الحقوق محفوظة",
@@ -243,6 +262,10 @@
         "card2.h2": "Cinematic edition",
         "card2.p": "An immersive showcase with smooth motion and transitions telling the product's story, ingredients and how it works — a premium visual experience.",
         "card2.cta": "See the experience",
+        "card3.badge": "Web store",
+        "card3.h2": "Web store",
+        "card3.p": "A full web version that runs right in the browser: browse products, cart, checkout and an admin dashboard — no install.",
+        "card3.cta": "Open the web store",
         "share.h3": "Share the site",
         "share.wa": "WhatsApp", "share.x": "X", "share.fb": "Facebook", "share.tg": "Telegram", "share.copy": "Copy link", "share.native": "Share",
         "footer.rights": "All rights reserved",
