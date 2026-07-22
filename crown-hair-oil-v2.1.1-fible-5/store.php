@@ -198,7 +198,7 @@
         <h3 style="font-size:16px;margin-bottom:14px;" data-i18n="admin.curProducts">المنتجات الحالية</h3>
         <div id="adminProductList"></div>
 
-        <h3 style="font-size:16px;margin:30px 0 14px;" data-i18n="admin.addProduct">إضافة منتج جديد</h3>
+        <h3 id="productFormTitle" style="font-size:16px;margin:30px 0 14px;" data-i18n="admin.addProduct">إضافة منتج جديد</h3>
         <form id="newProductForm">
           <div class="field">
             <label for="p-name" data-i18n="admin.pName">اسم المنتج</label>
@@ -229,11 +229,12 @@
             </div>
           </div>
           <div class="field">
-            <label for="p-image" data-i18n="admin.pImage">صورة المنتج</label>
-            <input id="p-image" type="file" name="image" accept="image/*">
-            <small class="field-hint" data-i18n="admin.imgHint">يتم ضغط الصورة تلقائياً لتناسب التخزين المحلي.</small>
+            <span data-i18n="admin.pImages">صور المنتج (حتى 5)</span>
+            <div class="img-manager" id="productImgList"></div>
+            <small class="field-hint"><span data-i18n="admin.imagesHint">أضيفي حتى 5 صور — الأولى هي الصورة الرئيسية. تُضغط الصور تلقائياً.</span> · <span id="productImgCount"></span></small>
           </div>
-          <button type="submit" class="btn btn-primary" data-i18n="admin.saveProduct">حفظ المنتج</button>
+          <button type="submit" id="productSubmitBtn" class="btn btn-primary" data-i18n="admin.saveProduct">حفظ المنتج</button>
+          <button type="button" id="productCancelBtn" class="btn btn-ghost" data-i18n="admin.cancelEdit" hidden>إلغاء التعديل</button>
         </form>
       </div>
 
