@@ -91,8 +91,18 @@ const DEFAULT_PRODUCTS = [
     category: "زيوت الشعر",
     categoryEn: "Hair oils",
     image: "assets/product-white.png",
+    images: ["assets/product-white.png"],
   },
 ];
+
+export const MAX_PRODUCT_IMAGES = 5;
+
+/** All images for a product (up to MAX_PRODUCT_IMAGES); always ≥ 1. */
+export function productImages(p) {
+  if (p && Array.isArray(p.images) && p.images.length) return p.images.slice(0, MAX_PRODUCT_IMAGES);
+  if (p && p.image) return [p.image];
+  return [DEFAULT_PRODUCT_IMAGE];
+}
 
 function readJSON(key, fallback) {
   try {
@@ -147,6 +157,16 @@ export function loadProducts() {
   products.forEach((p) => {
     if (p.image === LEGACY_PRODUCT_IMAGE) {
       p.image = DEFAULT_PRODUCT_IMAGE;
+      migrated = true;
+    }
+    // Backfill the images[] gallery for catalogs saved before multi-image support.
+    if (!Array.isArray(p.images) || !p.images.length) {
+      p.images = [p.image || DEFAULT_PRODUCT_IMAGE];
+      migrated = true;
+    }
+    // Keep the primary image in sync with the first gallery image.
+    if (p.images[0] && p.image !== p.images[0]) {
+      p.image = p.images[0];
       migrated = true;
     }
   });

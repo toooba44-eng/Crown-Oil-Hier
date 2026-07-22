@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { money, pName, pDesc } from '../lib/store.js';
+import { money, pName, pDesc, productImages } from '../lib/store.js';
 
 const ALL = '__all__';
 
@@ -13,6 +13,92 @@ function stockNote(stock, t) {
   if (stock <= 0) return <span className="stock-note out">{t('store.stockOut')}</span>;
   if (stock <= 5) return <span className="stock-note low">{t('store.stockLow', { n: stock })}</span>;
   return <span className="stock-note">{t('store.stockIn')}</span>;
+}
+
+/** Small thumbnail switcher shown under the main image when a product has >1 image. */
+function ThumbStrip({ imgs, idx, onPick, t, className }) {
+  if (imgs.length <= 1) return null;
+  return (
+    <div className={'thumb-strip' + (className ? ' ' + className : '')}>
+      {imgs.map((src, i) => (
+        <button
+          key={i}
+          type="button"
+          className={'thumb-dot' + (i === idx ? ' active' : '')}
+          aria-label={t('store.viewImage', { n: i + 1 })}
+          aria-pressed={i === idx}
+          onClick={(e) => { e.stopPropagation(); onPick(i); }}
+        >
+          <img src={src} alt="" />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ProductCard({ p, lang, t, onAdd, onOpen }) {
+  const imgs = productImages(p);
+  const [active, setActive] = useState(0);
+  const idx = Math.min(active, imgs.length - 1);
+  return (
+    <article className="product-card">
+      <button className="product-thumb" onClick={() => onOpen(p)} aria-label={t('store.detailsOf', { name: pName(p, lang) })}>
+        {saleBadge(p, t)}
+        <img src={imgs[idx]} alt={pName(p, lang)} loading="lazy" />
+      </button>
+      <ThumbStrip imgs={imgs} idx={idx} onPick={setActive} t={t} />
+      <div className="product-body">
+        <h3>{pName(p, lang)}</h3>
+        <div className="price-row">
+          <span className="price">{money(p.price)}</span>
+          {p.oldPrice ? <span className="price-old">{money(p.oldPrice)}</span> : null}
+          {stockNote(p.stock, t)}
+        </div>
+        <button className="btn btn-primary btn-block" disabled={p.stock <= 0} onClick={() => onAdd(p.id)}>
+          {p.stock <= 0 ? t('store.stockOut') : t('store.add')}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function DetailSheet({ p, lang, t, onAdd, onClose }) {
+  const imgs = productImages(p);
+  const [active, setActive] = useState(0);
+  const idx = Math.min(active, imgs.length - 1);
+  return (
+    <div className="sheet-overlay" onClick={onClose}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="sheet-handle" />
+        <img className="sheet-img" src={imgs[idx]} alt={pName(p, lang)} />
+        <ThumbStrip imgs={imgs} idx={idx} onPick={setActive} t={t} className="sheet-thumbs" />
+        <h2>{pName(p, lang)}</h2>
+        <p className="sheet-desc">{pDesc(p, lang)}</p>
+        <div className="price-row">
+          <span className="price">{money(p.price)}</span>
+          {p.oldPrice ? <span className="price-old">{money(p.oldPrice)}</span> : null}
+          {stockNote(p.stock, t)}
+        </div>
+        <button
+          className="btn btn-primary btn-block"
+          disabled={p.stock <= 0}
+          onClick={() => { onAdd(p.id); onClose(); }}
+        >
+          {p.stock <= 0 ? t('store.stockOut') : t('store.add')}
+        </button>
+        <button className="btn btn-ghost btn-block" onClick={onClose}>{t('store.close')}</button>
+      </div>
+    </div>
+  );
+}
+
+function Stars({ rating, t }) {
+  const n = Math.max(0, Math.min(5, Math.round(rating || 0)));
+  return (
+    <span className="stars" aria-label={t('store.starsAria', { n })}>
+      {'★★★★★☆☆☆☆☆'.slice(5 - n, 10 - n)}
+    </span>
+  );
 }
 
 function ResultSlide({ r, theme, t, ariaHidden }) {
@@ -42,15 +128,6 @@ function ResultSlide({ r, theme, t, ariaHidden }) {
   );
 }
 
-function Stars({ rating, t }) {
-  const n = Math.max(0, Math.min(5, Math.round(rating || 0)));
-  return (
-    <span className="stars" aria-label={t('store.starsAria', { n })}>
-      {'★★★★★☆☆☆☆☆'.slice(5 - n, 10 - n)}
-    </span>
-  );
-}
-
 export default function Store({ products, results = [], reviews = [], theme, lang = 'ar', t, onAdd }) {
   const [cat, setCat] = useState(ALL);
   const [detail, setDetail] = useState(null); // product shown in the bottom sheet
@@ -59,7 +136,6 @@ export default function Store({ products, results = [], reviews = [], theme, lan
     () => [ALL, ...new Set(products.map((p) => p.category).filter(Boolean))],
     [products]
   );
-  // Map each category to its English label so chips localize too.
   const catEn = useMemo(() => {
     const m = {};
     products.forEach((p) => { if (p.category) m[p.category] = p.categoryEn || p.category; });
@@ -84,23 +160,7 @@ export default function Store({ products, results = [], reviews = [], theme, lan
       ) : (
         <div className="product-list">
           {filtered.map((p) => (
-            <article className="product-card" key={p.id}>
-              <button className="product-thumb" onClick={() => setDetail(p)} aria-label={t('store.detailsOf', { name: pName(p, lang) })}>
-                {saleBadge(p, t)}
-                <img src={p.image} alt={pName(p, lang)} loading="lazy" />
-              </button>
-              <div className="product-body">
-                <h3>{pName(p, lang)}</h3>
-                <div className="price-row">
-                  <span className="price">{money(p.price)}</span>
-                  {p.oldPrice ? <span className="price-old">{money(p.oldPrice)}</span> : null}
-                  {stockNote(p.stock, t)}
-                </div>
-                <button className="btn btn-primary btn-block" disabled={p.stock <= 0} onClick={() => onAdd(p.id)}>
-                  {p.stock <= 0 ? t('store.stockOut') : t('store.add')}
-                </button>
-              </div>
-            </article>
+            <ProductCard key={p.id} p={p} lang={lang} t={t} onAdd={onAdd} onOpen={setDetail} />
           ))}
         </div>
       )}
@@ -145,27 +205,7 @@ export default function Store({ products, results = [], reviews = [], theme, lan
       )}
 
       {detail && (
-        <div className="sheet-overlay" onClick={() => setDetail(null)}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="sheet-handle" />
-            <img className="sheet-img" src={detail.image} alt={pName(detail, lang)} />
-            <h2>{pName(detail, lang)}</h2>
-            <p className="sheet-desc">{pDesc(detail, lang)}</p>
-            <div className="price-row">
-              <span className="price">{money(detail.price)}</span>
-              {detail.oldPrice ? <span className="price-old">{money(detail.oldPrice)}</span> : null}
-              {stockNote(detail.stock, t)}
-            </div>
-            <button
-              className="btn btn-primary btn-block"
-              disabled={detail.stock <= 0}
-              onClick={() => { onAdd(detail.id); setDetail(null); }}
-            >
-              {detail.stock <= 0 ? t('store.stockOut') : t('store.add')}
-            </button>
-            <button className="btn btn-ghost btn-block" onClick={() => setDetail(null)}>{t('store.close')}</button>
-          </div>
-        </div>
+        <DetailSheet p={detail} lang={lang} t={t} onAdd={onAdd} onClose={() => setDetail(null)} />
       )}
     </div>
   );
