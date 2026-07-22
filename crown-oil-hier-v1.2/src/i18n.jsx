@@ -45,6 +45,10 @@ const EN = {
   'features.h1': 'Three instruments,',
   'features.h2': 'one ritual.',
 
+  'results.eyebrow': 'Before / After',
+  'results.h': 'Real results',
+  'results.sub': 'Actual before/after photos from our customers.',
+
   'shuffler.title': 'Botanical Complex',
   'shuffler.sub': 'Three actives, one formula — cycling through the ritual stack.',
   'shuffler.item1': 'Argan Oil',
@@ -126,6 +130,10 @@ const AR = {
   'features.eyebrow': 'التركيبة',
   'features.h1': 'ثلاث أدوات،',
   'features.h2': 'طقسٌ واحد.',
+
+  'results.eyebrow': 'قبل / بعد',
+  'results.h': 'نتائج حقيقية',
+  'results.sub': 'صور فعلية من عميلاتنا قبل وبعد استخدام الزيت.',
 
   'shuffler.title': 'المركّب النباتي',
   'shuffler.sub': 'ثلاثة عناصر فعّالة في تركيبة واحدة — تتناوب داخل طقس العناية.',
