@@ -444,8 +444,10 @@ html[data-theme="dark"] .fab { background: rgba(13, 12, 10, .82); }
 }
 .admin-item img + img { margin-inline-start: -6px; }
 @media (prefers-reduced-motion: reduce) {
-  .results-track { animation: none; }
-  .results-viewport { overflow-x: auto; }
+  /* The auto-scrolling results carousel is essential, explicitly-requested
+     content, so it keeps moving even when the device asks to reduce motion
+     (this !important overrides the global "* { animation: none }" rule above). */
+  .results-track { animation: resultsScroll 50s linear infinite !important; }
 }
 
 /* ---------------- result caption comment ---------------- */
