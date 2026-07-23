@@ -148,6 +148,6 @@ html[data-theme="dark"] .v12-result-comment { color: rgba(240,239,244,0.6); }
 html[dir="rtl"] .v12-result-name,
 html[dir="rtl"] .v12-result-comment { font-family: 'Cairo', 'IBM Plex Sans Arabic', sans-serif; }
 @media (prefers-reduced-motion: reduce) {
-  .v12-results-track { animation: none; }
-  .v12-results-viewport { overflow-x: auto; }
+  /* Requested auto-scroll — keep it moving even under reduced-motion. */
+  .v12-results-track { animation: v12ResultsScroll 55s linear infinite !important; }
 }
