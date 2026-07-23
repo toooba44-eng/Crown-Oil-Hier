@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useLang } from '../i18n.jsx';
+import { orderHref } from '../orderLink.js';
 
 export default function Hero() {
   const { t } = useLang();
   const scope = useRef(null);
+  const orderTo = orderHref();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -56,7 +58,7 @@ export default function Hero() {
           </p>
           <div className="hero-cta mt-9 flex flex-wrap items-center gap-4">
             <a
-              href="#start"
+              href={orderTo}
               className="btn-magnetic inline-flex items-center rounded-full px-7 py-3.5 text-sm font-semibold font-jakarta bg-clay text-ghost shadow-clay"
             >
               <span className="btn-bg bg-plasma" />

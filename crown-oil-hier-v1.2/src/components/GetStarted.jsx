@@ -3,12 +3,14 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, ShieldCheck, Truck } from 'lucide-react';
 import { useLang } from '../i18n.jsx';
+import { orderHref } from '../orderLink.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function GetStarted() {
   const { t } = useLang();
   const scope = useRef(null);
+  const orderTo = orderHref();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -52,7 +54,7 @@ export default function GetStarted() {
             </div>
 
             <a
-              href="#"
+              href={orderTo}
               className="start-reveal btn-magnetic mt-7 inline-flex items-center gap-2 rounded-full px-8 py-4 text-sm font-semibold font-jakarta bg-clay text-ghost shadow-clay"
             >
               <span className="btn-bg bg-plasma" />

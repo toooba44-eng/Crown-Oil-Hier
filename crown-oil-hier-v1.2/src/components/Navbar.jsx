@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLang } from '../i18n.jsx';
+import { orderHref } from '../orderLink.js';
 
 export default function Navbar() {
   const { lang, setLang, t } = useLang();
+  const orderTo = orderHref();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState(() => document.documentElement.dataset.theme || 'light');
@@ -119,7 +121,7 @@ export default function Navbar() {
             {theme === 'dark' ? '☀️' : '\u{1F319}'}
           </button>
           <a
-            href="#start"
+            href={orderTo}
             className="btn-magnetic inline-flex items-center rounded-full px-5 py-2 text-sm font-semibold font-jakarta bg-clay text-ghost"
           >
             <span className="btn-bg bg-moss" />
@@ -193,7 +195,7 @@ export default function Navbar() {
             </li>
             <li>
               <a
-                href="#start"
+                href={orderTo}
                 onClick={() => setOpen(false)}
                 className="btn-magnetic mt-2 inline-flex items-center rounded-full px-5 py-2.5 text-sm font-semibold font-jakarta bg-clay text-ghost"
               >
