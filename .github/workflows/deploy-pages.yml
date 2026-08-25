@@ -39,7 +39,8 @@ jobs:
           rm -rf _site
           mkdir -p _site
           cp -r crown-hair-oil-v3/dist/. _site/
-          cp -r assets _site/assets
+          mkdir -p _site/assets
+          cp -r assets/. _site/assets/
           cp "Hair after-before 1.jpg" _site/
           cp "Hair after-before 2.jpg" _site/
           cp "Hair after-before 3.jpg" _site/
