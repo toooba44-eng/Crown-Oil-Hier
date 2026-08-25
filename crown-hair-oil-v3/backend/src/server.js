@@ -5,6 +5,8 @@ import cors from 'cors'
 import { rateLimit } from 'express-rate-limit'
 import pg from 'pg'
 import { z } from 'zod'
+import { paymentProviderStatus } from './providers/payment.js'
+import { shippingProviderStatus } from './providers/shipping.js'
 
 const { Pool } = pg
 const app = express()
@@ -47,6 +49,17 @@ app.get('/api/v1/health', async (_req, res) => {
   }
 })
 
+app.get('/api/v1/integrations/status', (_req, res) => {
+  const payment = paymentProviderStatus()
+  const shipping = shippingProviderStatus()
+  res.json({
+    database: Boolean(pool),
+    payment: { provider: payment.provider, configured: payment.configured },
+    shipping: { provider: shipping.provider, configured: shipping.configured },
+    adminAuth: false,
+  })
+})
+
 app.get('/api/v1/products', requireDatabase, async (_req, res, next) => {
   try {
     const { rows } = await pool.query(`select id, slug, name_ar, name_en, description_ar, description_en, price_sar, size_label, sku, stock_qty, active from products where active = true order by created_at asc`)
@@ -66,8 +79,6 @@ app.post('/api/v1/checkout', requireDatabase, async (req, res, next) => {
   const parsed = checkoutSchema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'invalid_checkout', details: parsed.error.flatten() })
 
-  // Important: totals, stock, VAT and shipping must be recalculated server-side.
-  // A payment session is intentionally NOT created until a real gateway is configured.
   try {
     const client = await pool.connect()
     try {
@@ -76,18 +87,33 @@ app.post('/api/v1/checkout', requireDatabase, async (req, res, next) => {
       const normalizedItems = []
       for (const item of parsed.data.items) {
         const { rows } = await client.query(`select id, sku, name_ar, price_sar, stock_qty from products where sku=$1 and active=true for update`, [item.sku])
-        const product = rows[0]
-        if (!product) throw Object.assign(new Error('product_not_found'), { status: 400 })
-        if (product.stock_qty < item.quantity) throw Object.assign(new Error('insufficient_stock'), { status: 409 })
-        const unit = Number(product.price_sar)
+        const row = rows[0]
+        if (!row) throw Object.assign(new Error('product_not_found'), { status: 400 })
+        if (row.stock_qty < item.quantity) throw Object.assign(new Error('insufficient_stock'), { status: 409 })
+        const unit = Number(row.price_sar)
         subtotal += unit * item.quantity
-        normalizedItems.push({ ...item, productId: product.id, unitPrice: unit, name: product.name_ar })
+        normalizedItems.push({ ...item, productId: row.id, unitPrice: unit, name: row.name_ar })
       }
 
+      const payment = paymentProviderStatus()
+      const shipping = shippingProviderStatus()
       await client.query('rollback')
+
+      if (!shipping.configured) {
+        return res.status(501).json({
+          error: 'shipping_provider_not_configured',
+          preview: { subtotal, items: normalizedItems },
+        })
+      }
+      if (parsed.data.paymentMethod === 'card' && !payment.configured) {
+        return res.status(501).json({
+          error: 'payment_gateway_not_configured',
+          preview: { subtotal, items: normalizedItems },
+        })
+      }
+
       return res.status(501).json({
-        error: 'payment_gateway_not_configured',
-        message: 'Checkout validation succeeded, but production payment creation is disabled until gateway credentials and webhook verification are configured.',
+        error: 'commerce_provider_adapters_not_implemented',
         preview: { subtotal, items: normalizedItems },
       })
     } finally { client.release() }
