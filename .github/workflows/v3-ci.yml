@@ -1,0 +1,52 @@
+name: Crown V3 CI
+
+on:
+  push:
+    branches: [crown-v3-redesign]
+    paths:
+      - "crown-hair-oil-v3/**"
+      - ".github/workflows/v3-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "crown-hair-oil-v3/**"
+      - ".github/workflows/v3-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  storefront:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crown-hair-oil-v3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install frontend dependencies
+        run: npm install
+      - name: Build V3 storefront
+        run: npm run build
+      - name: Upload V3 build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crown-hair-oil-v3-dist
+          path: crown-hair-oil-v3/dist
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crown-hair-oil-v3/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install backend dependencies
+        run: npm install
+      - name: Validate backend syntax
+        run: node --check src/server.js

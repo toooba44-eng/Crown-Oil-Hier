@@ -1,13 +1,12 @@
-name: Deploy sites to GitHub Pages
+name: Deploy Crown Hair Oil to GitHub Pages
 
 on:
   push:
-    branches: [main, claude/code-application-llet2j]
+    branches: [main]
     paths:
-      - "crown-hair-oil-mobile-app-v2.1.1-fible-5/**"
-      - "crown-oil-hier-v1.2/**"
-      - "crown-hair-oil-v2.1.1-fible-5/**"
-      - "landing/**"
+      - "crown-hair-oil-v3/**"
+      - "assets/**"
+      - "Hair after-before *.jpg"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
@@ -29,33 +28,23 @@ jobs:
         with:
           node-version: 22
 
-      # Mobile app (v2.1.1) — served under /app
-      - name: Build mobile app
-        working-directory: crown-hair-oil-mobile-app-v2.1.1-fible-5
+      - name: Build Crown Hair Oil V3
+        working-directory: crown-hair-oil-v3
         run: |
-          npm ci
+          npm install
           npm run build
 
-      # Cinematic landing page (v1.2) — served under /v1.2
-      - name: Build v1.2 landing page
-        working-directory: crown-oil-hier-v1.2
-        run: |
-          npm ci
-          npm run build
-
-      - name: Assemble site
+      - name: Assemble production site
         run: |
           rm -rf _site
-          mkdir -p _site/app _site/v1.2 _site/store
-          cp -r landing/. _site/
-          cp -r crown-hair-oil-mobile-app-v2.1.1-fible-5/dist/. _site/app/
-          cp -r crown-oil-hier-v1.2/dist/. _site/v1.2/
-          # Web store (static HTML + JS, no build) — served under /store
-          cp -r crown-hair-oil-v2.1.1-fible-5/assets _site/store/
-          cp -r crown-hair-oil-v2.1.1-fible-5/css _site/store/
-          cp -r crown-hair-oil-v2.1.1-fible-5/js _site/store/
-          cp crown-hair-oil-v2.1.1-fible-5/index.html _site/store/
-          cp crown-hair-oil-v2.1.1-fible-5/store.html _site/store/
+          mkdir -p _site
+          cp -r crown-hair-oil-v3/dist/. _site/
+          cp -r assets _site/assets
+          cp "Hair after-before 1.jpg" _site/
+          cp "Hair after-before 2.jpg" _site/
+          cp "Hair after-before 3.jpg" _site/
+          cp "Hair after-before 4.jpg" _site/
+          cp "Hair after-before 5.jpg" _site/
 
       - uses: actions/configure-pages@v5
         with:
