@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import AdminDashboard from './admin/AdminDashboard.jsx'
 import './styles.css'
+import './overrides.css'
 
 const params = new URLSearchParams(window.location.search)
 const RootView = params.get('admin') === 'preview' ? AdminDashboard : App
