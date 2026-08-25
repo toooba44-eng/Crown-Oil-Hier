@@ -1,0 +1,20 @@
+{
+  "name": "Crown Hair Oil",
+  "short_name": "Crown",
+  "description": "Botanical hair and scalp care.",
+  "start_url": "/Crown-Oil-Hier/",
+  "scope": "/Crown-Oil-Hier/",
+  "display": "standalone",
+  "background_color": "#F7F3EA",
+  "theme_color": "#2B3024",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/Crown-Oil-Hier/assets/logo.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
