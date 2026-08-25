@@ -1,0 +1,39 @@
+name: Crown V3 CI
+
+on:
+  push:
+    branches: [crown-v3-redesign]
+    paths:
+      - "crown-hair-oil-v3/**"
+      - ".github/workflows/v3-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "crown-hair-oil-v3/**"
+      - ".github/workflows/v3-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crown-hair-oil-v3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: crown-hair-oil-v3/package-lock.json
+      - name: Install dependencies
+        run: npm install
+      - name: Build V3
+        run: npm run build
+      - name: Upload V3 build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crown-hair-oil-v3-dist
+          path: crown-hair-oil-v3/dist
