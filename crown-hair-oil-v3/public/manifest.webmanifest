@@ -11,10 +11,10 @@
   "dir": "rtl",
   "icons": [
     {
-      "src": "/Crown-Oil-Hier/assets/logo.jpg",
+      "src": "/Crown-Oil-Hier/icon.svg",
       "sizes": "any",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
