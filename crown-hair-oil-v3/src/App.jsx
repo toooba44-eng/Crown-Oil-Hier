@@ -202,11 +202,12 @@ export default function App() {
           <div className="hero-copy hero-sequence">
             <p className="eyebrow">BOTANICAL HAIR & SCALP OIL</p>
             <h1>العناية بشعرك<br /><em>تبدأ من الجذور.</em></h1>
-            <p className="lead">مزيج نباتي دافئ من الأرغان والروزماري والزيتون، صُمم ليجعل عنايتك بالشعر طقسًا بسيطًا تستمتعين به.</p>
-            <div className="hero-meta"><span className="stars">★★★★★</span><span>100 مل</span><span>119 ر.س</span></div>
+            <p className="lead">مزيج نباتي غني بزيت الأرغان والروزماري والزيتون، صُمم ليكون طقسًا بسيطًا للعناية بالشعر وفروة الرأس.</p>
+            <div className="hero-rating"><span className="stars">★★★★★</span><span>تجربة Crown للعناية اليومية</span></div>
+            <div className="hero-price"><strong>119</strong><span>ر.س · 100 مل</span></div>
             <div className="hero-actions">
-              <button className="primary" onClick={addToCart}>تسوّقي Crown</button>
-              <a className="text-action" href="#ingredients">اكتشفي المكونات <span>↗</span></a>
+              <button className="primary" onClick={addToCart}>تسوّقي الآن</button>
+              <a className="secondary" href="#ingredients">اكتشفي المكونات</a>
             </div>
             <div className="micro"><span>زيوت نباتية مختارة</span><span>لجميع أنواع الشعر</span><span>توصيل داخل المملكة</span></div>
           </div>
@@ -235,12 +236,12 @@ export default function App() {
         <section id="ingredients" className="section ingredients" data-reveal>
           <div className="section-title">
             <div><p className="eyebrow">WHAT'S INSIDE</p><h2>ثلاثة مكونات.<br />فلسفة واحدة.</h2></div>
-            <p>قلب تركيبة Crown النباتية في ثلاث مكونات بارزة، مع تجربة بصرية أكثر هدوءًا ووضوحًا.</p>
+            <p>قلب تركيبة Crown النباتية: مكونات مألوفة ضمن روتين عناية بسيط ومقصود.</p>
           </div>
           <div className="ingredient-grid">
-            {ingredients.map((item, index) => (
-              <article key={item.name} className="ingredient-card">
-                <div className={`ingredient-art ${item.className}`}><span>0{index + 1}</span></div>
+            {ingredients.map((item, i) => (
+              <article className="ingredient-card" key={item.name}>
+                <div className={`ingredient-art ${item.className}`}><span>0{i + 1}</span></div>
                 <div className="ingredient-copy"><h3>{item.name}</h3><p>{item.copy}</p></div>
               </article>
             ))}
@@ -248,74 +249,68 @@ export default function App() {
         </section>
 
         <section id="product" className="section product" data-reveal>
-          <div className="product-image"><img src={`${A}assets/hero-detail.jpg`} alt="Crown Hair Oil 100ml" /></div>
+          <div className="product-image"><img src={`${A}assets/hero-detail.jpg`} alt="Crown Hair Oil 100 ml" /></div>
           <div className="product-copy">
             <p className="eyebrow">THE SIGNATURE OIL</p>
             <h2>Crown Hair Oil</h2>
             <p className="muted">Botanical Hair & Scalp Oil · 100 ml</p>
-            <div className="stars">★★★★★</div>
-            <p>زيت عناية نباتي للشعر وفروة الرأس، يجمع الأرغان والروزماري والزيتون في خطوة واحدة سهلة داخل روتينك.</p>
-            <div className="product-price">119 <small>ر.س</small><span>شامل الضريبة</span></div>
+            <p>زيت عناية نباتي للشعر وفروة الرأس يجمع الأرغان والروزماري والزيتون في خطوة واحدة سهلة ضمن روتينك.</p>
+            <div className="product-price">119 <small>ر.س</small><span>السعر يشمل الضريبة</span></div>
             <div className="buy-row"><Qty value={qty} setValue={setQty} /><button className="primary" onClick={addToCart}>أضيفي للسلة</button></div>
             <button className="buy-now" onClick={buyNow}>اشتري الآن</button>
-            <div className="product-trust"><span>توصيل داخل المملكة</span><span>تكلفة الشحن عند الدفع</span><span>سياسة استرجاع واضحة</span></div>
+            <div className="product-trust"><span>تجربة دفع آمنة عند التفعيل</span><span>توصيل داخل المملكة</span><span>سياسة استرجاع واضحة</span></div>
           </div>
         </section>
 
         <section id="results" className="section results" data-reveal>
           <div className="section-title">
-            <div><p className="eyebrow">CROWN COMMUNITY</p><h2>تجارب من مجتمع Crown.</h2></div>
-            <p>نتائج من الأرشيف الحالي للعلامة. تختلف النتائج الفردية باختلاف نوع الشعر والروتين.</p>
+            <div><p className="eyebrow">CROWN COMMUNITY</p><h2>من مجتمع Crown</h2></div>
+            <p>مجموعة من صور النتائج الموجودة في أرشيف Crown. تختلف النتائج من شخص لآخر.</p>
           </div>
           <ResultGallery />
         </section>
 
         <section id="ritual" className="section ritual" data-reveal>
-          <div><p className="eyebrow">THE RITUAL</p><h2>ثلاث خطوات<br />لروتين Crown.</h2><p className="ritual-intro">وقت قصير، حركة هادئة، وعناية تبدأ من فروة الرأس.</p></div>
+          <div><p className="eyebrow">THE RITUAL</p><h2>ثلاث خطوات<br />لروتين Crown.</h2><p className="ritual-intro">روتين بسيط صُمم ليدخل بسهولة في أسبوعك دون تعقيد.</p></div>
           <ol>
             <li><b>01</b><span><strong>قسّمي الشعر</strong>للوصول إلى فروة الرأس بسهولة.</span></li>
-            <li><b>02</b><span><strong>ضعي ودلّكي</strong>استخدمي كمية مناسبة ودلّكي بلطف بحركات دائرية.</span></li>
+            <li><b>02</b><span><strong>ضعي ودلّكي</strong>استخدمي كمية مناسبة ودلّكي فروة الرأس بلطف.</span></li>
             <li><b>03</b><span><strong>أكملي روتينك</strong>وزّعي ما يلزم على الأطراف حسب احتياج شعرك.</span></li>
           </ol>
         </section>
 
-        <section className="commerce-band" data-reveal>
-          <article><small>DELIVERY</small><b>توصيل داخل السعودية</b><span>تُحسب الرسوم النهائية عند إتمام الطلب.</span></article>
-          <article><small>PAYMENT</small><b>Checkout مبسط</b><span>واجهة جاهزة لمدى والبطاقات وApple Pay عند الربط الإنتاجي.</span></article>
-          <article><small>SUPPORT</small><b>نحن هنا للمساعدة</b><span>تواصلي معنا من صفحة الدعم الرسمية.</span><a href={`${A}contact.html`}>تواصل معنا ↗</a></article>
+        <section className="commerce-band" data-reveal aria-label="الدفع والشحن والدعم">
+          <article><small>DELIVERY</small><b>توصيل داخل المملكة</b><span>تظهر تكلفة الشحن النهائية أثناء إتمام الطلب.</span><a href={`${A}shipping-returns.html`}>سياسة الشحن والاسترجاع ←</a></article>
+          <article><small>PAYMENT</small><b>مدى · بطاقات · Apple Pay</b><span>تُفعّل طرق الدفع بعد ربط بوابة الدفع الإنتاجية الآمنة.</span><a href="#product">تسوّقي المنتج ←</a></article>
+          <article><small>SUPPORT</small><b>نحن هنا للمساعدة</b><span>للاستفسارات عن المنتج أو الطلبات، تواصلي عبر صفحة الدعم.</span><a href={`${A}contact.html`}>تواصلي معنا ←</a></article>
         </section>
 
         <section id="faq" className="section faq" data-reveal>
           <p className="eyebrow">FAQ</p><h2>أسئلة شائعة</h2>
-          {faqs.map((item, index) => (
-            <article className={faq === index ? 'active' : ''} key={item[0]}>
-              <button onClick={() => setFaq(faq === index ? -1 : index)} aria-expanded={faq === index}><span>{item[0]}</span><b>{faq === index ? '−' : '+'}</b></button>
-              {faq === index && <p>{item[1]}</p>}
+          {faqs.map((item, i) => (
+            <article className={faq === i ? 'active' : ''} key={item[0]}>
+              <button onClick={() => setFaq(faq === i ? -1 : i)} aria-expanded={faq === i}><span>{item[0]}</span><b>{faq === i ? '−' : '+'}</b></button>
+              {faq === i && <p>{item[1]}</p>}
             </article>
           ))}
         </section>
 
         <section className="final-cta" data-reveal>
-          <div>
-            <p className="eyebrow">YOUR CROWN. YOUR RITUAL.</p>
-            <h2>امنحي شعرك<br />لحظته الخاصة.</h2>
-            <p>روتين نباتي بسيط بتصميم يجعل العناية جزءًا مريحًا من يومك.</p>
-            <button className="primary" onClick={addToCart}>ابدئي روتين Crown</button>
-          </div>
+          <div><p className="eyebrow">YOUR CROWN. YOUR RITUAL.</p><h2>امنحي شعرك<br />وقته الخاص.</h2><p>روتين نباتي بسيط، عبوة واحدة، ولحظة عناية تصبح جزءًا من أسبوعك.</p><button className="primary" onClick={addToCart}>ابدئي روتين Crown · 119 ر.س</button></div>
           <img src={`${A}assets/hero-dark-crop.jpg`} alt="Crown Hair Oil lifestyle" />
         </section>
       </main>
 
       <footer>
-        <div className="footer-brand"><img src={`${A}assets/logo.jpg`} alt="Crown Hair Oil" /><b>CROWN<small>HAIR OIL</small></b><p>Botanical care for your crown.</p></div>
-        <div><h4>Crown</h4><a href="#ingredients">المكونات</a><a href="#results">النتائج</a><a href="#ritual">طريقة الاستخدام</a></div>
-        <div><h4>المساعدة</h4><a href="#faq">الأسئلة الشائعة</a><a href={`${A}shipping-returns.html`}>الشحن والاسترجاع</a><a href={`${A}contact.html`}>تواصل معنا</a></div>
-        <div><h4>قانوني</h4><a href={`${A}privacy.html`}>الخصوصية</a><a href={`${A}terms.html`}>الشروط والأحكام</a></div>
-        <div className="copyright">© 2026 Crown Hair Oil · Saudi Arabia · SAR</div>
+        <div className="footer-brand"><img src={`${A}assets/logo.jpg`} alt="Crown Hair Oil" /><b>CROWN</b><small>HAIR OIL</small><p>Botanical Hair & Scalp Oil</p></div>
+        <div><h4>تسوّقي</h4><a href="#product">Crown Hair Oil</a><a href="#ingredients">المكونات</a><a href="#ritual">طريقة الاستخدام</a></div>
+        <div><h4>المساعدة</h4><a href={`${A}shipping-returns.html`}>الشحن والاسترجاع</a><a href={`${A}contact.html`}>تواصلي معنا</a><a href="#faq">الأسئلة الشائعة</a></div>
+        <div><h4>القانونية</h4><a href={`${A}privacy.html`}>الخصوصية</a><a href={`${A}terms.html`}>الشروط والأحكام</a></div>
+        <div className="copyright">© 2026 CROWN HAIR OIL · SAUDI ARABIA</div>
       </footer>
 
-      <a className="support-fab" href={`${A}contact.html`} aria-label="تواصل مع Crown"><span>✦</span><b>تواصل</b></a>
-      <div className="mobile-buy"><span><b>119 ر.س</b><small>Crown Hair Oil</small></span><button onClick={addToCart}>أضيفي للسلة</button></div>
+      <a className="support-fab" href={`${A}contact.html`} aria-label="الدعم والتواصل"><span>?</span><b>الدعم</b></a>
+      <div className="mobile-buy"><span><b>119 ر.س</b><small>Crown Hair Oil · 100 ml</small></span><button onClick={addToCart}>أضيفي للسلة</button></div>
     </div>
   )
 }
