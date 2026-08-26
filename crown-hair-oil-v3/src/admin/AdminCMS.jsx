@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 
-const API = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+const API = import.meta.env.VITE_ADMIN_API_URL || 'https://asubcanztloxiddshakz.supabase.co/functions/v1/crown-admin-api'
+const TOKEN_KEY = 'crown_admin_session'
+
 const defaultContent = {
   hero: {
     eyebrow: 'BOTANICAL HAIR & SCALP OIL',
@@ -17,14 +19,30 @@ const defaultContent = {
   ],
 }
 
+function getToken() {
+  return sessionStorage.getItem(TOKEN_KEY) || ''
+}
+
+function setToken(token) {
+  if (token) sessionStorage.setItem(TOKEN_KEY, token)
+  else sessionStorage.removeItem(TOKEN_KEY)
+}
+
 async function request(path, options = {}) {
+  const token = getToken()
   const response = await fetch(`${API}${path}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
     ...options,
   })
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw Object.assign(new Error(data.error || 'request_failed'), { status: response.status, data })
+  if (!response.ok) {
+    if (response.status === 401 && path !== '/login') setToken('')
+    throw Object.assign(new Error(data.error || 'request_failed'), { status: response.status, data })
+  }
   return data
 }
 
@@ -35,13 +53,19 @@ function Login({ onLogin }) {
   const [busy, setBusy] = useState(false)
 
   async function submit(e) {
-    e.preventDefault(); setBusy(true); setError('')
+    e.preventDefault()
+    setBusy(true)
+    setError('')
     try {
-      const result = await request('/admin/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) })
+      const result = await request('/login', { method: 'POST', body: JSON.stringify({ username, password }) })
+      setToken(result.token)
       onLogin(result.admin)
+      setPassword('')
     } catch (err) {
-      setError(err.status === 503 ? 'خدمة الإدارة لم تُنشر على Backend بعد.' : 'اسم المستخدم أو كلمة المرور غير صحيحة.')
-    } finally { setBusy(false) }
+      setError(err.status === 401 ? 'اسم المستخدم أو كلمة المرور غير صحيحة.' : 'تعذر الاتصال بخدمة الإدارة. حاول مرة أخرى.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return <main className="login-page" dir="rtl">
@@ -56,7 +80,7 @@ function Login({ onLogin }) {
         {error && <div className="login-error">{error}</div>}
         <button className="admin-primary" disabled={busy}>{busy ? 'جاري التحقق...' : 'دخول آمن'}</button>
       </form>
-      <small className="security-note">لا يتم حفظ كلمة المرور داخل المتصفح أو ملفات الموقع.</small>
+      <small className="security-note">كلمة المرور لا تُحفظ داخل GitHub أو ملفات الموقع. تنتهي جلسة الإدارة تلقائيًا.</small>
     </section>
   </main>
 }
@@ -69,23 +93,36 @@ function Editor({ admin, onLogout }) {
   const [editing, setEditing] = useState(false)
   const [section, setSection] = useState('hero')
   const [content, setContent] = useState(defaultContent)
-  const [status, setStatus] = useState('جاهز')
+  const [status, setStatus] = useState('تحميل المحتوى...')
 
-  useEffect(()=>{ request('/admin/content').then(r=>r.content && setContent(r.content)).catch(()=>{}) },[])
+  useEffect(() => {
+    request('/content')
+      .then(r => { if (r.content) setContent(r.content); setStatus('جاهز') })
+      .catch(() => setStatus('تعذر تحميل المحتوى'))
+  }, [])
+
   const previewTitle = useMemo(()=>`${content.hero.titleLine1} ${content.hero.titleLine2}`,[content])
-
   const setHero = (key, value) => setContent(c=>({...c,hero:{...c.hero,[key]:value}}))
   const setProduct = (key, value) => setContent(c=>({...c,product:{...c.product,[key]:value}}))
 
   async function saveDraft() {
     setStatus('حفظ المسودة...')
-    try { await request('/admin/content/draft',{method:'PUT',body:JSON.stringify({content})}); setStatus('تم حفظ المسودة') }
-    catch { setStatus('تعذر الحفظ — Backend غير متاح') }
+    try {
+      const result = await request('/content/draft',{method:'PUT',body:JSON.stringify({content})})
+      setStatus(`تم حفظ المسودة · الإصدار ${result.versionNo}`)
+    } catch {
+      setStatus('تعذر حفظ المسودة')
+    }
   }
+
   async function publish() {
     setStatus('جاري النشر...')
-    try { await request('/admin/content/publish',{method:'POST',body:JSON.stringify({content})}); setStatus('تم النشر بنجاح') }
-    catch { setStatus('تعذر النشر — Backend غير متاح') }
+    try {
+      const result = await request('/content/publish',{method:'POST',body:JSON.stringify({content})})
+      setStatus(`تم النشر · الإصدار ${result.versionNo}`)
+    } catch {
+      setStatus('تعذر النشر')
+    }
   }
 
   return <div className="cms-shell" dir="rtl">
@@ -120,14 +157,14 @@ function Editor({ admin, onLogout }) {
             <Field label="السعر" value={content.product.price} onChange={v=>setProduct('price',v)} />
             <Field label="الحجم" value={content.product.size} onChange={v=>setProduct('size',v)} />
           </>}
-          {section==='faq' && <div className="placeholder-panel">محرر FAQ المتعدد سيُربط بقاعدة البيانات في هذه المرحلة.</div>}
-          {section==='media' && <div className="placeholder-panel">Media Library جاهزة للربط مع Object Storage. لن تُحفظ الصور داخل GitHub أو PostgreSQL.</div>}
-          {section==='seo' && <div className="placeholder-panel">سيتم إدارة Title وDescription وSocial image هنا بدون تعديل الكود.</div>}
+          {section==='faq' && <div className="placeholder-panel">محرر FAQ الكامل سيتم ضمن المرحلة التالية.</div>}
+          {section==='media' && <div className="placeholder-panel">Media Library سيتم ربطها بـSupabase Storage في المرحلة التالية.</div>}
+          {section==='seo' && <div className="placeholder-panel">إدارة Title وDescription وSocial image ستكون من هنا.</div>}
         </div>
       </aside>}
 
       <main className="site-preview" dir="rtl">
-        <div className="preview-label">LIVE PREVIEW · التعديلات غير منشورة حتى تضغط «نشر»</div>
+        <div className="preview-label">LIVE PREVIEW · التعديلات لا تصل للعملاء حتى تضغط «نشر»</div>
         <section className="preview-hero">
           <div className="preview-copy">
             <p>{content.hero.eyebrow}</p>
@@ -139,7 +176,7 @@ function Editor({ admin, onLogout }) {
           </div>
           <div className="preview-image"><img src="/Crown-Oil-Hier/assets/hero-light.jpg" alt="Crown Hair Oil preview" /></div>
         </section>
-        <section className="preview-summary"><small>معاينة الصفحة</small><h2>{previewTitle}</h2><p>هذه المعاينة تستخدم نفس هوية Crown، ومع المراحل التالية سنحوّل جميع أقسام الموقع إلى Components قابلة للتحرير من نفس اللوحة.</p></section>
+        <section className="preview-summary"><small>معاينة الصفحة</small><h2>{previewTitle}</h2><p>المحتوى الآن متصل بقاعدة بيانات Crown الحقيقية، ويمكن حفظ نسخة Draft ثم نشرها كنسخة Published.</p></section>
       </main>
     </div>
   </div>
@@ -148,8 +185,18 @@ function Editor({ admin, onLogout }) {
 export default function AdminCMS() {
   const [admin, setAdmin] = useState(null)
   const [checking, setChecking] = useState(true)
-  useEffect(()=>{ request('/admin/auth/me').then(r=>setAdmin(r.admin)).catch(()=>{}).finally(()=>setChecking(false)) },[])
-  async function logout(){ try{await request('/admin/auth/logout',{method:'POST'})}catch{} setAdmin(null) }
+
+  useEffect(() => {
+    if (!getToken()) { setChecking(false); return }
+    request('/me').then(r=>setAdmin(r.admin)).catch(()=>setToken('')).finally(()=>setChecking(false))
+  }, [])
+
+  async function logout() {
+    try { await request('/logout',{method:'POST'}) } catch {}
+    setToken('')
+    setAdmin(null)
+  }
+
   if (checking) return <div className="admin-loading">CROWN ADMIN</div>
   return admin ? <Editor admin={admin} onLogout={logout}/> : <Login onLogin={setAdmin}/>
 }
