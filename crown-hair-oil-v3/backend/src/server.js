@@ -2,11 +2,13 @@ import 'dotenv/config'
 import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import { rateLimit } from 'express-rate-limit'
 import pg from 'pg'
 import { z } from 'zod'
 import { paymentProviderStatus } from './providers/payment.js'
 import { shippingProviderStatus } from './providers/shipping.js'
+import { bootstrapAdmin, installAdminRoutes } from './admin.js'
 
 const { Pool } = pg
 const app = express()
@@ -14,9 +16,11 @@ const port = Number(process.env.PORT || 8080)
 const pool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false }) : null
 
 app.disable('x-powered-by')
+app.set('trust proxy', 1)
 app.use(helmet())
 app.use(cors({ origin: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(','), credentials: true }))
 app.use(express.json({ limit: '64kb' }))
+app.use(cookieParser())
 app.use('/api/', rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: 'draft-8', legacyHeaders: false }))
 
 const checkoutSchema = z.object({
@@ -49,16 +53,25 @@ app.get('/api/v1/health', async (_req, res) => {
   }
 })
 
-app.get('/api/v1/integrations/status', (_req, res) => {
+app.get('/api/v1/integrations/status', async (_req, res) => {
   const payment = paymentProviderStatus()
   const shipping = shippingProviderStatus()
+  let adminAuth = false
+  if (pool) {
+    try {
+      const { rows } = await pool.query(`select exists(select 1 from admins where active=true) as configured`)
+      adminAuth = Boolean(rows[0]?.configured)
+    } catch {}
+  }
   res.json({
     database: Boolean(pool),
     payment: { provider: payment.provider, configured: payment.configured },
     shipping: { provider: shipping.provider, configured: shipping.configured },
-    adminAuth: false,
+    adminAuth,
   })
 })
+
+installAdminRoutes(app, pool)
 
 app.get('/api/v1/products', requireDatabase, async (_req, res, next) => {
   try {
@@ -99,33 +112,20 @@ app.post('/api/v1/checkout', requireDatabase, async (req, res, next) => {
       const shipping = shippingProviderStatus()
       await client.query('rollback')
 
-      if (!shipping.configured) {
-        return res.status(501).json({
-          error: 'shipping_provider_not_configured',
-          preview: { subtotal, items: normalizedItems },
-        })
-      }
-      if (parsed.data.paymentMethod === 'card' && !payment.configured) {
-        return res.status(501).json({
-          error: 'payment_gateway_not_configured',
-          preview: { subtotal, items: normalizedItems },
-        })
-      }
-
-      return res.status(501).json({
-        error: 'commerce_provider_adapters_not_implemented',
-        preview: { subtotal, items: normalizedItems },
-      })
+      if (!shipping.configured) return res.status(501).json({ error: 'shipping_provider_not_configured', preview: { subtotal, items: normalizedItems } })
+      if (parsed.data.paymentMethod === 'card' && !payment.configured) return res.status(501).json({ error: 'payment_gateway_not_configured', preview: { subtotal, items: normalizedItems } })
+      return res.status(501).json({ error: 'commerce_provider_adapters_not_implemented', preview: { subtotal, items: normalizedItems } })
     } finally { client.release() }
   } catch (error) { next(error) }
 })
-
-app.get('/api/v1/admin/dashboard', (_req, res) => res.status(501).json({ error: 'admin_auth_not_configured' }))
-app.get('/api/v1/admin/orders', (_req, res) => res.status(501).json({ error: 'admin_auth_not_configured' }))
 
 app.use((error, _req, res, _next) => {
   console.error(error)
   res.status(error.status || 500).json({ error: error.message || 'internal_server_error' })
 })
 
-app.listen(port, () => console.log(`Crown API listening on :${port}`))
+async function start() {
+  if (pool) await bootstrapAdmin(pool)
+  app.listen(port, () => console.log(`Crown API listening on :${port}`))
+}
+start().catch(error => { console.error(error); process.exit(1) })
