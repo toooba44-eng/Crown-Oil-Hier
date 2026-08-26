@@ -1,316 +1,63 @@
 import { useEffect, useState } from 'react'
+import { CONTENT_API, DEFAULT_CONTENT, mergeContent } from './siteContent.js'
 
 const A = '/Crown-Oil-Hier/'
-const product = {
-  name: 'Crown Hair Oil',
-  price: 119,
-  size: '100 ml',
-  image: `${A}assets/hero-detail.jpg`,
-}
 
-const ingredients = [
-  { name: 'الأرغان', copy: 'يساعد على منح الشعر ملمسًا أكثر نعومة ولمعانًا ضمن روتين العناية.', className: 'argan' },
-  { name: 'الروزماري', copy: 'مكوّن نباتي مميز لطقس عناية متوازن بالشعر وفروة الرأس.', className: 'rosemary' },
-  { name: 'زيت الزيتون', copy: 'غني وملائم للعناية بمظهر الشعر الجاف وتقليل الإحساس بالخشونة.', className: 'olive' },
-]
-
-const faqs = [
-  ['هل يناسب جميع أنواع الشعر؟', 'صُمم Crown Hair Oil ليكون جزءًا من روتين العناية لمختلف أنواع الشعر. ابدئي بكمية صغيرة وعدّليها حسب احتياج شعرك.'],
-  ['كم مرة يستخدم؟', 'ابدئي بمرتين إلى ثلاث مرات أسبوعيًا، ثم عدّلي التكرار حسب روتينك واستجابة شعرك.'],
-  ['كيف أستخدم الزيت؟', 'قسّمي الشعر، ضعي كمية مناسبة على فروة الرأس، دلّكي بلطف ثم وزّعي ما يلزم على الأطراف.'],
-  ['ما حجم العبوة؟', 'العبوة المعروضة حاليًا 100 مل.'],
-  ['كيف يتم الشحن؟', 'التوصيل متاح داخل المملكة العربية السعودية، وتُحسب تكلفة الشحن النهائية عند إتمام الطلب.'],
-]
-
-function Header({ count, onCart }) {
+function Header({ count, onCart, content }) {
   const [open, setOpen] = useState(false)
-  return (
-    <>
-      <div className="announcement">توصيل داخل المملكة العربية السعودية · الأسعار تشمل الضريبة</div>
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="Crown Hair Oil — الرئيسية">
-          <span className="brand-mark"><img src={`${A}assets/logo.jpg`} alt="" /></span>
-          <span className="brand-wordmark">CROWN<small>HAIR OIL</small></span>
-        </a>
-        <nav className={open ? 'open' : ''} aria-label="التنقل الرئيسي">
-          <a href="#product" onClick={() => setOpen(false)}>المنتج</a>
-          <a href="#ingredients" onClick={() => setOpen(false)}>المكونات</a>
-          <a href="#results" onClick={() => setOpen(false)}>النتائج</a>
-          <a href="#ritual" onClick={() => setOpen(false)}>طريقة الاستخدام</a>
-          <a href="#faq" onClick={() => setOpen(false)}>الأسئلة الشائعة</a>
-        </nav>
-        <div className="header-actions">
-          <button className="cart-button" onClick={onCart} aria-label={`السلة، ${count} منتج`}>
-            <span>السلة</span><b>{count}</b>
-          </button>
-          <button className="menu" onClick={() => setOpen(!open)} aria-label="فتح القائمة">☰</button>
-        </div>
-      </header>
-    </>
-  )
+  const n = content.navigation
+  return <>
+    <div className="announcement">{content.announcement}</div>
+    <header className="site-header">
+      <a className="brand" href="#top" aria-label="Crown Hair Oil — الرئيسية"><span className="brand-mark"><img src={`${A}assets/logo.jpg`} alt="" /></span><span className="brand-wordmark">CROWN<small>HAIR OIL</small></span></a>
+      <nav className={open ? 'open' : ''} aria-label="التنقل الرئيسي">
+        <a href="#product" onClick={()=>setOpen(false)}>{n.product}</a><a href="#ingredients" onClick={()=>setOpen(false)}>{n.ingredients}</a><a href="#results" onClick={()=>setOpen(false)}>{n.results}</a><a href="#ritual" onClick={()=>setOpen(false)}>{n.ritual}</a><a href="#faq" onClick={()=>setOpen(false)}>{n.faq}</a>
+      </nav>
+      <div className="header-actions"><button className="cart-button" onClick={onCart} aria-label={`${n.cart}، ${count} منتج`}><span>{n.cart}</span><b>{count}</b></button><button className="menu" onClick={()=>setOpen(!open)} aria-label="فتح القائمة">☰</button></div>
+    </header>
+  </>
 }
 
-function Qty({ value, setValue }) {
-  return (
-    <div className="qty" aria-label="الكمية">
-      <button onClick={() => setValue(Math.max(1, value - 1))} aria-label="تقليل الكمية">−</button>
-      <span>{value}</span>
-      <button onClick={() => setValue(value + 1)} aria-label="زيادة الكمية">+</button>
-    </div>
-  )
+function Qty({ value, setValue }) { return <div className="qty" aria-label="الكمية"><button onClick={()=>setValue(Math.max(1,value-1))}>−</button><span>{value}</span><button onClick={()=>setValue(value+1)}>+</button></div> }
+
+function Cart({ open,onClose,qty,setQty,onCheckout,product }) {
+  return <div className={`cart-layer ${open?'show':''}`} onClick={onClose} aria-hidden={!open}><aside className="cart" onClick={e=>e.stopPropagation()}>
+    <div className="cart-head"><div><p className="eyebrow">YOUR BAG</p><h2>سلة التسوق</h2></div><button onClick={onClose}>×</button></div>
+    <div className="cart-item"><img src={product.image} alt={product.name}/><div><b>{product.name}</b><small>{product.size}</small><strong>{product.price} ر.س</strong><Qty value={qty} setValue={setQty}/></div></div>
+    <div className="cart-total"><span>المجموع الفرعي</span><b>{Number(product.price)*qty} ر.س</b></div><p className="cart-note">الشحن يُحسب عند إتمام الطلب.</p><button className="primary full" onClick={onCheckout}>إتمام الطلب</button><button className="text-action full" onClick={onClose}>متابعة التسوق ←</button>
+  </aside></div>
 }
 
-function Cart({ open, onClose, qty, setQty, onCheckout }) {
-  return (
-    <div className={`cart-layer ${open ? 'show' : ''}`} onClick={onClose} aria-hidden={!open}>
-      <aside className="cart" onClick={(e) => e.stopPropagation()} aria-label="سلة التسوق">
-        <div className="cart-head">
-          <div><p className="eyebrow">YOUR BAG</p><h2>سلة التسوق</h2></div>
-          <button onClick={onClose} aria-label="إغلاق السلة">×</button>
-        </div>
-        <div className="cart-item">
-          <img src={product.image} alt={product.name} />
-          <div>
-            <b>{product.name}</b>
-            <small>{product.size}</small>
-            <strong>{product.price} ر.س</strong>
-            <Qty value={qty} setValue={setQty} />
-          </div>
-        </div>
-        <div className="cart-total"><span>المجموع الفرعي</span><b>{product.price * qty} ر.س</b></div>
-        <p className="cart-note">الشحن يُحسب عند إتمام الطلب.</p>
-        <button className="primary full" onClick={onCheckout}>إتمام الطلب</button>
-        <button className="text-action full" onClick={onClose}>متابعة التسوق ←</button>
-      </aside>
-    </div>
-  )
+function Checkout({ qty,onBack,content }) {
+  const p=content.product,c=content.checkout,total=Number(p.price)*qty
+  return <main className="checkout"><button className="back" onClick={onBack}>{c.back}</button><div className="checkout-grid"><section><p className="eyebrow">{c.eyebrow}</p><h1>{c.title}</h1><h3>{c.contactTitle}</h3><div className="form-grid"><input placeholder="الاسم الكامل"/><input placeholder="رقم الجوال" inputMode="tel"/><input placeholder="البريد الإلكتروني" type="email"/><input placeholder="المدينة"/><input placeholder="الحي"/><input placeholder="الشارع" className="wide"/></div><h3>{c.paymentTitle}</h3><div className="payment"><label><input type="radio" name="pay" defaultChecked/> بطاقة / مدى / Apple Pay</label><label><input type="radio" name="pay"/> الدفع عند الاستلام</label></div></section><aside className="summary"><h3>{c.summaryTitle}</h3><div className="summary-product"><img src={p.image} alt={p.name}/><span>{p.name}<small>{p.size} · الكمية {qty}</small></span><b>{total} ر.س</b></div><div><span>المجموع الفرعي</span><b>{total} ر.س</b></div><div><span>الشحن</span><span>{c.shippingPending}</span></div><hr/><div className="grand"><span>الإجمالي</span><b>{total} ر.س</b></div><button className="primary full" disabled>{c.paymentDisabled}</button><p className="secure">{c.secureNote}</p></aside></div></main>
 }
 
-function Checkout({ qty, onBack }) {
-  const total = product.price * qty
-  return (
-    <main className="checkout">
-      <button className="back" onClick={onBack}>← العودة للمتجر</button>
-      <div className="checkout-grid">
-        <section>
-          <p className="eyebrow">SECURE CHECKOUT</p>
-          <h1>إتمام الطلب</h1>
-          <h3>بيانات التواصل</h3>
-          <div className="form-grid">
-            <input placeholder="الاسم الكامل" />
-            <input placeholder="رقم الجوال" inputMode="tel" />
-            <input placeholder="البريد الإلكتروني" type="email" />
-            <input placeholder="المدينة" />
-            <input placeholder="الحي" />
-            <input placeholder="الشارع" className="wide" />
-          </div>
-          <h3>طريقة الدفع</h3>
-          <div className="payment">
-            <label><input type="radio" name="pay" defaultChecked /> بطاقة / مدى / Apple Pay</label>
-            <label><input type="radio" name="pay" /> الدفع عند الاستلام</label>
-          </div>
-        </section>
-        <aside className="summary">
-          <h3>ملخص الطلب</h3>
-          <div className="summary-product">
-            <img src={product.image} alt={product.name} />
-            <span>{product.name}<small>{product.size} · الكمية {qty}</small></span>
-            <b>{total} ر.س</b>
-          </div>
-          <div><span>المجموع الفرعي</span><b>{total} ر.س</b></div>
-          <div><span>الشحن</span><span>يُحسب لاحقًا</span></div>
-          <hr />
-          <div className="grand"><span>الإجمالي</span><b>{total} ر.س</b></div>
-          <button className="primary full" disabled title="يتطلب ربط بوابة دفع إنتاجية">الدفع غير متاح حاليًا</button>
-          <p className="secure">لن يتم تحصيل أي مبلغ قبل تفعيل بوابة دفع آمنة.</p>
-        </aside>
-      </div>
-    </main>
-  )
+function ResultGallery({ results }) {
+  const [active,setActive]=useState(0); const images=results.images?.length?results.images:DEFAULT_CONTENT.results.images; const src=images[Math.min(active,images.length-1)]
+  return <div className="results-stage"><figure className="result-feature"><img key={src} src={src} alt={`نتيجة Crown رقم ${active+1}`}/><figcaption>{results.caption}</figcaption></figure><div className="result-thumbs">{images.map((image,i)=><button key={`${image}-${i}`} className={active===i?'active':''} onClick={()=>setActive(i)}><img src={image} alt=""/></button>)}</div></div>
 }
 
-function ResultGallery() {
-  const [active, setActive] = useState(1)
-  const src = `${A}Hair after-before ${active}.jpg`
-  return (
-    <div className="results-stage">
-      <figure className="result-feature">
-        <img key={active} src={src} alt={`نتيجة Crown رقم ${active}`} />
-        <figcaption>من أرشيف نتائج Crown · تختلف النتائج من شخص لآخر</figcaption>
-      </figure>
-      <div className="result-thumbs" aria-label="اختيار صورة النتيجة">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button key={n} className={active === n ? 'active' : ''} onClick={() => setActive(n)} aria-label={`عرض النتيجة ${n}`}>
-            <img src={`${A}Hair after-before ${n}.jpg`} alt="" />
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
+export default function App(){
+  const [content,setContent]=useState(DEFAULT_CONTENT),[cartOpen,setCartOpen]=useState(false),[qty,setQty]=useState(1),[cartQty,setCartQty]=useState(0),[checkout,setCheckout]=useState(false),[faq,setFaq]=useState(0)
 
-export default function App() {
-  const [cartOpen, setCartOpen] = useState(false)
-  const [qty, setQty] = useState(1)
-  const [cartQty, setCartQty] = useState(0)
-  const [checkout, setCheckout] = useState(false)
-  const [faq, setFaq] = useState(0)
+  useEffect(()=>{ fetch(CONTENT_API).then(r=>r.ok?r.json():Promise.reject()).then(r=>{if(r.content)setContent(mergeContent(DEFAULT_CONTENT,r.content))}).catch(()=>{}) },[])
+  useEffect(()=>{ document.title=content.seo.title; let meta=document.querySelector('meta[name="description"]'); if(meta)meta.setAttribute('content',content.seo.description); let og=document.querySelector('meta[property="og:image"]'); if(og)og.setAttribute('content',content.seo.socialImage) },[content.seo])
+  useEffect(()=>{ const nodes=[...document.querySelectorAll('[data-reveal]')]; if(!('IntersectionObserver' in window)){nodes.forEach(n=>n.classList.add('is-visible'));return} const o=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');o.unobserve(e.target)}}),{threshold:.12});nodes.forEach(n=>o.observe(n));return()=>o.disconnect() },[content])
 
-  useEffect(() => {
-    const nodes = [...document.querySelectorAll('[data-reveal]')]
-    if (!('IntersectionObserver' in window)) {
-      nodes.forEach((node) => node.classList.add('is-visible'))
-      return undefined
-    }
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible')
-          observer.unobserve(entry.target)
-        }
-      })
-    }, { threshold: 0.12 })
-    nodes.forEach((node) => observer.observe(node))
-    return () => observer.disconnect()
-  }, [])
+  const addToCart=()=>{setCartQty(qty);setCartOpen(true)},buyNow=()=>{setCartQty(qty);setCheckout(true)},p=content.product
+  if(checkout)return <Checkout qty={cartQty||qty} onBack={()=>setCheckout(false)} content={content}/>
 
-  const addToCart = () => {
-    setCartQty(qty)
-    setCartOpen(true)
-  }
-
-  const buyNow = () => {
-    setCartQty(qty)
-    setCheckout(true)
-  }
-
-  if (checkout) return <Checkout qty={cartQty || qty} onBack={() => setCheckout(false)} />
-
-  return (
-    <div id="top">
-      <Header count={cartQty} onCart={() => cartQty > 0 && setCartOpen(true)} />
-      <Cart
-        open={cartOpen}
-        onClose={() => setCartOpen(false)}
-        qty={cartQty || qty}
-        setQty={(value) => { setQty(value); setCartQty(value) }}
-        onCheckout={() => { setCartOpen(false); setCheckout(true) }}
-      />
-
-      <main>
-        <section className="hero">
-          <div className="hero-copy hero-sequence">
-            <p className="eyebrow">BOTANICAL HAIR & SCALP OIL</p>
-            <h1>العناية بشعرك<br /><em>تبدأ من الجذور.</em></h1>
-            <p className="lead">مزيج نباتي غني بزيت الأرغان والروزماري والزيتون، صُمم ليكون طقسًا بسيطًا للعناية بالشعر وفروة الرأس.</p>
-            <div className="hero-rating"><span className="stars">★★★★★</span><span>تجربة Crown للعناية اليومية</span></div>
-            <div className="hero-price"><strong>119</strong><span>ر.س · 100 مل</span></div>
-            <div className="hero-actions">
-              <button className="primary" onClick={addToCart}>تسوّقي الآن</button>
-              <a className="secondary" href="#ingredients">اكتشفي المكونات</a>
-            </div>
-            <div className="micro"><span>زيوت نباتية مختارة</span><span>لجميع أنواع الشعر</span><span>توصيل داخل المملكة</span></div>
-          </div>
-          <div className="hero-visual" aria-label="Crown Hair Oil">
-            <div className="halo"></div>
-            <div className="hero-frame"><img src={`${A}assets/hero-light.jpg`} alt="Crown Hair Oil" /></div>
-            <span className="botanical b1">❧</span><span className="botanical b2">❦</span>
-          </div>
-        </section>
-
-        <section className="trust" aria-label="مزايا Crown">
-          <span>BOTANICAL OILS</span><i>✦</i><span>SCALP CARE</span><i>✦</i><span>ALL HAIR TYPES</span><i>✦</i><span>SAUDI DELIVERY</span>
-        </section>
-
-        <section className="section why" data-reveal>
-          <p className="eyebrow">WHY CROWN</p>
-          <h2>روتين أقل. عناية أكثر.</h2>
-          <div className="cards">
-            <article><b>01</b><span className="line-icon">❧</span><h3>تغذية</h3><p>زيوت مختارة لدعم مظهر الشعر الصحي ضمن روتين متوازن.</p></article>
-            <article><b>02</b><span className="line-icon">◌</span><h3>ترطيب</h3><p>يساعد على تقليل مظهر الجفاف ومنح الشعر ملمسًا أكثر نعومة.</p></article>
-            <article><b>03</b><span className="line-icon">✦</span><h3>لمعان</h3><p>لمسة نهائية تمنح الشعر مظهرًا حيويًا ولمعانًا طبيعيًا.</p></article>
-            <article><b>04</b><span className="line-icon">⌇</span><h3>فروة الرأس</h3><p>تدليك الزيت يحوّل العناية بفروة الرأس إلى طقس أسبوعي بسيط.</p></article>
-          </div>
-        </section>
-
-        <section id="ingredients" className="section ingredients" data-reveal>
-          <div className="section-title">
-            <div><p className="eyebrow">WHAT'S INSIDE</p><h2>ثلاثة مكونات.<br />فلسفة واحدة.</h2></div>
-            <p>قلب تركيبة Crown النباتية: مكونات مألوفة ضمن روتين عناية بسيط ومقصود.</p>
-          </div>
-          <div className="ingredient-grid">
-            {ingredients.map((item, i) => (
-              <article className="ingredient-card" key={item.name}>
-                <div className={`ingredient-art ${item.className}`}><span>0{i + 1}</span></div>
-                <div className="ingredient-copy"><h3>{item.name}</h3><p>{item.copy}</p></div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section id="product" className="section product" data-reveal>
-          <div className="product-image"><img src={`${A}assets/hero-detail.jpg`} alt="Crown Hair Oil 100 ml" /></div>
-          <div className="product-copy">
-            <p className="eyebrow">THE SIGNATURE OIL</p>
-            <h2>Crown Hair Oil</h2>
-            <p className="muted">Botanical Hair & Scalp Oil · 100 ml</p>
-            <p>زيت عناية نباتي للشعر وفروة الرأس يجمع الأرغان والروزماري والزيتون في خطوة واحدة سهلة ضمن روتينك.</p>
-            <div className="product-price">119 <small>ر.س</small><span>السعر يشمل الضريبة</span></div>
-            <div className="buy-row"><Qty value={qty} setValue={setQty} /><button className="primary" onClick={addToCart}>أضيفي للسلة</button></div>
-            <button className="buy-now" onClick={buyNow}>اشتري الآن</button>
-            <div className="product-trust"><span>تجربة دفع آمنة عند التفعيل</span><span>توصيل داخل المملكة</span><span>سياسة استرجاع واضحة</span></div>
-          </div>
-        </section>
-
-        <section id="results" className="section results" data-reveal>
-          <div className="section-title">
-            <div><p className="eyebrow">CROWN COMMUNITY</p><h2>من مجتمع Crown</h2></div>
-            <p>مجموعة من صور النتائج الموجودة في أرشيف Crown. تختلف النتائج من شخص لآخر.</p>
-          </div>
-          <ResultGallery />
-        </section>
-
-        <section id="ritual" className="section ritual" data-reveal>
-          <div><p className="eyebrow">THE RITUAL</p><h2>ثلاث خطوات<br />لروتين Crown.</h2><p className="ritual-intro">روتين بسيط صُمم ليدخل بسهولة في أسبوعك دون تعقيد.</p></div>
-          <ol>
-            <li><b>01</b><span><strong>قسّمي الشعر</strong>للوصول إلى فروة الرأس بسهولة.</span></li>
-            <li><b>02</b><span><strong>ضعي ودلّكي</strong>استخدمي كمية مناسبة ودلّكي فروة الرأس بلطف.</span></li>
-            <li><b>03</b><span><strong>أكملي روتينك</strong>وزّعي ما يلزم على الأطراف حسب احتياج شعرك.</span></li>
-          </ol>
-        </section>
-
-        <section className="commerce-band" data-reveal aria-label="الدفع والشحن والدعم">
-          <article><small>DELIVERY</small><b>توصيل داخل المملكة</b><span>تظهر تكلفة الشحن النهائية أثناء إتمام الطلب.</span><a href={`${A}shipping-returns.html`}>سياسة الشحن والاسترجاع ←</a></article>
-          <article><small>PAYMENT</small><b>مدى · بطاقات · Apple Pay</b><span>تُفعّل طرق الدفع بعد ربط بوابة الدفع الإنتاجية الآمنة.</span><a href="#product">تسوّقي المنتج ←</a></article>
-          <article><small>SUPPORT</small><b>نحن هنا للمساعدة</b><span>للاستفسارات عن المنتج أو الطلبات، تواصلي عبر صفحة الدعم.</span><a href={`${A}contact.html`}>تواصلي معنا ←</a></article>
-        </section>
-
-        <section id="faq" className="section faq" data-reveal>
-          <p className="eyebrow">FAQ</p><h2>أسئلة شائعة</h2>
-          {faqs.map((item, i) => (
-            <article className={faq === i ? 'active' : ''} key={item[0]}>
-              <button onClick={() => setFaq(faq === i ? -1 : i)} aria-expanded={faq === i}><span>{item[0]}</span><b>{faq === i ? '−' : '+'}</b></button>
-              {faq === i && <p>{item[1]}</p>}
-            </article>
-          ))}
-        </section>
-
-        <section className="final-cta" data-reveal>
-          <div><p className="eyebrow">YOUR CROWN. YOUR RITUAL.</p><h2>امنحي شعرك<br />وقته الخاص.</h2><p>روتين نباتي بسيط، عبوة واحدة، ولحظة عناية تصبح جزءًا من أسبوعك.</p><button className="primary" onClick={addToCart}>ابدئي روتين Crown · 119 ر.س</button></div>
-          <img src={`${A}assets/hero-dark-crop.jpg`} alt="Crown Hair Oil lifestyle" />
-        </section>
-      </main>
-
-      <footer>
-        <div className="footer-brand"><img src={`${A}assets/logo.jpg`} alt="Crown Hair Oil" /><b>CROWN</b><small>HAIR OIL</small><p>Botanical Hair & Scalp Oil</p></div>
-        <div><h4>تسوّقي</h4><a href="#product">Crown Hair Oil</a><a href="#ingredients">المكونات</a><a href="#ritual">طريقة الاستخدام</a></div>
-        <div><h4>المساعدة</h4><a href={`${A}shipping-returns.html`}>الشحن والاسترجاع</a><a href={`${A}contact.html`}>تواصلي معنا</a><a href="#faq">الأسئلة الشائعة</a></div>
-        <div><h4>القانونية</h4><a href={`${A}privacy.html`}>الخصوصية</a><a href={`${A}terms.html`}>الشروط والأحكام</a></div>
-        <div className="copyright">© 2026 CROWN HAIR OIL · SAUDI ARABIA</div>
-      </footer>
-
-      <a className="support-fab" href={`${A}contact.html`} aria-label="الدعم والتواصل"><span>?</span><b>الدعم</b></a>
-      <div className="mobile-buy"><span><b>119 ر.س</b><small>Crown Hair Oil · 100 ml</small></span><button onClick={addToCart}>أضيفي للسلة</button></div>
-    </div>
-  )
+  return <div id="top"><Header count={cartQty} onCart={()=>cartQty>0&&setCartOpen(true)} content={content}/><Cart open={cartOpen} onClose={()=>setCartOpen(false)} qty={cartQty||qty} setQty={v=>{setQty(v);setCartQty(v)}} onCheckout={()=>{setCartOpen(false);setCheckout(true)}} product={p}/><main>
+    <section className="hero"><div className="hero-copy hero-sequence"><p className="eyebrow">{content.hero.eyebrow}</p><h1>{content.hero.titleLine1}<br/><em>{content.hero.titleLine2}</em></h1><p className="lead">{content.hero.description}</p><div className="hero-rating"><span className="stars">★★★★★</span><span>{content.hero.ratingText}</span></div><div className="hero-price"><strong>{p.price}</strong><span>ر.س · {p.size}</span></div><div className="hero-actions"><button className="primary" onClick={addToCart}>{content.hero.primaryCta}</button><a className="secondary" href="#ingredients">{content.hero.secondaryCta}</a></div><div className="micro">{content.hero.micro.map(x=><span key={x}>{x}</span>)}</div></div><div className="hero-visual"><div className="halo"></div><div className="hero-frame"><img src={content.hero.image} alt={p.name}/></div><span className="botanical b1">❧</span><span className="botanical b2">❦</span></div></section>
+    <section className="trust">{content.trust.map((x,i)=><span key={x}>{i>0&&<i>✦</i>}{x}</span>)}</section>
+    <section className="section why" data-reveal><p className="eyebrow">{content.why.eyebrow}</p><h2>{content.why.title}</h2><div className="cards">{content.why.cards.map(c=><article key={c.number}><b>{c.number}</b><span className="line-icon">{c.icon}</span><h3>{c.title}</h3><p>{c.copy}</p></article>)}</div></section>
+    <section id="ingredients" className="section ingredients" data-reveal><div className="section-title"><div><p className="eyebrow">{content.ingredients.eyebrow}</p><h2>{content.ingredients.titleLine1}<br/>{content.ingredients.titleLine2}</h2></div><p>{content.ingredients.intro}</p></div><div className="ingredient-grid">{content.ingredients.items.map((item,i)=><article className="ingredient-card" key={`${item.name}-${i}`}><div className={`ingredient-art ${item.className}`} style={item.image?{backgroundImage:`url(${item.image})`,backgroundSize:'cover',backgroundPosition:'center'}:{}}><span>0{i+1}</span></div><div className="ingredient-copy"><h3>{item.name}</h3><p>{item.copy}</p></div></article>)}</div></section>
+    <section id="product" className="section product" data-reveal><div className="product-image"><img src={p.image} alt={`${p.name} ${p.size}`}/></div><div className="product-copy"><p className="eyebrow">{p.eyebrow}</p><h2>{p.name}</h2><p className="muted">{p.subline} · {p.size}</p><p>{p.description}</p><div className="product-price">{p.price} <small>ر.س</small><span>{p.priceNote}</span></div><div className="buy-row"><Qty value={qty} setValue={setQty}/><button className="primary" onClick={addToCart}>{p.addToCart}</button></div><button className="buy-now" onClick={buyNow}>{p.buyNow}</button><div className="product-trust">{p.trust.map(x=><span key={x}>{x}</span>)}</div></div></section>
+    <section id="results" className="section results" data-reveal><div className="section-title"><div><p className="eyebrow">{content.results.eyebrow}</p><h2>{content.results.title}</h2></div><p>{content.results.intro}</p></div><ResultGallery results={content.results}/></section>
+    <section id="ritual" className="section ritual" data-reveal><div><p className="eyebrow">{content.ritual.eyebrow}</p><h2>{content.ritual.titleLine1}<br/>{content.ritual.titleLine2}</h2><p className="ritual-intro">{content.ritual.intro}</p></div><ol>{content.ritual.steps.map(s=><li key={s.number}><b>{s.number}</b><span><strong>{s.title}</strong>{s.copy}</span></li>)}</ol></section>
+    <section className="commerce-band" data-reveal>{content.commerce.map((c,i)=><article key={`${c.eyebrow}-${i}`}><small>{c.eyebrow}</small><b>{c.title}</b><span>{c.copy}</span><a href={c.href}>{c.linkText}</a></article>)}</section>
+    <section id="faq" className="section faq" data-reveal><p className="eyebrow">{content.faq.eyebrow}</p><h2>{content.faq.title}</h2>{content.faq.items.map((item,i)=><article className={faq===i?'active':''} key={`${item.question}-${i}`}><button onClick={()=>setFaq(faq===i?-1:i)} aria-expanded={faq===i}><span>{item.question}</span><b>{faq===i?'−':'+'}</b></button>{faq===i&&<p>{item.answer}</p>}</article>)}</section>
+    <section className="final-cta" data-reveal><div><p className="eyebrow">{content.finalCta.eyebrow}</p><h2>{content.finalCta.titleLine1}<br/>{content.finalCta.titleLine2}</h2><p>{content.finalCta.description}</p><button className="primary" onClick={addToCart}>{content.finalCta.button} · {p.price} ر.س</button></div><img src={content.finalCta.image} alt={`${p.name} lifestyle`}/></section>
+  </main><footer><div className="footer-brand"><img src={`${A}assets/logo.jpg`} alt={p.name}/><b>CROWN</b><small>HAIR OIL</small><p>{content.footer.tagline}</p></div><div><h4>{content.footer.shopTitle}</h4><a href="#product">{p.name}</a><a href="#ingredients">{content.navigation.ingredients}</a><a href="#ritual">{content.navigation.ritual}</a></div><div><h4>{content.footer.helpTitle}</h4><a href={`${A}shipping-returns.html`}>الشحن والاسترجاع</a><a href={`${A}contact.html`}>تواصلي معنا</a><a href="#faq">{content.navigation.faq}</a></div><div><h4>{content.footer.legalTitle}</h4><a href={`${A}privacy.html`}>الخصوصية</a><a href={`${A}terms.html`}>الشروط والأحكام</a></div><div className="copyright">{content.footer.copyright}</div></footer><a className="support-fab" href={`${A}contact.html`}><span>?</span><b>{content.footer.supportLabel}</b></a><div className="mobile-buy"><span><b>{p.price} ر.س</b><small>{p.name} · {p.size}</small></span><button onClick={addToCart}>{p.addToCart}</button></div></div>
 }

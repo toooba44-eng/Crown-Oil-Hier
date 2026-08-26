@@ -1,202 +1,67 @@
 import { useEffect, useMemo, useState } from 'react'
+import { DEFAULT_CONTENT, mergeContent } from '../siteContent.js'
 
 const API = import.meta.env.VITE_ADMIN_API_URL || 'https://asubcanztloxiddshakz.supabase.co/functions/v1/crown-admin-api'
-const TOKEN_KEY = 'crown_admin_session'
+const TOKEN_KEY='crown_admin_session'
+const getToken=()=>sessionStorage.getItem(TOKEN_KEY)||''
+const setToken=t=>t?sessionStorage.setItem(TOKEN_KEY,t):sessionStorage.removeItem(TOKEN_KEY)
 
-const defaultContent = {
-  hero: {
-    eyebrow: 'BOTANICAL HAIR & SCALP OIL',
-    titleLine1: 'العناية بشعرك',
-    titleLine2: 'تبدأ من الجذور.',
-    description: 'مزيج نباتي غني بزيت الأرغان والروزماري والزيتون، صُمم ليكون طقسًا بسيطًا للعناية بالشعر وفروة الرأس.',
-    primaryCta: 'تسوّقي الآن',
-    secondaryCta: 'اكتشفي المكونات',
-  },
-  product: { name: 'Crown Hair Oil', price: '119', size: '100 ml' },
-  faq: [
-    { question: 'هل يناسب جميع أنواع الشعر؟', answer: 'صُمم Crown Hair Oil ليكون جزءًا من روتين العناية لمختلف أنواع الشعر.' },
-    { question: 'كم مرة يستخدم؟', answer: 'ابدئي بمرتين إلى ثلاث مرات أسبوعيًا وعدّلي التكرار حسب احتياج شعرك.' },
-  ],
+async function request(path,options={}){
+  const token=getToken(),isForm=options.body instanceof FormData
+  const response=await fetch(`${API}${path}`,{headers:{...(isForm?{}:{'Content-Type':'application/json'}),...(token?{Authorization:`Bearer ${token}`}:{}) ,...(options.headers||{})},...options})
+  const data=await response.json().catch(()=>({})); if(!response.ok){if(response.status===401&&path!=='/login')setToken(''); throw Object.assign(new Error(data.error||'request_failed'),{status:response.status,data})} return data
 }
 
-function getToken() {
-  return sessionStorage.getItem(TOKEN_KEY) || ''
+function Login({onLogin}){
+  const[username,setUsername]=useState(''),[password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false)
+  async function submit(e){e.preventDefault();setBusy(true);setError('');try{const r=await request('/login',{method:'POST',body:JSON.stringify({username,password})});setToken(r.token);onLogin(r.admin);setPassword('')}catch(err){setError(err.status===401?'اسم المستخدم أو كلمة المرور غير صحيحة.':'تعذر الاتصال بخدمة الإدارة.')}finally{setBusy(false)}}
+  return <main className="login-page" dir="rtl"><section className="login-card"><div className="login-brand"><span>C</span><div><b>CROWN</b><small>ADMIN</small></div></div><p className="login-kicker">SECURE CONTENT MANAGEMENT</p><h1>تسجيل دخول الإدارة</h1><p className="login-copy">هذه المنطقة مخصصة لفريق إدارة Crown فقط.</p><form onSubmit={submit}><label>اسم المستخدم<input value={username} onChange={e=>setUsername(e.target.value)} required/></label><label>كلمة المرور<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required/></label>{error&&<div className="login-error">{error}</div>}<button className="admin-primary" disabled={busy}>{busy?'جاري التحقق...':'دخول آمن'}</button></form><small className="security-note">تنتهي جلسة الإدارة تلقائيًا، ولا تُحفظ كلمة المرور داخل GitHub.</small></section></main>
 }
 
-function setToken(token) {
-  if (token) sessionStorage.setItem(TOKEN_KEY, token)
-  else sessionStorage.removeItem(TOKEN_KEY)
+function Field({label,value,onChange,textarea=false,type='text'}){return <label className="editor-field"><span>{label}</span>{textarea?<textarea value={value??''} onChange={e=>onChange(e.target.value)}/>:<input type={type} value={value??''} onChange={e=>onChange(type==='number'?Number(e.target.value):e.target.value)}/>}</label>}
+function Pair({children}){return <div className="field-pair">{children}</div>}
+function Repeater({items,render,onAdd,onRemove,addLabel='إضافة عنصر'}){return <div className="repeater">{items.map((item,i)=><div className="repeat-card" key={i}><div className="repeat-head"><b>#{i+1}</b><button onClick={()=>onRemove(i)}>حذف</button></div>{render(item,i)}</div>)}<button className="add-row" onClick={onAdd}>+ {addLabel}</button></div>}
+
+function Editor({admin,onLogout}){
+  const[editing,setEditing]=useState(true),[section,setSection]=useState('hero'),[content,setContent]=useState(DEFAULT_CONTENT),[status,setStatus]=useState('تحميل المحتوى...'),[media,setMedia]=useState([]),[versions,setVersions]=useState([]),[uploading,setUploading]=useState(false)
+  const tabs={hero:'Hero',why:'Why Crown',ingredients:'المكونات',product:'المنتج',results:'النتائج',ritual:'طريقة الاستخدام',commerce:'الشحن والدعم',faq:'FAQ',final:'Final CTA',footer:'Footer',seo:'SEO',media:'الصور',versions:'الإصدارات'}
+  useEffect(()=>{request('/content').then(r=>{setContent(mergeContent(DEFAULT_CONTENT,r.content||{}));setStatus('جاهز')}).catch(()=>setStatus('تعذر تحميل المحتوى'));loadMedia();loadVersions()},[])
+  const previewTitle=useMemo(()=>`${content.hero.titleLine1} ${content.hero.titleLine2}`,[content])
+  const setObj=(key,field,value)=>setContent(c=>({...c,[key]:{...c[key],[field]:value}}))
+  const setArrayItem=(key,arrayField,i,field,value)=>setContent(c=>({...c,[key]:{...c[key],[arrayField]:c[key][arrayField].map((x,n)=>n===i?{...x,[field]:value}:x)}}))
+  const removeArrayItem=(key,arrayField,i)=>setContent(c=>({...c,[key]:{...c[key],[arrayField]:c[key][arrayField].filter((_,n)=>n!==i)}}))
+  const addArrayItem=(key,arrayField,item)=>setContent(c=>({...c,[key]:{...c[key],[arrayField]:[...c[key][arrayField],item]}}))
+  async function saveDraft(){setStatus('حفظ المسودة...');try{const r=await request('/content/draft',{method:'PUT',body:JSON.stringify({content})});setStatus(`تم حفظ المسودة · الإصدار ${r.versionNo}`);loadVersions()}catch{setStatus('تعذر حفظ المسودة')}}
+  async function publish(){setStatus('جاري النشر...');try{const r=await request('/content/publish',{method:'POST',body:JSON.stringify({content})});setStatus(`تم النشر · الإصدار ${r.versionNo}`);loadVersions()}catch{setStatus('تعذر النشر')}}
+  async function loadMedia(){try{const r=await request('/media');setMedia(r.media||[])}catch{}}
+  async function loadVersions(){try{const r=await request('/versions');setVersions(r.versions||[])}catch{}}
+  async function upload(file,alt){if(!file)return;setUploading(true);setStatus('رفع الصورة...');try{const f=new FormData();f.append('file',file);f.append('alt',alt||'');await request('/media/upload',{method:'POST',body:f});await loadMedia();setStatus('تم رفع الصورة')}catch(e){setStatus(e.data?.error==='file_too_large'?'الصورة أكبر من 5MB':'تعذر رفع الصورة')}finally{setUploading(false)}}
+  async function deleteMedia(id){if(!confirm('حذف الصورة من المكتبة؟'))return;await request('/media/delete',{method:'POST',body:JSON.stringify({id})});loadMedia()}
+  async function restore(versionNo){if(!confirm(`استرجاع الإصدار ${versionNo} كمسودة؟`))return;setStatus('استرجاع الإصدار...');try{const r=await request('/content/restore',{method:'POST',body:JSON.stringify({versionNo})});setContent(mergeContent(DEFAULT_CONTENT,r.content));setStatus(`تم الاسترجاع كمسودة · الإصدار ${r.versionNo}`);loadVersions()}catch{setStatus('تعذر الاسترجاع')}}
+  const useImage=(target,url)=>{if(target==='hero')setObj('hero','image',url);if(target==='product')setObj('product','image',url);if(target==='final')setObj('finalCta','image',url);setStatus('تم اختيار الصورة · احفظ أو انشر التعديل')}
+
+  return <div className="cms-shell" dir="rtl"><header className="cms-topbar"><div className="cms-brand"><span>C</span><b>CROWN <small>ADMIN</small></b></div><div className="cms-actions"><span className="save-status">{status}</span><button className="ghost" onClick={()=>setEditing(v=>!v)}>{editing?'إغلاق التحرير':'تحرير'}</button><button className="ghost" onClick={saveDraft}>حفظ المسودة</button><button className="admin-primary compact" onClick={publish}>نشر</button><button className="avatar" onClick={onLogout}>خروج</button></div></header>
+  <div className="editor-workspace">{editing&&<aside className="editor-sidebar"><div className="sidebar-head"><small>SITE EDITOR</small><h2>تحرير الموقع</h2></div><div className="section-tabs">{Object.entries(tabs).map(([k,v])=><button key={k} className={section===k?'active':''} onClick={()=>setSection(k)}>{v}</button>)}</div><div className="fields">
+    {section==='hero'&&<><Field label="Eyebrow" value={content.hero.eyebrow} onChange={v=>setObj('hero','eyebrow',v)}/><Pair><Field label="العنوان 1" value={content.hero.titleLine1} onChange={v=>setObj('hero','titleLine1',v)}/><Field label="العنوان 2" value={content.hero.titleLine2} onChange={v=>setObj('hero','titleLine2',v)}/></Pair><Field textarea label="الوصف" value={content.hero.description} onChange={v=>setObj('hero','description',v)}/><Field label="سطر التقييم" value={content.hero.ratingText} onChange={v=>setObj('hero','ratingText',v)}/><Pair><Field label="الزر الرئيسي" value={content.hero.primaryCta} onChange={v=>setObj('hero','primaryCta',v)}/><Field label="الزر الثانوي" value={content.hero.secondaryCta} onChange={v=>setObj('hero','secondaryCta',v)}/></Pair><Field label="رابط صورة Hero" value={content.hero.image} onChange={v=>setObj('hero','image',v)}/>{content.hero.micro.map((x,i)=><Field key={i} label={`ميزة صغيرة ${i+1}`} value={x} onChange={v=>setContent(c=>({...c,hero:{...c.hero,micro:c.hero.micro.map((m,n)=>n===i?v:m)}}))}/>)}</>}
+    {section==='why'&&<><Field label="Eyebrow" value={content.why.eyebrow} onChange={v=>setObj('why','eyebrow',v)}/><Field label="العنوان" value={content.why.title} onChange={v=>setObj('why','title',v)}/><Repeater items={content.why.cards} onAdd={()=>addArrayItem('why','cards',{number:`0${content.why.cards.length+1}`,icon:'✦',title:'ميزة جديدة',copy:'الوصف'})} onRemove={i=>removeArrayItem('why','cards',i)} render={(x,i)=><><Pair><Field label="الرقم" value={x.number} onChange={v=>setArrayItem('why','cards',i,'number',v)}/><Field label="الأيقونة" value={x.icon} onChange={v=>setArrayItem('why','cards',i,'icon',v)}/></Pair><Field label="العنوان" value={x.title} onChange={v=>setArrayItem('why','cards',i,'title',v)}/><Field textarea label="الوصف" value={x.copy} onChange={v=>setArrayItem('why','cards',i,'copy',v)}/></>}/></>}
+    {section==='ingredients'&&<><Field label="Eyebrow" value={content.ingredients.eyebrow} onChange={v=>setObj('ingredients','eyebrow',v)}/><Pair><Field label="العنوان 1" value={content.ingredients.titleLine1} onChange={v=>setObj('ingredients','titleLine1',v)}/><Field label="العنوان 2" value={content.ingredients.titleLine2} onChange={v=>setObj('ingredients','titleLine2',v)}/></Pair><Field textarea label="المقدمة" value={content.ingredients.intro} onChange={v=>setObj('ingredients','intro',v)}/><Repeater items={content.ingredients.items} onAdd={()=>addArrayItem('ingredients','items',{name:'مكوّن جديد',copy:'الوصف',className:'argan',image:''})} onRemove={i=>removeArrayItem('ingredients','items',i)} render={(x,i)=><><Field label="اسم المكوّن" value={x.name} onChange={v=>setArrayItem('ingredients','items',i,'name',v)}/><Field textarea label="الوصف" value={x.copy} onChange={v=>setArrayItem('ingredients','items',i,'copy',v)}/><Field label="رابط الصورة" value={x.image} onChange={v=>setArrayItem('ingredients','items',i,'image',v)}/></>}/></>}
+    {section==='product'&&<><Field label="Eyebrow" value={content.product.eyebrow} onChange={v=>setObj('product','eyebrow',v)}/><Field label="اسم المنتج" value={content.product.name} onChange={v=>setObj('product','name',v)}/><Pair><Field type="number" label="السعر" value={content.product.price} onChange={v=>setObj('product','price',v)}/><Field label="الحجم" value={content.product.size} onChange={v=>setObj('product','size',v)}/></Pair><Field label="Subline" value={content.product.subline} onChange={v=>setObj('product','subline',v)}/><Field textarea label="الوصف" value={content.product.description} onChange={v=>setObj('product','description',v)}/><Field label="رابط الصورة" value={content.product.image} onChange={v=>setObj('product','image',v)}/><Pair><Field label="زر السلة" value={content.product.addToCart} onChange={v=>setObj('product','addToCart',v)}/><Field label="زر الشراء" value={content.product.buyNow} onChange={v=>setObj('product','buyNow',v)}/></Pair></>}
+    {section==='results'&&<><Field label="Eyebrow" value={content.results.eyebrow} onChange={v=>setObj('results','eyebrow',v)}/><Field label="العنوان" value={content.results.title} onChange={v=>setObj('results','title',v)}/><Field textarea label="المقدمة" value={content.results.intro} onChange={v=>setObj('results','intro',v)}/><Field label="Caption" value={content.results.caption} onChange={v=>setObj('results','caption',v)}/><Repeater addLabel="إضافة صورة نتائج" items={content.results.images.map(url=>({url}))} onAdd={()=>setContent(c=>({...c,results:{...c.results,images:[...c.results.images,'']}}))} onRemove={i=>setContent(c=>({...c,results:{...c.results,images:c.results.images.filter((_,n)=>n!==i)}}))} render={(x,i)=><Field label="رابط الصورة" value={x.url} onChange={v=>setContent(c=>({...c,results:{...c.results,images:c.results.images.map((m,n)=>n===i?v:m)}}))}/>} /></>}
+    {section==='ritual'&&<><Field label="Eyebrow" value={content.ritual.eyebrow} onChange={v=>setObj('ritual','eyebrow',v)}/><Pair><Field label="العنوان 1" value={content.ritual.titleLine1} onChange={v=>setObj('ritual','titleLine1',v)}/><Field label="العنوان 2" value={content.ritual.titleLine2} onChange={v=>setObj('ritual','titleLine2',v)}/></Pair><Field textarea label="المقدمة" value={content.ritual.intro} onChange={v=>setObj('ritual','intro',v)}/><Repeater items={content.ritual.steps} onAdd={()=>addArrayItem('ritual','steps',{number:`0${content.ritual.steps.length+1}`,title:'خطوة جديدة',copy:'الوصف'})} onRemove={i=>removeArrayItem('ritual','steps',i)} render={(x,i)=><><Pair><Field label="الرقم" value={x.number} onChange={v=>setArrayItem('ritual','steps',i,'number',v)}/><Field label="العنوان" value={x.title} onChange={v=>setArrayItem('ritual','steps',i,'title',v)}/></Pair><Field label="الوصف" value={x.copy} onChange={v=>setArrayItem('ritual','steps',i,'copy',v)}/></>}/></>}
+    {section==='commerce'&&<Repeater items={content.commerce} onAdd={()=>setContent(c=>({...c,commerce:[...c.commerce,{eyebrow:'INFO',title:'عنوان',copy:'الوصف',linkText:'اعرف المزيد ←',href:'#'}]}))} onRemove={i=>setContent(c=>({...c,commerce:c.commerce.filter((_,n)=>n!==i)}))} render={(x,i)=><><Pair><Field label="Eyebrow" value={x.eyebrow} onChange={v=>setContent(c=>({...c,commerce:c.commerce.map((m,n)=>n===i?{...m,eyebrow:v}:m)}))}/><Field label="العنوان" value={x.title} onChange={v=>setContent(c=>({...c,commerce:c.commerce.map((m,n)=>n===i?{...m,title:v}:m)}))}/></Pair><Field textarea label="الوصف" value={x.copy} onChange={v=>setContent(c=>({...c,commerce:c.commerce.map((m,n)=>n===i?{...m,copy:v}:m)}))}/><Pair><Field label="نص الرابط" value={x.linkText} onChange={v=>setContent(c=>({...c,commerce:c.commerce.map((m,n)=>n===i?{...m,linkText:v}:m)}))}/><Field label="الرابط" value={x.href} onChange={v=>setContent(c=>({...c,commerce:c.commerce.map((m,n)=>n===i?{...m,href:v}:m)}))}/></Pair></>}/>} 
+    {section==='faq'&&<><Pair><Field label="Eyebrow" value={content.faq.eyebrow} onChange={v=>setObj('faq','eyebrow',v)}/><Field label="العنوان" value={content.faq.title} onChange={v=>setObj('faq','title',v)}/></Pair><Repeater addLabel="إضافة سؤال" items={content.faq.items} onAdd={()=>addArrayItem('faq','items',{question:'سؤال جديد',answer:'الإجابة'})} onRemove={i=>removeArrayItem('faq','items',i)} render={(x,i)=><><Field label="السؤال" value={x.question} onChange={v=>setArrayItem('faq','items',i,'question',v)}/><Field textarea label="الإجابة" value={x.answer} onChange={v=>setArrayItem('faq','items',i,'answer',v)}/></>}/></>}
+    {section==='final'&&<><Field label="Eyebrow" value={content.finalCta.eyebrow} onChange={v=>setObj('finalCta','eyebrow',v)}/><Pair><Field label="العنوان 1" value={content.finalCta.titleLine1} onChange={v=>setObj('finalCta','titleLine1',v)}/><Field label="العنوان 2" value={content.finalCta.titleLine2} onChange={v=>setObj('finalCta','titleLine2',v)}/></Pair><Field textarea label="الوصف" value={content.finalCta.description} onChange={v=>setObj('finalCta','description',v)}/><Field label="نص الزر" value={content.finalCta.button} onChange={v=>setObj('finalCta','button',v)}/><Field label="رابط الصورة" value={content.finalCta.image} onChange={v=>setObj('finalCta','image',v)}/></>}
+    {section==='footer'&&<><Field label="Tagline" value={content.footer.tagline} onChange={v=>setObj('footer','tagline',v)}/><Pair><Field label="عنوان التسوق" value={content.footer.shopTitle} onChange={v=>setObj('footer','shopTitle',v)}/><Field label="عنوان المساعدة" value={content.footer.helpTitle} onChange={v=>setObj('footer','helpTitle',v)}/></Pair><Field label="عنوان القانونية" value={content.footer.legalTitle} onChange={v=>setObj('footer','legalTitle',v)}/><Field label="Copyright" value={content.footer.copyright} onChange={v=>setObj('footer','copyright',v)}/><Field label="زر الدعم" value={content.footer.supportLabel} onChange={v=>setObj('footer','supportLabel',v)}/></>}
+    {section==='seo'&&<><Field label="SEO Title" value={content.seo.title} onChange={v=>setObj('seo','title',v)}/><Field textarea label="Meta Description" value={content.seo.description} onChange={v=>setObj('seo','description',v)}/><Field label="Social / OG Image" value={content.seo.socialImage} onChange={v=>setObj('seo','socialImage',v)}/><Field label="Announcement Bar" value={content.announcement} onChange={v=>setContent(c=>({...c,announcement:v}))}/></>}
+    {section==='media'&&<MediaPanel media={media} uploading={uploading} upload={upload} remove={deleteMedia} useImage={useImage}/>} 
+    {section==='versions'&&<div className="version-list">{versions.length?versions.map(v=><article key={v.id}><div><b>الإصدار {v.version_no}</b><small>{v.status==='published'?'منشور':'مسودة'} · {new Date(v.created_at).toLocaleString('ar-SA')}</small></div><button onClick={()=>restore(v.version_no)}>استرجاع كمسودة</button></article>):<p>لا توجد إصدارات بعد.</p>}</div>}
+  </div></aside>}
+  <main className="site-preview"><div className="preview-label">LIVE PREVIEW · التعديلات لا تصل للعملاء حتى تضغط «نشر»</div><section className="preview-hero"><div className="preview-copy"><p>{content.hero.eyebrow}</p><h1>{content.hero.titleLine1}<br/><em>{content.hero.titleLine2}</em></h1><div className="preview-description">{content.hero.description}</div><div className="preview-rating">★★★★★ <span>{content.hero.ratingText}</span></div><div className="preview-price"><strong>{content.product.price}</strong><span>ر.س · {content.product.size}</span></div><div className="preview-buttons"><button>{content.hero.primaryCta}</button><button className="outline">{content.hero.secondaryCta}</button></div></div><div className="preview-image"><img src={content.hero.image} alt="Crown preview"/></div></section><section className="preview-summary"><small>CONTENT MANAGEMENT</small><h2>{previewTitle}</h2><p>جميع أقسام المتجر مرتبطة الآن بنفس نسخة المحتوى. استخدم القائمة اليسرى للتحرير، ثم «حفظ المسودة» أو «نشر».</p><div className="preview-stats"><span><b>{content.faq.items.length}</b> أسئلة FAQ</span><span><b>{content.results.images.length}</b> صور نتائج</span><span><b>{media.length}</b> صور بالمكتبة</span></div></section></main></div></div>
 }
 
-async function request(path, options = {}) {
-  const token = getToken()
-  const response = await fetch(`${API}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-    ...options,
-  })
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) {
-    if (response.status === 401 && path !== '/login') setToken('')
-    throw Object.assign(new Error(data.error || 'request_failed'), { status: response.status, data })
-  }
-  return data
+function MediaPanel({media,uploading,upload,remove,useImage}){
+  const[file,setFile]=useState(null),[alt,setAlt]=useState('')
+  return <div className="media-panel"><div className="upload-box"><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={e=>setFile(e.target.files?.[0]||null)}/><input placeholder="Alt text للصورة" value={alt} onChange={e=>setAlt(e.target.value)}/><button className="admin-primary" disabled={!file||uploading} onClick={()=>upload(file,alt).then(()=>{setFile(null);setAlt('')})}>{uploading?'جاري الرفع...':'رفع الصورة'}</button><small>JPEG / PNG / WebP / AVIF · حتى 5MB</small></div><div className="media-grid">{media.map(m=><article key={m.id}><img src={m.url} alt={m.alt_text||''}/><div><small>{m.alt_text||'بدون Alt text'}</small><div className="media-actions"><button onClick={()=>useImage('hero',m.url)}>Hero</button><button onClick={()=>useImage('product',m.url)}>Product</button><button onClick={()=>useImage('final',m.url)}>Final</button><button className="danger" onClick={()=>remove(m.id)}>حذف</button></div></div></article>)}</div></div>
 }
 
-function Login({ onLogin }) {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  async function submit(e) {
-    e.preventDefault()
-    setBusy(true)
-    setError('')
-    try {
-      const result = await request('/login', { method: 'POST', body: JSON.stringify({ username, password }) })
-      setToken(result.token)
-      onLogin(result.admin)
-      setPassword('')
-    } catch (err) {
-      setError(err.status === 401 ? 'اسم المستخدم أو كلمة المرور غير صحيحة.' : 'تعذر الاتصال بخدمة الإدارة. حاول مرة أخرى.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return <main className="login-page" dir="rtl">
-    <section className="login-card">
-      <div className="login-brand"><span>C</span><div><b>CROWN</b><small>ADMIN</small></div></div>
-      <p className="login-kicker">SECURE CONTENT MANAGEMENT</p>
-      <h1>تسجيل دخول الإدارة</h1>
-      <p className="login-copy">هذه المنطقة مخصصة لفريق إدارة Crown فقط.</p>
-      <form onSubmit={submit}>
-        <label>اسم المستخدم<input autoComplete="username" value={username} onChange={e=>setUsername(e.target.value)} required /></label>
-        <label>كلمة المرور<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required /></label>
-        {error && <div className="login-error">{error}</div>}
-        <button className="admin-primary" disabled={busy}>{busy ? 'جاري التحقق...' : 'دخول آمن'}</button>
-      </form>
-      <small className="security-note">كلمة المرور لا تُحفظ داخل GitHub أو ملفات الموقع. تنتهي جلسة الإدارة تلقائيًا.</small>
-    </section>
-  </main>
-}
-
-function Field({ label, value, onChange, textarea=false }) {
-  return <label className="editor-field"><span>{label}</span>{textarea ? <textarea value={value} onChange={e=>onChange(e.target.value)} /> : <input value={value} onChange={e=>onChange(e.target.value)} />}</label>
-}
-
-function Editor({ admin, onLogout }) {
-  const [editing, setEditing] = useState(false)
-  const [section, setSection] = useState('hero')
-  const [content, setContent] = useState(defaultContent)
-  const [status, setStatus] = useState('تحميل المحتوى...')
-
-  useEffect(() => {
-    request('/content')
-      .then(r => { if (r.content) setContent(r.content); setStatus('جاهز') })
-      .catch(() => setStatus('تعذر تحميل المحتوى'))
-  }, [])
-
-  const previewTitle = useMemo(()=>`${content.hero.titleLine1} ${content.hero.titleLine2}`,[content])
-  const setHero = (key, value) => setContent(c=>({...c,hero:{...c.hero,[key]:value}}))
-  const setProduct = (key, value) => setContent(c=>({...c,product:{...c.product,[key]:value}}))
-
-  async function saveDraft() {
-    setStatus('حفظ المسودة...')
-    try {
-      const result = await request('/content/draft',{method:'PUT',body:JSON.stringify({content})})
-      setStatus(`تم حفظ المسودة · الإصدار ${result.versionNo}`)
-    } catch {
-      setStatus('تعذر حفظ المسودة')
-    }
-  }
-
-  async function publish() {
-    setStatus('جاري النشر...')
-    try {
-      const result = await request('/content/publish',{method:'POST',body:JSON.stringify({content})})
-      setStatus(`تم النشر · الإصدار ${result.versionNo}`)
-    } catch {
-      setStatus('تعذر النشر')
-    }
-  }
-
-  return <div className="cms-shell" dir="rtl">
-    <header className="cms-topbar">
-      <div className="cms-brand"><span>C</span><b>CROWN <small>ADMIN</small></b></div>
-      <div className="cms-actions">
-        <span className="save-status">{status}</span>
-        <button className="ghost" onClick={()=>setEditing(v=>!v)}>{editing ? 'إغلاق التحرير' : 'تحرير'}</button>
-        <button className="ghost" onClick={saveDraft}>حفظ المسودة</button>
-        <button className="admin-primary compact" onClick={publish}>نشر</button>
-        <button className="avatar" title={admin?.username || 'Admin'} onClick={onLogout}>خروج</button>
-      </div>
-    </header>
-
-    <div className="editor-workspace">
-      {editing && <aside className="editor-sidebar" dir="rtl">
-        <div className="sidebar-head"><small>SITE EDITOR</small><h2>تحرير الموقع</h2></div>
-        <div className="section-tabs">
-          {['hero','product','faq','media','seo'].map(x=><button key={x} className={section===x?'active':''} onClick={()=>setSection(x)}>{({hero:'Hero',product:'المنتج',faq:'FAQ',media:'الصور',seo:'SEO'})[x]}</button>)}
-        </div>
-        <div className="fields">
-          {section==='hero' && <>
-            <Field label="Eyebrow" value={content.hero.eyebrow} onChange={v=>setHero('eyebrow',v)} />
-            <Field label="العنوان — السطر الأول" value={content.hero.titleLine1} onChange={v=>setHero('titleLine1',v)} />
-            <Field label="العنوان — السطر الثاني" value={content.hero.titleLine2} onChange={v=>setHero('titleLine2',v)} />
-            <Field textarea label="الوصف" value={content.hero.description} onChange={v=>setHero('description',v)} />
-            <Field label="الزر الرئيسي" value={content.hero.primaryCta} onChange={v=>setHero('primaryCta',v)} />
-            <Field label="الزر الثانوي" value={content.hero.secondaryCta} onChange={v=>setHero('secondaryCta',v)} />
-          </>}
-          {section==='product' && <>
-            <Field label="اسم المنتج" value={content.product.name} onChange={v=>setProduct('name',v)} />
-            <Field label="السعر" value={content.product.price} onChange={v=>setProduct('price',v)} />
-            <Field label="الحجم" value={content.product.size} onChange={v=>setProduct('size',v)} />
-          </>}
-          {section==='faq' && <div className="placeholder-panel">محرر FAQ الكامل سيتم ضمن المرحلة التالية.</div>}
-          {section==='media' && <div className="placeholder-panel">Media Library سيتم ربطها بـSupabase Storage في المرحلة التالية.</div>}
-          {section==='seo' && <div className="placeholder-panel">إدارة Title وDescription وSocial image ستكون من هنا.</div>}
-        </div>
-      </aside>}
-
-      <main className="site-preview" dir="rtl">
-        <div className="preview-label">LIVE PREVIEW · التعديلات لا تصل للعملاء حتى تضغط «نشر»</div>
-        <section className="preview-hero">
-          <div className="preview-copy">
-            <p>{content.hero.eyebrow}</p>
-            <h1>{content.hero.titleLine1}<br/><em>{content.hero.titleLine2}</em></h1>
-            <div className="preview-description">{content.hero.description}</div>
-            <div className="preview-rating">★★★★★ <span>تجربة Crown للعناية اليومية</span></div>
-            <div className="preview-price"><strong>{content.product.price}</strong><span>ر.س · {content.product.size}</span></div>
-            <div className="preview-buttons"><button>{content.hero.primaryCta}</button><button className="outline">{content.hero.secondaryCta}</button></div>
-          </div>
-          <div className="preview-image"><img src="/Crown-Oil-Hier/assets/hero-light.jpg" alt="Crown Hair Oil preview" /></div>
-        </section>
-        <section className="preview-summary"><small>معاينة الصفحة</small><h2>{previewTitle}</h2><p>المحتوى الآن متصل بقاعدة بيانات Crown الحقيقية، ويمكن حفظ نسخة Draft ثم نشرها كنسخة Published.</p></section>
-      </main>
-    </div>
-  </div>
-}
-
-export default function AdminCMS() {
-  const [admin, setAdmin] = useState(null)
-  const [checking, setChecking] = useState(true)
-
-  useEffect(() => {
-    if (!getToken()) { setChecking(false); return }
-    request('/me').then(r=>setAdmin(r.admin)).catch(()=>setToken('')).finally(()=>setChecking(false))
-  }, [])
-
-  async function logout() {
-    try { await request('/logout',{method:'POST'}) } catch {}
-    setToken('')
-    setAdmin(null)
-  }
-
-  if (checking) return <div className="admin-loading">CROWN ADMIN</div>
-  return admin ? <Editor admin={admin} onLogout={logout}/> : <Login onLogin={setAdmin}/>
-}
+export default function AdminCMS(){const[admin,setAdmin]=useState(null),[checking,setChecking]=useState(true);useEffect(()=>{if(!getToken()){setChecking(false);return}request('/me').then(r=>setAdmin(r.admin)).catch(()=>setToken('')).finally(()=>setChecking(false))},[]);async function logout(){try{await request('/logout',{method:'POST'})}catch{}setToken('');setAdmin(null)}if(checking)return <div className="admin-loading">CROWN ADMIN</div>;return admin?<Editor admin={admin} onLogout={logout}/>:<Login onLogin={setAdmin}/>}
