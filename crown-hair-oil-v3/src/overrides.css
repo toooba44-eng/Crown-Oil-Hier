@@ -27,6 +27,7 @@
 /* Checkout rules */
 .checkout-required-note{font-size:11px;color:var(--terra);margin:-6px 0 14px}.form-grid input:required{border-color:rgba(43,48,36,.24)}.form-grid input:required:focus{border-color:var(--gold)}.shipping-hint{font-size:10px!important;line-height:1.8;color:var(--muted);margin:2px 0 10px!important}.summary>div b{font-family:'DM Sans',sans-serif}
 .checkout-qty-row{display:flex;align-items:center;gap:8px;margin-top:8px}.checkout-qty-row>small{margin:0!important;color:var(--muted)}.checkout-qty-row .qty{height:36px;background:#fff}.checkout-qty-row .qty button{width:32px;font-size:17px}.checkout-qty-row .qty span{min-width:22px;font-family:'DM Sans',sans-serif;font-weight:600}.summary-product>span{min-width:0}
+.payment-methods{display:grid;gap:10px}.payment-methods>label{display:flex;align-items:center;gap:9px}.payment-methods>label small{font-size:10px;color:var(--terra)}.bank-transfer-details{margin-top:2px;padding:18px;border:1px solid rgba(43,48,36,.15);background:#fffdf8}.bank-transfer-title{display:grid;gap:2px;margin-bottom:10px}.bank-transfer-title b{font-size:14px}.bank-transfer-title span,.bank-empty{font-size:10px;color:var(--muted)}.bank-transfer-details>div:not(.bank-transfer-title){display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-top:1px solid rgba(43,48,36,.09)}.bank-transfer-details>div:not(.bank-transfer-title) span{font-size:11px;color:var(--muted)}.bank-transfer-details>div:not(.bank-transfer-title) b{font-family:'DM Sans',sans-serif;overflow-wrap:anywhere}.bank-iban{letter-spacing:.5px}
 
 /* Hero copy must never depend on animation to be visible */
 .hero-sequence>*{opacity:1!important;animation:none!important;transform:none}
@@ -43,6 +44,6 @@
 }
 
 @media(max-width:900px){.hero-rating,.hero-price{justify-content:center}.hero .lead{margin-left:auto;margin-right:auto}.hero-actions{justify-content:center}}
-@media(max-width:600px){.hero h1{font-size:46px;line-height:1.28}.hero .lead{font-size:14px;line-height:1.95}.hero-rating{font-size:9px;gap:8px}.hero-price strong{font-size:40px}.hero-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.hero-actions .primary,.hero-actions .secondary{min-width:0;width:100%;padding:13px 16px}.hero-text-link{grid-column:1/-1;justify-self:center;padding-top:3px}.hero .micro{justify-content:center;gap:7px 13px}.checkout-qty-row{flex-wrap:wrap}}
+@media(max-width:600px){.hero h1{font-size:46px;line-height:1.28}.hero .lead{font-size:14px;line-height:1.95}.hero-rating{font-size:9px;gap:8px}.hero-price strong{font-size:40px}.hero-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.hero-actions .primary,.hero-actions .secondary{min-width:0;width:100%;padding:13px 16px}.hero-text-link{grid-column:1/-1;justify-self:center;padding-top:3px}.hero .micro{justify-content:center;gap:7px 13px}.checkout-qty-row{flex-wrap:wrap}.bank-transfer-details>div:not(.bank-transfer-title){display:grid;gap:3px}}
 
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}.hero-sequence>*{opacity:1!important;transform:none!important}}
