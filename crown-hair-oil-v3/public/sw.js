@@ -1,4 +1,4 @@
-const CACHE='crown-v3-runtime-v6'
+const CACHE='crown-v3-runtime-v7'
 const SCOPE='/Crown-Oil-Hier/'
 
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([SCOPE,`${SCOPE}shop/`,`${SCOPE}product/`,`${SCOPE}manifest.webmanifest`,`${SCOPE}icon-192.png`,`${SCOPE}crown-logo.png`])).catch(()=>null));self.skipWaiting()})
