@@ -93,13 +93,24 @@ export const DEFAULT_CONTENT = {
 }
 
 export function mergeContent(base, incoming) {
-  if (!incoming || typeof incoming !== 'object') return base
-  const out = Array.isArray(base) ? [...base] : { ...base }
-  Object.keys(incoming).forEach((key) => {
-    const value = incoming[key]
-    if (Array.isArray(value)) out[key] = value
-    else if (value && typeof value === 'object' && base?.[key] && typeof base[key] === 'object' && !Array.isArray(base[key])) out[key] = mergeContent(base[key], value)
-    else out[key] = value
-  })
-  return out
+  if (Array.isArray(base)) return Array.isArray(incoming) ? incoming : [...base]
+  if (base && typeof base === 'object') {
+    if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return { ...base }
+    const out = { ...base }
+    Object.keys(incoming).forEach((key) => {
+      const value = incoming[key]
+      const baseValue = base[key]
+      if (Array.isArray(baseValue)) {
+        if (Array.isArray(value)) out[key] = value
+        return
+      }
+      if (baseValue && typeof baseValue === 'object') {
+        if (value && typeof value === 'object' && !Array.isArray(value)) out[key] = mergeContent(baseValue, value)
+        return
+      }
+      if (value !== undefined && value !== null) out[key] = value
+    })
+    return out
+  }
+  return incoming ?? base
 }
