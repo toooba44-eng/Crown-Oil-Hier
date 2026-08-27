@@ -1,10 +1,11 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import MultiStoreApp from './MultiStoreApp.jsx'
-import './multistore.css'
+import App from './App.jsx'
+import './styles.css'
+import './overrides.css'
 
 createRoot(document.getElementById('root')).render(
-  <React.StrictMode><MultiStoreApp /></React.StrictMode>
+  <React.StrictMode><App /></React.StrictMode>
 )
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
