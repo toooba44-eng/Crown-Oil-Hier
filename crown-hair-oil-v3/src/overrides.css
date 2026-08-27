@@ -1,5 +1,10 @@
 .primary:disabled{opacity:.55;cursor:not-allowed;transform:none;background:#6d7166}.primary:disabled:hover{transform:none;background:#6d7166}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #b8924a;outline-offset:3px}.cart-head button,.qty button,.faq button{touch-action:manipulation}
 
+/* Crown 2026 logo — use the uploaded mark everywhere the product logo appears */
+.brand-mark{display:grid;place-items:center;background:#fff url('/Crown-Oil-Hier/crown-logo.png') center/78% 78% no-repeat!important}
+.brand-mark img{opacity:0!important;transform:none!important}
+.footer-brand img{content:url('/Crown-Oil-Hier/crown-logo.png');object-fit:contain!important;object-position:center!important;background:#fff;border-radius:50%;padding:6px}
+
 /* Hero reference restoration — keep the new Alexandria + DM Sans typography */
 .hero-copy{max-width:700px}
 .hero h1{font-family:'Alexandria',sans-serif;font-size:clamp(50px,5.9vw,90px);line-height:1.2;letter-spacing:0;font-weight:400;margin-bottom:22px}
