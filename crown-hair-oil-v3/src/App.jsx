@@ -24,13 +24,30 @@ function Cart({ open,onClose,qty,setQty,onCheckout,product }) {
   return <div className={`cart-layer ${open?'show':''}`} onClick={onClose} aria-hidden={!open}><aside className="cart" onClick={e=>e.stopPropagation()}>
     <div className="cart-head"><div><p className="eyebrow">YOUR BAG</p><h2>سلة التسوق</h2></div><button onClick={onClose}>×</button></div>
     <div className="cart-item"><img src={product.image} alt={product.name}/><div><b>{product.name}</b><small>{product.size}</small><strong>{product.price} ر.س</strong><Qty value={qty} setValue={setQty}/></div></div>
-    <div className="cart-total"><span>المجموع الفرعي</span><b>{Number(product.price)*qty} ر.س</b></div><p className="cart-note">الشحن يُحسب عند إتمام الطلب.</p><button className="primary full" onClick={onCheckout}>إتمام الطلب</button><button className="text-action full" onClick={onClose}>متابعة التسوق ←</button>
+    <div className="cart-total"><span>المجموع الفرعي</span><b>{Number(product.price)*qty} ر.س</b></div><p className="cart-note">الشحن يُحسب حسب المدينة والكمية عند إتمام الطلب.</p><button className="primary full" onClick={onCheckout}>إتمام الطلب</button><button className="text-action full" onClick={onClose}>متابعة التسوق ←</button>
   </aside></div>
 }
 
+function isRiyadh(city='') {
+  const value=city.trim().toLowerCase().replace(/[\s-]+/g,' ')
+  return value==='الرياض'||value==='رياض'||value==='riyadh'||value==='al riyadh'||value==='ar riyadh'
+}
+function shippingFor(city,qty){
+  if(!city.trim())return null
+  const riyadh=isRiyadh(city)
+  if(riyadh)return qty>2?0:16
+  return qty>5?0:34
+}
+
 function Checkout({ qty,onBack,content }) {
-  const p=content.product,c=content.checkout,total=Number(p.price)*qty
-  return <main className="checkout"><button className="back" onClick={onBack}>{c.back}</button><div className="checkout-grid"><section><p className="eyebrow">{c.eyebrow}</p><h1>{c.title}</h1><h3>{c.contactTitle}</h3><div className="form-grid"><input placeholder="الاسم الكامل"/><input placeholder="رقم الجوال" inputMode="tel"/><input placeholder="البريد الإلكتروني" type="email"/><input placeholder="المدينة"/><input placeholder="الحي"/><input placeholder="الشارع" className="wide"/></div><h3>{c.paymentTitle}</h3><div className="payment"><label><input type="radio" name="pay" defaultChecked/> بطاقة / مدى / Apple Pay</label><label><input type="radio" name="pay"/> الدفع عند الاستلام</label></div></section><aside className="summary"><h3>{c.summaryTitle}</h3><div className="summary-product"><img src={p.image} alt={p.name}/><span>{p.name}<small>{p.size} · الكمية {qty}</small></span><b>{total} ر.س</b></div><div><span>المجموع الفرعي</span><b>{total} ر.س</b></div><div><span>الشحن</span><span>{c.shippingPending}</span></div><hr/><div className="grand"><span>الإجمالي</span><b>{total} ر.س</b></div><button className="primary full" disabled>{c.paymentDisabled}</button><p className="secure">{c.secureNote}</p></aside></div></main>
+  const p=content.product,c=content.checkout
+  const [form,setForm]=useState({name:'',phone:'',email:'',city:'',district:'',street:''})
+  const subtotal=Number(p.price)*qty,shipping=shippingFor(form.city,qty),total=subtotal+(shipping??0)
+  const update=(key,value)=>setForm(prev=>({...prev,[key]:value}))
+  const cityKnown=form.city.trim().length>0,riyadh=cityKnown&&isRiyadh(form.city)
+  const shippingLabel=!cityKnown?'يُحسب بعد إدخال المدينة':shipping===0?'مجاني':`${shipping} ر.س`
+  const shippingHint=!cityKnown?'الرياض: 16 ر.س، ومجانًا عند 3 قطع فأكثر. خارج الرياض: 34 ر.س، ومجانًا عند 6 قطع فأكثر.':shipping===0?'مؤهل للشحن المجاني حسب المدينة والكمية.':riyadh?'الشحن داخل الرياض مجاني عند طلب أكثر من قطعتين.':'الشحن خارج الرياض مجاني عند طلب أكثر من 5 قطع.'
+  return <main className="checkout"><button className="back" onClick={onBack}>{c.back}</button><div className="checkout-grid"><section><p className="eyebrow">{c.eyebrow}</p><h1>{c.title}</h1><h3>{c.contactTitle}</h3><p className="checkout-required-note">جميع بيانات التواصل والعنوان إلزامية *</p><form className="form-grid" onSubmit={e=>e.preventDefault()}><input required autoComplete="name" value={form.name} onChange={e=>update('name',e.target.value)} placeholder="الاسم الكامل *"/><input required autoComplete="tel" value={form.phone} onChange={e=>update('phone',e.target.value)} placeholder="رقم الجوال *" inputMode="tel"/><input required autoComplete="email" value={form.email} onChange={e=>update('email',e.target.value)} placeholder="البريد الإلكتروني *" type="email"/><input required autoComplete="address-level2" value={form.city} onChange={e=>update('city',e.target.value)} placeholder="المدينة *"/><input required autoComplete="address-level3" value={form.district} onChange={e=>update('district',e.target.value)} placeholder="الحي *"/><input required autoComplete="street-address" value={form.street} onChange={e=>update('street',e.target.value)} placeholder="الشارع *" className="wide"/></form><h3>{c.paymentTitle}</h3><div className="payment"><label><input type="radio" name="pay" defaultChecked/> بطاقة / مدى / Apple Pay</label><label><input type="radio" name="pay"/> الدفع عند الاستلام</label></div></section><aside className="summary"><h3>{c.summaryTitle}</h3><div className="summary-product"><img src={p.image} alt={p.name}/><span>{p.name}<small>{p.size} · الكمية {qty}</small></span><b>{subtotal} ر.س</b></div><div><span>المجموع الفرعي</span><b>{subtotal} ر.س</b></div><div><span>الشحن</span><b>{shippingLabel}</b></div><p className="shipping-hint">{shippingHint}</p><hr/><div className="grand"><span>الإجمالي</span><b>{cityKnown?`${total} ر.س`:`${subtotal} ر.س + الشحن`}</b></div><button className="primary full" disabled>{c.paymentDisabled}</button><p className="secure">{c.secureNote}</p></aside></div></main>
 }
 
 function ResultGallery({ results }) {

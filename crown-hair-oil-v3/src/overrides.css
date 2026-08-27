@@ -24,6 +24,9 @@
 .hero .micro{gap:20px;margin-top:26px;font-size:10px;flex-wrap:wrap}
 .hero .micro span:before{content:'✓';font-family:'DM Sans',sans-serif;color:var(--olive-2);margin-left:6px;font-size:11px}
 
+/* Checkout rules */
+.checkout-required-note{font-size:11px;color:var(--terra);margin:-6px 0 14px}.form-grid input:required{border-color:rgba(43,48,36,.24)}.form-grid input:required:focus{border-color:var(--gold)}.shipping-hint{font-size:10px!important;line-height:1.8;color:var(--muted);margin:2px 0 10px!important}.summary>div b{font-family:'DM Sans',sans-serif}
+
 /* Hero copy must never depend on animation to be visible */
 .hero-sequence>*{opacity:1!important;animation:none!important;transform:none}
 @media(prefers-reduced-motion:no-preference){
