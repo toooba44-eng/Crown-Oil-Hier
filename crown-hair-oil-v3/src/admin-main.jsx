@@ -5,6 +5,7 @@ import AdminErrorBoundary from './admin/AdminErrorBoundary.jsx'
 import './admin/stage4.css'
 import './admin/stage5.css'
 import './admin/stage5-fixes.css'
+import './admin/multistore-admin.css'
 
 createRoot(document.getElementById('admin-root')).render(
   <React.StrictMode><AdminErrorBoundary><AdminHub /></AdminErrorBoundary></React.StrictMode>

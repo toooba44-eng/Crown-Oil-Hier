@@ -9,6 +9,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         storefront: resolve(__dirname, 'index.html'),
+        shop: resolve(__dirname, 'shop/index.html'),
+        product: resolve(__dirname, 'product/index.html'),
         admin: resolve(__dirname, 'admin/index.html'),
       },
     },
