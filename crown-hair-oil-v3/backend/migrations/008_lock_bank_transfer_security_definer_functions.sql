@@ -1,0 +1,10 @@
+revoke execute on function public.reserve_inventory_for_order(uuid,integer) from public, anon, authenticated;
+revoke execute on function public.release_expired_inventory_reservations() from public, anon, authenticated;
+revoke execute on function public.confirm_bank_transfer_payment(uuid,uuid,text) from public, anon, authenticated;
+revoke execute on function public.reject_bank_transfer_payment(uuid,uuid,text,text) from public, anon, authenticated;
+revoke execute on function public.available_stock_for_product(uuid) from public, anon, authenticated;
+grant execute on function public.reserve_inventory_for_order(uuid,integer) to service_role;
+grant execute on function public.release_expired_inventory_reservations() to service_role;
+grant execute on function public.confirm_bank_transfer_payment(uuid,uuid,text) to service_role;
+grant execute on function public.reject_bank_transfer_payment(uuid,uuid,text,text) to service_role;
+grant execute on function public.available_stock_for_product(uuid) to service_role;
