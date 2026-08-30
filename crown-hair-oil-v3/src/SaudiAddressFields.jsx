@@ -31,7 +31,7 @@ function SearchDropdown({ label, instruction, placeholder, value, options, disab
   return <label className="checkout-field-block address-field" ref={root}>
     <span className="field-instruction">{instruction}</span>
     <div className={`search-select ${open?'is-open':''} ${disabled?'is-disabled':''}`}>
-      <button type="button" className="search-select-trigger" disabled={disabled} onClick={()=>{if(!disabled)setOpen(v=>!v)}} aria-haspopup="listbox" aria-expanded={open}>
+      <button type="button" className="search-select-trigger" disabled={disabled} onClick={()=>{if(!disabled)setOpen(v=>!v)}} aria-haspopup="listbox" aria-expanded={open} aria-required="true">
         <span className={selected?'':'placeholder'}>{selected?.name||placeholder}</span><b aria-hidden="true">⌄</b>
       </button>
       {open&&<div className="search-select-menu">
@@ -41,7 +41,7 @@ function SearchDropdown({ label, instruction, placeholder, value, options, disab
         </div>
       </div>}
     </div>
-    <input className="address-required-proxy" tabIndex="-1" aria-hidden="true" required value={value||''} onChange={()=>{}} />
+    <small className="field-error field-error-space" aria-hidden="true">.</small>
   </label>
 }
 
