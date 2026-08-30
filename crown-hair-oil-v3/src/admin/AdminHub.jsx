@@ -13,7 +13,7 @@ export default function AdminHub(){
   return <div className="admin-hub" dir="rtl">
     <nav className="admin-hub-nav" aria-label="أقسام لوحة الإدارة">
       <div className="admin-hub-logo"><img src="/Crown-Oil-Hier/crown-logo.png" alt="Crown Hair Oil"/><span><b>CROWN</b><small>ADMIN</small></span></div>
-      <div className="admin-hub-switch"><button className={mode==='site'?'active':''} onClick={()=>change('site')}>تحرير الموقع</button><button className={mode==='contact'?'active':''} onClick={()=>change('contact')}>تواصل معنا</button><button className={mode==='commerce'?'active':''} onClick={()=>change('commerce')}>Commerce</button><button className={mode==='payments'?'active':''} onClick={()=>change('payments')}>الدفع والتحويل البنكي</button></div>
+      <div className="admin-hub-switch"><button className={mode==='site'?'active':''} onClick={()=>change('site')}>تحرير الموقع</button><button className={mode==='contact'?'active':''} onClick={()=>change('contact')}>تواصل معنا</button><button className={mode==='commerce'?'active':''} onClick={()=>change('commerce')}>Commerce</button><button className={mode==='payments'?'active':''} onClick={()=>change('payments')}>إدارة طرق الدفع</button></div>
     </nav>
     <div className="admin-hub-body">{mode==='site'?<AdminVisualCMS/>:mode==='contact'?<ContactSettings/>:mode==='commerce'?<CommerceAdmin onOpenSite={()=>change('site')}/>:<PaymentSettings/>}</div>
   </div>
