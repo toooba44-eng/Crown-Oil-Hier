@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CONTENT_API, DEFAULT_CONTENT, mergeContent } from './siteContent.js'
 import PaymentMethods from './PaymentMethods.jsx'
+import SaudiAddressFields from './SaudiAddressFields.jsx'
 
 const A = '/Crown-Oil-Hier/'
 
@@ -42,13 +43,24 @@ function shippingFor(city,qty){
 
 function Checkout({ qty,setQty,onBack,content }) {
   const p=content.product,c=content.checkout
-  const [form,setForm]=useState({name:'',phone:'',email:'',city:'',district:'',street:''})
+  const [form,setForm]=useState({name:'',phone:'',email:'',cityId:'',city:'',districtId:'',district:'',street:''})
   const subtotal=Number(p.price)*qty,shipping=shippingFor(form.city,qty),total=subtotal+(shipping??0)
   const update=(key,value)=>setForm(prev=>({...prev,[key]:value}))
   const cityKnown=form.city.trim().length>0,riyadh=cityKnown&&isRiyadh(form.city)
-  const shippingLabel=!cityKnown?'يُحسب بعد إدخال المدينة':shipping===0?'مجاني':`${shipping} ر.س`
+  const shippingLabel=!cityKnown?'يُحسب بعد اختيار المدينة':shipping===0?'مجاني':`${shipping} ر.س`
   const shippingHint=!cityKnown?'الرياض: 16 ر.س، ومجانًا عند 3 قطع فأكثر. خارج الرياض: 34 ر.س، ومجانًا عند 6 قطع فأكثر.':shipping===0?'مؤهل للشحن المجاني حسب المدينة والكمية.':riyadh?'الشحن داخل الرياض مجاني عند طلب أكثر من قطعتين.':'الشحن خارج الرياض مجاني عند طلب أكثر من 5 قطع.'
-  return <main className="checkout"><button className="back" onClick={onBack}>{c.back}</button><div className="checkout-grid"><section><p className="eyebrow">{c.eyebrow}</p><h1>{c.title}</h1><h3>{c.contactTitle}</h3><p className="checkout-required-note">جميع بيانات التواصل والعنوان إلزامية *</p><form className="form-grid" onSubmit={e=>e.preventDefault()}><input required autoComplete="name" value={form.name} onChange={e=>update('name',e.target.value)} placeholder="الاسم الكامل *"/><input required autoComplete="tel" value={form.phone} onChange={e=>update('phone',e.target.value)} placeholder="رقم الجوال *" inputMode="tel"/><input required autoComplete="email" value={form.email} onChange={e=>update('email',e.target.value)} placeholder="البريد الإلكتروني *" type="email"/><input required autoComplete="address-level2" value={form.city} onChange={e=>update('city',e.target.value)} placeholder="المدينة *"/><input required autoComplete="address-level3" value={form.district} onChange={e=>update('district',e.target.value)} placeholder="الحي *"/><input required autoComplete="street-address" value={form.street} onChange={e=>update('street',e.target.value)} placeholder="الشارع *" className="wide"/></form><h3>{c.paymentTitle}</h3><PaymentMethods checkout={c}/></section><aside className="summary"><h3>{c.summaryTitle}</h3><div className="summary-product"><img src={p.image} alt={p.name}/><span>{p.name}<small>{p.size}</small><div className="checkout-qty-row"><small>الكمية</small><Qty value={qty} setValue={setQty}/></div></span><b>{subtotal} ر.س</b></div><div><span>المجموع الفرعي</span><b>{subtotal} ر.س</b></div><div><span>الشحن</span><b>{shippingLabel}</b></div><p className="shipping-hint">{shippingHint}</p><hr/><div className="grand"><span>الإجمالي</span><b>{cityKnown?`${total} ر.س`:`${subtotal} ر.س + الشحن`}</b></div><button className="primary full" disabled>{c.paymentDisabled}</button><p className="secure">{c.secureNote}</p></aside></div></main>
+  const setCity=city=>setForm(prev=>({...prev,cityId:city?.city_id||'',city:city?.name_ar||'',districtId:'',district:''}))
+  const setDistrict=district=>setForm(prev=>({...prev,districtId:district?.district_id||'',district:district?.name_ar||''}))
+  const updatePhone=value=>update('phone',value.replace(/\D/g,'').slice(0,10))
+  const updateEmail=value=>update('email',value.replace(/[^\x00-\x7F]/g,''))
+
+  return <main className="checkout"><button className="back" onClick={onBack}>{c.back}</button><div className="checkout-grid"><section><p className="eyebrow">{c.eyebrow}</p><h1>{c.title}</h1><h3>{c.contactTitle}</h3><p className="checkout-required-note">جميع بيانات التواصل والعنوان إلزامية *</p><form className="form-grid" onSubmit={e=>e.preventDefault()}>
+    <input required autoComplete="name" value={form.name} onChange={e=>update('name',e.target.value)} placeholder="الاسم الكامل *"/>
+    <label className="checkout-field-block"><span className="field-instruction">10 أرقام وتبدأ بـ 05.</span><input required autoComplete="tel" value={form.phone} onChange={e=>updatePhone(e.target.value)} placeholder="05xxxxxxxx" inputMode="numeric" maxLength={10} minLength={10} pattern="05[0-9]{8}" title="رقم الجوال يجب أن يتكون من 10 أرقام ويبدأ بـ 05"/></label>
+    <label className="checkout-field-block"><span className="field-instruction">اكتبي بريدًا صحيحًا بالأحرف الإنجليزية فقط.</span><input required autoComplete="email" value={form.email} onChange={e=>updateEmail(e.target.value)} placeholder="example@example.com" type="email" inputMode="email" pattern="[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}" title="أدخلي بريدًا إلكترونيًا صحيحًا بالأحرف الإنجليزية" dir="ltr"/></label>
+    <SaudiAddressFields cityId={form.cityId} districtId={form.districtId} onCityChange={setCity} onDistrictChange={setDistrict}/>
+    <input required autoComplete="street-address" value={form.street} onChange={e=>update('street',e.target.value)} placeholder="الشارع *" className="wide"/>
+  </form><h3>{c.paymentTitle}</h3><PaymentMethods checkout={c}/></section><aside className="summary"><h3>{c.summaryTitle}</h3><div className="summary-product"><img src={p.image} alt={p.name}/><span>{p.name}<small>{p.size}</small><div className="checkout-qty-row"><small>الكمية</small><Qty value={qty} setValue={setQty}/></div></span><b>{subtotal} ر.س</b></div><div><span>المجموع الفرعي</span><b>{subtotal} ر.س</b></div><div><span>الشحن</span><b>{shippingLabel}</b></div><p className="shipping-hint">{shippingHint}</p><hr/><div className="grand"><span>الإجمالي</span><b>{cityKnown?`${total} ر.س`:`${subtotal} ر.س + الشحن`}</b></div><button className="primary full" disabled>{c.paymentDisabled}</button><p className="secure">{c.secureNote}</p></aside></div></main>
 }
 
 function ResultGallery({ results }) {
