@@ -6,7 +6,7 @@ const DEFAULTS={
   bank:{enabled:true,label:'تحويل بنكي',note:''},
 }
 
-export default function PaymentMethods({ checkout }){
+export default function PaymentMethods({ checkout,value,onChange }){
   const configured=checkout?.paymentMethods||{}
   const methods=useMemo(()=>({
     card:{...DEFAULTS.card,...(configured.card||{})},
@@ -14,13 +14,15 @@ export default function PaymentMethods({ checkout }){
     bank:{...DEFAULTS.bank,...(configured.bank||{})},
   }),[configured])
   const visible=useMemo(()=>['card','cod','bank'].filter(key=>methods[key].enabled!==false),[methods])
-  const [method,setMethod]=useState(visible[0]||'')
+  const [internal,setInternal]=useState(visible[0]||'')
+  const method=value??internal
+  const setMethod=next=>{setInternal(next);onChange?.(next)}
   const bank=checkout?.bankTransfer||{}
   const hasBank=Boolean(bank.bankName||bank.accountNumber||bank.iban)
 
   useEffect(()=>{
-    if(!visible.includes(method)) setMethod(visible[0]||'')
-  },[visible,method])
+    if(!visible.includes(method)){const next=visible[0]||'';setInternal(next);onChange?.(next)}
+  },[visible,method,onChange])
 
   if(!visible.length) return <div className="payment payment-methods"><p className="bank-empty">لا توجد طريقة دفع متاحة حاليًا.</p></div>
 
@@ -29,7 +31,7 @@ export default function PaymentMethods({ checkout }){
     {visible.includes('cod')&&<label><input type="radio" name="pay" value="cod" checked={method==='cod'} onChange={()=>setMethod('cod')}/> {methods.cod.label} {methods.cod.note&&<small>({methods.cod.note})</small>}</label>}
     {visible.includes('bank')&&<label><input type="radio" name="pay" value="bank" checked={method==='bank'} onChange={()=>setMethod('bank')}/> {methods.bank.label} {methods.bank.note&&<small>({methods.bank.note})</small>}</label>}
     {method==='bank'&&visible.includes('bank')&&<div className="bank-transfer-details">
-      <div className="bank-transfer-title"><b>بيانات التحويل البنكي</b><span>يرجى مراجعة البيانات قبل إجراء التحويل.</span></div>
+      <div className="bank-transfer-title"><b>بيانات التحويل البنكي</b><span>الإيصال لا يُعد إثبات دفع نهائيًا؛ يتم اعتماد الطلب فقط بعد مطابقة المبلغ في الحساب البنكي.</span></div>
       {hasBank?<>
         <div><span>اسم البنك</span><b>{bank.bankName||'—'}</b></div>
         <div><span>رقم الحساب</span><b dir="ltr">{bank.accountNumber||'—'}</b></div>
