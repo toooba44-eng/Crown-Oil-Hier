@@ -4,6 +4,7 @@ import PaymentMethods from './PaymentMethods.jsx'
 import SaudiAddressFields from './SaudiAddressFields.jsx'
 
 const A = '/Crown-Oil-Hier/'
+const BANK_API='https://asubcanztloxiddshakz.supabase.co/functions/v1/crown-bank-transfer-api'
 
 function Header({ count, onCart, content }) {
   const [open, setOpen] = useState(false)
@@ -56,6 +57,8 @@ function emailError(value=''){
 function Checkout({ qty,setQty,onBack,content }) {
   const p=content.product,c=content.checkout
   const [form,setForm]=useState({name:'',phone:'',email:'',cityId:'',city:'',districtId:'',district:'',street:''})
+  const [paymentMethod,setPaymentMethod]=useState('card')
+  const [bankOrder,setBankOrder]=useState(null),[receipt,setReceipt]=useState(null),[senderName,setSenderName]=useState(''),[last4,setLast4]=useState(''),[bankBusy,setBankBusy]=useState(false),[bankMessage,setBankMessage]=useState('')
   const subtotal=Number(p.price)*qty,shipping=shippingFor(form.city,qty),total=subtotal+(shipping??0)
   const update=(key,value)=>setForm(prev=>({...prev,[key]:value}))
   const cityKnown=form.city.trim().length>0,riyadh=cityKnown&&isRiyadh(form.city)
@@ -66,6 +69,28 @@ function Checkout({ qty,setQty,onBack,content }) {
   const updatePhone=value=>update('phone',value.replace(/\D/g,'').slice(0,10))
   const updateEmail=value=>update('email',value.replace(/[^\x00-\x7F]/g,''))
   const phoneMessage=phoneError(form.phone),emailMessage=emailError(form.email)
+  const validForm=Boolean(form.name.trim()&&!phoneMessage&&form.phone.length===10&&!emailMessage&&form.email&&form.city&&form.district&&form.street.trim())
+
+  async function createBankOrder(){
+    if(!validForm||bankBusy)return
+    setBankBusy(true);setBankMessage('جاري حجز المنتجات لمدة 24 ساعة...')
+    try{
+      const r=await fetch(`${BANK_API}/public/orders`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:form.name,phone:form.phone,email:form.email},address:{city:form.city,district:form.district,street:form.street},items:[{sku:p.sku||'CRN-OIL-100',quantity:qty}]})})
+      const d=await r.json();if(!r.ok)throw new Error(d.error||'request_failed')
+      setBankOrder({...d,submitted:false});setBankMessage('تم حجز المخزون. ارفعي إيصال التحويل لإرسال الطلب للمراجعة.')
+    }catch(e){setBankMessage(e.message==='insufficient_stock'?'عذرًا، الكمية المطلوبة لم تعد متاحة.':'تعذر إنشاء طلب التحويل البنكي. تحققي من البيانات وحاولي مرة أخرى.')}
+    finally{setBankBusy(false)}
+  }
+  async function uploadReceipt(){
+    if(!bankOrder||!receipt||bankBusy)return
+    setBankBusy(true);setBankMessage('جاري رفع الإيصال بشكل آمن...')
+    try{
+      const fd=new FormData();fd.append('token',bankOrder.accessToken);fd.append('receipt',receipt);fd.append('senderName',senderName);fd.append('last4',last4)
+      const r=await fetch(`${BANK_API}/public/orders/${bankOrder.order.id}/receipt`,{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error(d.error||'upload_failed')
+      setBankOrder(prev=>({...prev,submitted:true}));setBankMessage('تم إرسال الإيصال للمراجعة. سيُعتمد الدفع فقط بعد مطابقة المبلغ فعليًا في الحساب البنكي.')
+    }catch(e){setBankMessage(e.message==='reservation_expired'?'انتهت مهلة حجز المخزون. أنشئي طلبًا جديدًا.':'تعذر رفع الإيصال. تأكدي أن الملف JPG أو PNG أو WebP أو PDF وأقل من 5MB.')}
+    finally{setBankBusy(false)}
+  }
 
   return <main className="checkout"><button className="back" onClick={onBack}>{c.back}</button><div className="checkout-grid"><section><p className="eyebrow">{c.eyebrow}</p><h1>{c.title}</h1><h3>{c.contactTitle}</h3><p className="checkout-required-note">جميع بيانات التواصل والعنوان إلزامية *</p><form className="form-grid professional-form" onSubmit={e=>e.preventDefault()}>
     <label className="checkout-field-block"><span className="field-instruction field-instruction-spacer">الاسم الكامل</span><input required autoComplete="name" value={form.name} onChange={e=>update('name',e.target.value)} placeholder="الاسم الكامل *"/></label>
@@ -73,7 +98,9 @@ function Checkout({ qty,setQty,onBack,content }) {
     <label className={`checkout-field-block ${emailMessage?'has-error':''}`}><span className="field-instruction">اكتبي بريدًا صحيحًا بالأحرف الإنجليزية فقط.</span><input required autoComplete="email" value={form.email} onChange={e=>updateEmail(e.target.value)} placeholder="example@example.com" type="email" inputMode="email" pattern="[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}" aria-invalid={Boolean(emailMessage)} aria-describedby="email-error" dir="ltr"/>{emailMessage&&<small className="field-error" id="email-error">{emailMessage}</small>}</label>
     <SaudiAddressFields cityId={form.cityId} districtId={form.districtId} onCityChange={setCity} onDistrictChange={setDistrict}/>
     <label className="checkout-field-block street-field"><span className="field-instruction">أضيفي اسم الشارع ورقم العمارة ورقم الشقة والوصف.</span><input required autoComplete="street-address" value={form.street} onChange={e=>update('street',e.target.value)} placeholder="الشارع، رقم العمارة، رقم الشقة، الوصف *"/></label>
-  </form><h3>{c.paymentTitle}</h3><PaymentMethods checkout={c}/></section><aside className="summary"><h3>{c.summaryTitle}</h3><div className="summary-product"><img src={p.image} alt={p.name}/><span>{p.name}<small>{p.size}</small><div className="checkout-qty-row"><small>الكمية</small><Qty value={qty} setValue={setQty}/></div></span><b>{subtotal} ر.س</b></div><div><span>المجموع الفرعي</span><b>{subtotal} ر.س</b></div><div><span>الشحن</span><b>{shippingLabel}</b></div><p className="shipping-hint">{shippingHint}</p><hr/><div className="grand"><span>الإجمالي</span><b>{cityKnown?`${total} ر.س`:`${subtotal} ر.س + الشحن`}</b></div><button className="primary full" disabled>{c.paymentDisabled}</button><p className="secure">{c.secureNote}</p></aside></div></main>
+  </form><h3>{c.paymentTitle}</h3><PaymentMethods checkout={c} value={paymentMethod} onChange={setPaymentMethod}/>
+  {paymentMethod==='bank'&&bankOrder&&<div className="bank-review-workflow"><div className="bank-order-head"><span>رقم الطلب</span><b>{bankOrder.order.orderNumber}</b></div><p>تم حجز المنتجات حتى <strong>{new Date(bankOrder.order.expiresAt).toLocaleString('ar-SA')}</strong>. اكتبي رقم الطلب في مرجع التحويل إن أمكن.</p><div className="bank-order-total"><span>المبلغ المطلوب تحويله</span><b>{bankOrder.order.total} ر.س</b></div>{!bankOrder.submitted?<><label>اسم المحوّل <small>(اختياري)</small><input value={senderName} onChange={e=>setSenderName(e.target.value)} /></label><label>آخر 4 أرقام من الحساب المحوّل منه <small>(اختياري)</small><input dir="ltr" inputMode="numeric" maxLength={4} value={last4} onChange={e=>setLast4(e.target.value.replace(/\D/g,'').slice(0,4))}/></label><label className="receipt-upload">إيصال التحويل <small>إلزامي · JPG/PNG/WebP/PDF · حتى 5MB</small><input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required onChange={e=>setReceipt(e.target.files?.[0]||null)}/></label><button className="primary full" disabled={!receipt||bankBusy} onClick={uploadReceipt}>{bankBusy?'جاري الرفع...':'رفع الإيصال وإرسال الطلب للمراجعة'}</button></>:<div className="bank-submitted-state"><b>✓ تم استلام الإيصال</b><p>الطلب بانتظار التحقق اليدوي. صورة الإيصال ليست إثباتًا نهائيًا للدفع، ولن يكتمل البيع إلا بعد مطابقة التحويل في الحساب البنكي.</p></div>}</div>}
+  {bankMessage&&<div className="bank-workflow-message">{bankMessage}</div>}</section><aside className="summary"><h3>{c.summaryTitle}</h3><div className="summary-product"><img src={p.image} alt={p.name}/><span>{p.name}<small>{p.size}</small><div className="checkout-qty-row"><small>الكمية</small><Qty value={qty} setValue={setQty}/></div></span><b>{subtotal} ر.س</b></div><div><span>المجموع الفرعي</span><b>{subtotal} ر.س</b></div><div><span>الشحن</span><b>{shippingLabel}</b></div><p className="shipping-hint">{shippingHint}</p><hr/><div className="grand"><span>الإجمالي</span><b>{cityKnown?`${total} ر.س`:`${subtotal} ر.س + الشحن`}</b></div>{paymentMethod==='bank'&&!bankOrder?<button className="primary full" disabled={!validForm||bankBusy} onClick={createBankOrder}>{bankBusy?'جاري الحجز...':'حجز المخزون والمتابعة بالتحويل البنكي'}</button>:<button className="primary full" disabled>{paymentMethod==='bank'?(bankOrder?.submitted?'بانتظار التحقق من التحويل':'المخزون محجوز · ارفعي الإيصال'):c.paymentDisabled}</button>}<p className="secure">{paymentMethod==='bank'?'الحجز لمدة 24 ساعة قبل رفع الإيصال. بعد رفعه يبقى المخزون محجوزًا أثناء المراجعة.':c.secureNote}</p></aside></div></main>
 }
 
 function ResultGallery({ results }) {
