@@ -40,6 +40,18 @@ function shippingFor(city,qty){
   if(riyadh)return qty>2?0:16
   return qty>5?0:34
 }
+function phoneError(value=''){
+  if(!value)return ''
+  const starts=value.startsWith('05'),complete=value.length===10
+  if(!starts&&!complete)return 'رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام.'
+  if(!starts)return 'رقم الجوال يجب أن يبدأ بـ 05.'
+  if(!complete)return 'رقم الجوال يجب أن يتكون من 10 أرقام.'
+  return ''
+}
+function emailError(value=''){
+  if(!value)return ''
+  return /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(value)?'':'أدخلي بريدًا إلكترونيًا صحيحًا مثل example@example.com.'
+}
 
 function Checkout({ qty,setQty,onBack,content }) {
   const p=content.product,c=content.checkout
@@ -53,13 +65,14 @@ function Checkout({ qty,setQty,onBack,content }) {
   const setDistrict=district=>setForm(prev=>({...prev,districtId:district?.district_id||'',district:district?.name_ar||''}))
   const updatePhone=value=>update('phone',value.replace(/\D/g,'').slice(0,10))
   const updateEmail=value=>update('email',value.replace(/[^\x00-\x7F]/g,''))
+  const phoneMessage=phoneError(form.phone),emailMessage=emailError(form.email)
 
-  return <main className="checkout"><button className="back" onClick={onBack}>{c.back}</button><div className="checkout-grid"><section><p className="eyebrow">{c.eyebrow}</p><h1>{c.title}</h1><h3>{c.contactTitle}</h3><p className="checkout-required-note">جميع بيانات التواصل والعنوان إلزامية *</p><form className="form-grid" onSubmit={e=>e.preventDefault()}>
-    <input required autoComplete="name" value={form.name} onChange={e=>update('name',e.target.value)} placeholder="الاسم الكامل *"/>
-    <label className="checkout-field-block"><span className="field-instruction">10 أرقام وتبدأ بـ 05.</span><input required autoComplete="tel" value={form.phone} onChange={e=>updatePhone(e.target.value)} placeholder="05xxxxxxxx" inputMode="numeric" maxLength={10} minLength={10} pattern="05[0-9]{8}" title="رقم الجوال يجب أن يتكون من 10 أرقام ويبدأ بـ 05"/></label>
-    <label className="checkout-field-block"><span className="field-instruction">اكتبي بريدًا صحيحًا بالأحرف الإنجليزية فقط.</span><input required autoComplete="email" value={form.email} onChange={e=>updateEmail(e.target.value)} placeholder="example@example.com" type="email" inputMode="email" pattern="[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}" title="أدخلي بريدًا إلكترونيًا صحيحًا بالأحرف الإنجليزية" dir="ltr"/></label>
+  return <main className="checkout"><button className="back" onClick={onBack}>{c.back}</button><div className="checkout-grid"><section><p className="eyebrow">{c.eyebrow}</p><h1>{c.title}</h1><h3>{c.contactTitle}</h3><p className="checkout-required-note">جميع بيانات التواصل والعنوان إلزامية *</p><form className="form-grid professional-form" onSubmit={e=>e.preventDefault()}>
+    <label className="checkout-field-block"><span className="field-instruction field-instruction-spacer">الاسم الكامل</span><input required autoComplete="name" value={form.name} onChange={e=>update('name',e.target.value)} placeholder="الاسم الكامل *"/></label>
+    <label className={`checkout-field-block ${phoneMessage?'has-error':''}`}><span className="field-instruction">10 أرقام وتبدأ بـ 05.</span><input required autoComplete="tel" value={form.phone} onChange={e=>updatePhone(e.target.value)} placeholder="05xxxxxxxx" inputMode="numeric" maxLength={10} minLength={10} pattern="05[0-9]{8}" aria-invalid={Boolean(phoneMessage)} aria-describedby="phone-error"/>{phoneMessage&&<small className="field-error" id="phone-error">{phoneMessage}</small>}</label>
+    <label className={`checkout-field-block ${emailMessage?'has-error':''}`}><span className="field-instruction">اكتبي بريدًا صحيحًا بالأحرف الإنجليزية فقط.</span><input required autoComplete="email" value={form.email} onChange={e=>updateEmail(e.target.value)} placeholder="example@example.com" type="email" inputMode="email" pattern="[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}" aria-invalid={Boolean(emailMessage)} aria-describedby="email-error" dir="ltr"/>{emailMessage&&<small className="field-error" id="email-error">{emailMessage}</small>}</label>
     <SaudiAddressFields cityId={form.cityId} districtId={form.districtId} onCityChange={setCity} onDistrictChange={setDistrict}/>
-    <input required autoComplete="street-address" value={form.street} onChange={e=>update('street',e.target.value)} placeholder="الشارع *" className="wide"/>
+    <label className="checkout-field-block street-field"><span className="field-instruction">أضيفي اسم الشارع ورقم العمارة ورقم الشقة والوصف.</span><input required autoComplete="street-address" value={form.street} onChange={e=>update('street',e.target.value)} placeholder="الشارع، رقم العمارة، رقم الشقة، الوصف *"/></label>
   </form><h3>{c.paymentTitle}</h3><PaymentMethods checkout={c}/></section><aside className="summary"><h3>{c.summaryTitle}</h3><div className="summary-product"><img src={p.image} alt={p.name}/><span>{p.name}<small>{p.size}</small><div className="checkout-qty-row"><small>الكمية</small><Qty value={qty} setValue={setQty}/></div></span><b>{subtotal} ر.س</b></div><div><span>المجموع الفرعي</span><b>{subtotal} ر.س</b></div><div><span>الشحن</span><b>{shippingLabel}</b></div><p className="shipping-hint">{shippingHint}</p><hr/><div className="grand"><span>الإجمالي</span><b>{cityKnown?`${total} ر.س`:`${subtotal} ر.س + الشحن`}</b></div><button className="primary full" disabled>{c.paymentDisabled}</button><p className="secure">{c.secureNote}</p></aside></div></main>
 }
 
